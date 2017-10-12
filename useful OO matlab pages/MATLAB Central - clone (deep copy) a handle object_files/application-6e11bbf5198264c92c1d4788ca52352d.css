@@ -1,0 +1,43 @@
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+ * or vendor/assets/stylesheets of plugins, if any, can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the top of the
+ * compiled file, but it's generally better to create a new file per style scope.
+ *
+
+ */
+
+div.mlc_author_popover {
+  display: none;
+  width: 397px;
+}
+.profile { z-index: 100; width: 355px; padding: 20px;  border: 1px solid #ccc; box-shadow: 5px 5px 9px rgba(204,204,204,0.5); font-size: 15px; font-size: 1.5rem; position: relative; background-color: white;}
+.profile__name a { margin-bottom: 0; color: #d55000 !important; font-family: 'Futura',Arial,Helvetica,sans-serif; font-weight: 500 !important; text-decoration: none !important; } 
+.profile__name { width: auto !important; line-height: normal; } 
+.profile__altname { 
+  color: #999; 
+  font-size: 16px; 
+  width: initial !important;
+}
+.profile .profile__image { width: 100px; height: 100px; background-size: cover; background-position: center; background-repeat: no-repeat; overflow: hidden; display: table-cell; vertical-align: top; }
+.profile .profile__stats { padding-left: 0; display: table-cell; }
+.profile__stats ul>li a {
+font-size: 14px !important;
+font-weight: normal !important;
+display: inline-block !important;
+}
+.profile ul { margin-bottom: 0; }
+.profile ul > li:before { content: none; }
+.profile ul > li:last-child { margin-bottom: 0; }
+.profile ul > li { background: transparent none; font-size: 14px; line-height: 1.5; padding-left: 0px;}
+.profile ul > li span[class^='ico'] { color: #999; font-size: 16px; }
+.profile ul > li a:hover { text-decoration: none; }
+.profile h3 a > span {
+  font-size: 14px;
+  color: #005FCE;
+}
+.profile h3 a:visited > span { color: #004AA0; }

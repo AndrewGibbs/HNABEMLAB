@@ -1,0 +1,7 @@
+var mboxCurrent = mboxFactories.get('default').get('target-global-mbox',0);mboxCurrent.setOffer(new mboxOfferAjax(''));mboxCurrent.getOffer().setOnLoad(function() {
+/*T&T Metadata v3 ==>Response Plugin*/
+window.ttMETA=(typeof(window.ttMETA)!="undefined")?window.ttMETA:[];window.ttMETA.push({"CampaignName":"","CampaignId":"","RecipeName":"","RecipeId":"","OfferId":"","OfferName":"","MboxName":"target-global-mbox"});
+
+var test_name= "";
+var tntRecipeName= "";
+});mboxCurrent.loaded();mboxFactories.get('default').get('target-global-mbox',0).cancelTimeout();mboxFactories.get('default').get('target-global-mbox',0).setOffer(new mboxOfferDefault()).show();

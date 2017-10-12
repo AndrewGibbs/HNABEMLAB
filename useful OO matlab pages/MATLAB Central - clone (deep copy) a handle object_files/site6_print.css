@@ -1,0 +1,119 @@
+/*
+-----------------------------------
+TOC
+-----------------------------------
+
+Bootstrap Overrides:......Changes to base-Bootstrap CSS
+
+Page Globals:.............Styling of HTML and BODY
+
+Site Elements:............Re-usable site elements 	
+
+Structure:................Site structural components
+
+Section Specific:.........Styles for Home and all Sub Pages
+
+Page/Element Specific:....Page, element or flow Specific CSS
+
+Additive CSS:.............Additive/override CSS
+
+Responsive:...............Specific styles for Desktop, Tablet and Mobile
+
+*/
+
+
+/*-----------------------------------
+   Page Globals
+-------------------------------------*/
+html body { background:#fff none; overflow:visible !important; }
+
+/* ---- Code ---- */
+
+	/* Code: Responsive */
+	.code_responsive { width: auto; margin-bottom: 0; border: none; overflow-y: visible; overflow-x: visible; }
+
+
+/* ---- Tables ---- */
+	.table th,
+	.table td,
+	.table tr > th,
+	.table tr > td,
+	.table-striped > tbody > tr:nth-child(odd) > th,
+	.table-striped > tbody > tr:nth-child(odd) > td { background: #fff; color: #474747 !important; }
+	
+	/* Tables: Responsive */
+	.table-responsive { width: auto; margin-bottom: 0; border: none; overflow-y: visible; overflow-x: visible; }
+	.table-responsive > .table > thead > tr > th,
+	.table-responsive > .table > tbody > tr > th,
+	.table-responsive > .table > tfoot > tr > th,
+	.table-responsive > .table > thead > tr > td,
+	.table-responsive > .table > tbody > tr > td,
+	.table-responsive > .table > tfoot > tr > td { white-space: normal; }
+
+
+
+/*-----------------------------------
+   Structure
+-------------------------------------*/
+
+/* ---- Template ---- */
+.row-offcanvas,
+.row-offcanvas.active { margin-left: 0 !important; left: 0 !important; position: relative !important; }
+
+.sidebar-offcanvas { display: none !important; }
+
+/* ---- Header ---- */
+.header { display: none !important; }
+
+/* ---- Section Header ---- */
+.section_header { background:none !important; }
+.section_header h1 { color:#000 !important; }
+.sticky_header_container { display: block !important; }
+.search_nested_content_container { display:none !important; }
+#mobile_search, #search_actuator { display:none !important; }
+
+/* ---- CTAs ---- */
+.cta_box { display: none !important; }
+
+/* ---- Content ---- */
+.row-offcanvas #content_container { padding-top: 20px; font-size:12px; overflow:visible !important; }
+.row-offcanvas.active #content_container { width: 100%; font-size:14px; overflow:visible !important; }
+
+a[href]:after { content:"" !important; }
+
+#go-top { display: none !important; }
+
+.panel-heading { background:none !important; border:none !important; }
+.panel-heading * { color:#000 !important; }
+.caption { font-size:10pt; color:#000; font-style:italic; }
+blockquote { border:none !important; color:#000; font-size:10pt; padding-left:0px; }
+img {  width:auto !important; height:auto !important; }
+h1 { font-size:18pt; }
+h2 { font-size:16pt; }
+
+.tab-content > .tab-pane { display:block !important; opacity:1 !important; }
+.tab-container .collapse { display:block !important; }
+
+.doc_topic_desc #expandAllPage { display:none; }
+
+.feedbackblock { display:none; }
+
+.doc_nda_notice { margin-bottom:30px; }
+
+/* ---- Body Trail ---- */
+.body_trail_container { display:none; }
+
+/* ---- Footer ---- */
+#footer { display:block; color:#000; }
+.fat_footer_container { display:none; }
+#countrynav, .footernav, .social_media { display:none; }
+
+
+/*-----------------------------------
+   Additive CSS
+-------------------------------------*/
+
+.add_border_left:before { border: none !important; }
+
+.row.reorder_xs { transform: rotate(180deg); direction: rtl; }
+.row.reorder_xs > [class*="col-"] { transform: rotate(-180deg); direction: ltr; }

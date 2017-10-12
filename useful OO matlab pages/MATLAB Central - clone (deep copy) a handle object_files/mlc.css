@@ -1,0 +1,70 @@
+/*
+-----------------------------------
+TOC
+-----------------------------------
+
+Fonts:....................Available font-family declarations
+
+Bootstrap Overrides:......Changes to base-Bootstrap CSS
+
+Template Globals:.........Styles for specific responsive templates
+
+Page Globals:.............Styling of HTML and BODY
+
+Site Elements:............Re-usable site elements 	
+
+Structure:................Site structural components
+
+Section Specific:.........Styles for Home and all Sub Pages
+
+Page/Element Specific:....Page, element or flow Specific CSS
+
+Responsive:...............Specific styles for Desktop, Tablet and Mobile
+
+Additive CSS:.............Additive/override CSS
+
+*/
+
+
+/* ------------------------------------
+$ Page Globals
+------------------------------------ */
+html body { color: #404040; }
+
+/* TopNav Highlighting */
+.topnav_community > a,
+.topnav_community > a:hover { border-radius: 4px; background: #e6f2fa !important; color: #474747 !important; }
+
+/* ---- Code ---- */
+pre + pre { margin-top: -25px; border-top: none; border-top-right-radius: 0; border-top-left-radius: 0; }
+
+/* ---- Links ---- */
+a:visited { color: #609; }
+a:hover { color: #007dd9; }
+
+/* OVERRIDES CODED BY COMMUNITY TEAM */
+h1 { margin-bottom: 15px; }
+.page-arrows { padding: 2px 5px 2px 5px !important; }
+.panel-body-no-overflow { overflow-y: visible; }
+
+/* answer/cody-style tagging css */
+.add_tags { float: left; font-weight: normal; width: 100% }
+.multicomplete { display: block; width: auto; cursor: text; overflow: hidden; zoom: 1; margin: 0 0.5em 0.5em 0; border: 1px solid #bbbbbb; padding: 0 5px; background-color: #ffffff; }
+.multicomplete-input { width: 100%; display: block; float: left; margin: 0 !important; border: 0 !important; padding: 3px 0 !important; outline: none !important; background-color: #ffffff; box-shadow: none !important; webkit-box-shadow: none !important; }
+.multicomplete-selected-item { float: left; margin: 0 5px 0 0; padding: 2px 0; color: #4d4d4d; white-space: nowrap; }
+.multicomplete-selected-item span { float: left; padding: 0 1px 0 0; white-space: nowrap; }
+.multicomplete-selected-item a { display: block; width: 15px; float: left; overflow: hidden; color: #cb6015 !important; font-family: 'mathworks'; white-space: nowrap; text-decoration: none; }
+.multicomplete-selected-item a:before { content: "\e64b" !important; }
+.ui-autocomplete { display: inline-block; position: absolute; z-index: 999999999; list-style: none outside none; max-height: 165px; min-width: 30px; overflow-x: hidden; overflow-y: auto; margin: 0; margin-left: 0 !important; border: 1px solid #bbbbbb; padding: 0; text-align: left; background-color: #ffffff; }
+
+/* IE 6 doesn't support max-height or min-width */
+html .ui-autocomplete { width: 150px; }
+.ui-autocomplete li { margin: 0; padding: 0; background: none; }
+.ui-autocomplete li a { display: block; padding: 0 0 0 6px; }
+.ui-helper-hidden-accessible { display:none; }
+.tag-list { margin-right: 30px; }
+.tag-list em { color: #999999; font-style: italic; }
+.tag-list ul li, .tag-list ul form { float: left; margin: 0 !important; padding: 0; font-size: 11px; line-height: 15px; background: none; white-space: nowrap; }
+.tag-list ul form, .tag-list ul li a { display: block; float: left; }
+.tag-list form input { display: inline-block; width: 12px; border: 0; padding: 0; outline: 0; content: "\e64b" !important; color: #cb6015 !important; font-size: 11px; line-height: 15px; text-indent: -5000px; cursor: pointer; }
+.tag-separator:after { content: ","; display: inline-block; padding: 0 5px 0 0; }

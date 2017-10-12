@@ -1,0 +1,26 @@
+P=[1:8];
+K=[4 16 32];
+SampleScale=[1:5];
+%now plot stuff.
+k_=0;
+lines={'b','k','r'};
+
+hold on;
+for k=K
+    k_=k_+1;
+    %load(sprintf('k%dp8_hpBEM',k));
+    figure(k_);
+    p_=0;
+    for p=P
+        p_=p_+1;
+        %semilogy(P,err(P,k_,s_));
+        %do this next bit manually because matlab can't tell a vector from
+        %a 
+        for s_=SampleScale
+            yData(SampleScale)=err(p_,k_,SampleScale);
+        end
+        semilogy(SampleScale,err(p_,k_,SampleScale));
+        hold on;
+    end
+    hold off;
+end
