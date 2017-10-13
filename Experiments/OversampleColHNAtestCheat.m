@@ -19,7 +19,7 @@ standartMethodPolynomialDegree=12;
 
 %loop parameters
 P=[1:8];
-K=[64 128 256 512 1024 2048 4096];
+K=[1024];
 SampleScale=linspace(1,2,10);
 
 kCount=0;

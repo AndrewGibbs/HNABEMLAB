@@ -6,35 +6,34 @@ fprintf('Brute force composite Gauss V %s\n',class(QuadIn));
   %  try
 
         
-%         %define the screen
-%         vertices=[0 0       %first vertex
-%                   1 0];     %second vertex
-% 
-%         %create 'edge' object for the screen
-%         Gamma=edge(vertices);
-        Gamma=Vbasis.side;
+        %define the screen
+        vertices=[0 0       %first vertex
+                  1 0];     %second vertex
+
+        %create 'edge' object for the screen
+        Gamma=edge(vertices);
 
         %inident plane wave
         uinc=planeWave(kwave,[1 1]./sqrt(2));
 
         %with RHS data
-        f=DirichletData(uinc,Gamma);
+        f=DirichletData(uinc,Vbasis.side);
         
-        DOFs=length(Vbasis.el);
+        DOFs=length(VHNA.el);
         %define the single layer 'operator' object
         S=SingleLayer(kwave,Gamma);
 
         %construct Geometrical optics approximation on Gamma
         GOA=GeometricalOpticsApprox(uinc,Gamma);
 
-        X = getColPoints( Vbasis );
+        X = getColPoints( VHNA );
         %X = ChebyshevRoots( DOFs, 'Tn', [Gamma.supp(1) Gamma.supp(2)] ).';
 
         preColMatrix=[];
         elCount=1;
 
         %create collocation matrix
-        for b=Vbasis.el
+        for b=VHNA.el
             Sb=S*b;
             preColMatrix=[preColMatrix Sb.col(X)];
             elCount=elCount+1;
@@ -49,7 +48,7 @@ fprintf('Brute force composite Gauss V %s\n',class(QuadIn));
         preColRHSb=Sgoa.col(X);
 
         % initialise brute force integration solver to test against
-        CG=CompGaussBasic(kwave,1000,1000);
+        CG=CompGaussBasic(kwave,5000,5000);
 
         ColMatrixCG=zeros(size(preColMatrix));
         ColMatrixNSD=zeros(size(preColMatrix));
@@ -67,7 +66,7 @@ fprintf('Brute force composite Gauss V %s\n',class(QuadIn));
         end
         errL=MatMax(abs(ColMatrixCG-ColMatrixNSD));
         errR=MatMax(abs(ColRHSbGC-ColRHSbNSD));
-        output=strcat('Matrix error: ', sprintf('%e',errL), '\tRHS error: ', sprintf('%e',errR));
+        output=char('Matrix error: ', fprintf('%e',errL), 'RHS error: ', fprintf('%e',errR));
         display('Comparison complete');
 %     catch MatlabError
 %         display('An error occured');

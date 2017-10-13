@@ -3,20 +3,26 @@ function t = getColPoints( Vbasis, overSamplesPerMeshEl, scaler )
 %elements
  %ChebyshevRoots( 3, 'Tn', [1 2] )
  if nargin <=1
-     overSamplesPerMeshEl=0;
+     overSamplesPerMeshEl=1;
  end
  if nargin<=2
      scaler=1;
  end
+ if overSamplesPerMeshEl<1
+     error('Oversampling param must be at least one');
+ end
  
     t=[];
     if isa(Vbasis,'HNAoverlappingMesh')
-        M=[Vbasis.mesh{1}.el Vbasis.mesh{2}.el];
+        E=[Vbasis.mesh{1}.el Vbasis.mesh{2}.el];
+        M=[Vbasis.meshDOFs{1} Vbasis.meshDOFs{2}];
     else
-        M=Vbasis.mesh.el;
+        E=Vbasis.mesh.el;
+        M=Vbasis.meshDOFs;
     end
-    for m=M
-        pts=m.pMax+1+overSamplesPerMeshEl;
+    for m=1:length(M)
+        %pts=ceil((m.pMax+1)*overSamplesPerMeshEl);
+        pts=ceil(M(m)*overSamplesPerMeshEl);
         s=sort(cos(pi*(2*(1:pts)-1)/(2*pts))).';
         if mod(length(s),2)==0 %if even number of points
             mid=length(s)/2;
@@ -34,7 +40,7 @@ function t = getColPoints( Vbasis, overSamplesPerMeshEl, scaler )
         s3=1-(1-s3).*scaler;
         s=[s1;s2;s3;];
         %now scale everything onto the mesh element:
-        t=[t; m.interval(1)+m.width*.5*(s+1);];
+        t=[t; E(m).interval(1)+E(m).width*.5*(s+1);];
     end
 end
 

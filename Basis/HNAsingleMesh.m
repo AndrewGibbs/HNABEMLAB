@@ -13,8 +13,11 @@ classdef HNAsingleMesh <basis
             self.sigmaGrad=sigmaGrad;
             self.alphaDist=alphaDist;
             
+            
             %first construct the mesh
             mesh=singleMesh(side, nLayers, sigmaGrad);
+            
+            self.meshDOFs=zeros(1,length(mesh.el));
             
             %now put basis elements on it
             elCount=0;
@@ -35,6 +38,7 @@ classdef HNAsingleMesh <basis
                         for pm=[-1 1]
                             elCount=elCount+1;
                             self.el(elCount)=baseFnHNA(kwave,p,mesh.el(m),pm,mesh.side);
+                            self.meshDOFs(m)=self.meshDOFs(m)+1;
                         end
                         mesh.el(m).osc=1;
                     else
@@ -42,6 +46,7 @@ classdef HNAsingleMesh <basis
                         elCount=elCount+1;
                         self.el(elCount)=baseFnHNA(kwave,p,mesh.el(m),0,mesh.side);
                         mesh.el(m).osc=0;
+                        self.meshDOFs(m)=self.meshDOFs(m)+1;
                     end
                 end
             end

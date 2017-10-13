@@ -7,8 +7,8 @@ classdef NSDlinearPhase < Integrator
     %be linear.
     
     properties
-        Nsd=10 %number of nodes to take along SD paths
-        Ngauss=15  % number of nodes to take for standard Gaussian quadrature
+        Nsd %number of nodes to take along SD paths
+        Ngauss  % number of nodes to take for standard Gaussian quadrature
         
         %parameters for occasional graded quadrature:
         nLayers=12   %number of graded layers
@@ -18,12 +18,18 @@ classdef NSDlinearPhase < Integrator
     methods 
         function self=NSDlinearPhase(Nsd,Ngauss, nLayers,GradingParam)
             %set key parameters, if they are specified
-            if nargin>=1
+            if nargin==0
+                self.Nsd=10;
+            else
                 self.Nsd=Nsd;
             end
+            
             if nargin>=2
                 self.Ngauss=Ngauss;
+            else
+                self.Ngauss=self.Nsd;
             end
+            
             if nargin>=3
                 self.nLayers=nLayers;
             end
@@ -58,17 +64,20 @@ classdef NSDlinearPhase < Integrator
                     %--------------integral is oscillatory-----------------
                     k=I.kernel.kwave;
                     m_g=I.phaseLinear(1);   c_g=I.phaseLinear(2);
-                    if strcmp(I.type , 'Singular left')
-                        [ x, w, r ] = NSDLogLinearPhase( self.Nsd, k,a,b,m_g,c_g,'L' );
-                    elseif strcmp(I.type , 'Singular right')
-                        [ x, w, r ] = NSDLogLinearPhase( self.Nsd, k,a,b,m_g,c_g,'R' );
-                    elseif strcmp(I.type , 'Nearly singular left') || strcmp(I.type , 'Nearly singular right')
-                        [ x, w, r ] = NSDnearLogLinearPhase( self.Ngauss, k, a, b, m_g, c_g, I.ColPoint, self.nLayers, self.GradingParam );
-                    elseif strcmp(I.type , 'Smooth')
-                        [ x, w ] = SDbasic( self.Nsd, k,a,b,m_g,c_g );
-                    else
-                        error('Integral classification not recognised');
-                    end
+                    %can be nearly singular on both sides, which needs to
+                    %be accounted for!
+%                     if strcmp(I.type , 'Singular left')
+%                         [ x, w, r ] = NSDLogLinearPhase( self.Nsd, k,a,b,m_g,c_g,'L' );
+%                     elseif strcmp(I.type , 'Singular right')
+%                         [ x, w, r ] = NSDLogLinearPhase( self.Nsd, k,a,b,m_g,c_g,'R' );
+%                     elseif strcmp(I.type , 'Nearly singular left') || strcmp(I.type , 'Nearly singular right')
+%                         [ x, w, r ] = NSDnearLogLinearPhase( self.Ngauss, k, a, b, m_g, c_g, I.ColPoint, self.nLayers, self.GradingParam );
+%                     elseif strcmp(I.type , 'Smooth')
+%                         [ x, w ] = SDbasic( self.Nsd, k,a,b,m_g,c_g );
+%                     else
+%                         error('Integral classification not recognised');
+%                     end
+                    [ x, w ] = NSDLogLinearPhaseV2( self.Nsd, k,a,b,m_g,c_g,I.ColPoint, self.nLayers,self.GradingParam );
                     %r being output is currently wrong, here's a quick fix:
                     if I.ColPoint<=I.supp(1)
                         r=x-I.ColPoint;

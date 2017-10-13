@@ -19,7 +19,7 @@ function [v_N, VHNA, X, coeffs] = HNAColOversample( kwave,Gamma,uinc,pMax,extraP
     %construct Geometrical optics approximation on Gamma
     GOA=GeometricalOpticsApprox(uinc,Gamma);
 
-    X = getColPoints2( VHNA, extraPoints, scaler);
+    X = getColPoints( VHNA, extraPoints, scaler);
     COLs=length(X);
 
     preColMatrix=[];

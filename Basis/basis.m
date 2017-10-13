@@ -8,6 +8,7 @@ classdef (Abstract) basis <handle
         pMax
         nLayers
         sigmaGrad
+        meshDOFs
     end
     
     methods
