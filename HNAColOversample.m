@@ -1,4 +1,4 @@
-function [v_N, VHNA, X, coeffs] = HNAColOversample( kwave,Gamma,uinc,pMax,extraPoints,scaler, messageFlag )
+function [v_N, VHNA, X, coeffs, solveTime] = HNAColOversample( kwave,Gamma,uinc,pMax,extraPoints,scaler, messageFlag )
 %function which returns oversampled collocation HNA BEM
     if nargin<=5
         scaler=1;
@@ -45,10 +45,11 @@ function [v_N, VHNA, X, coeffs] = HNAColOversample( kwave,Gamma,uinc,pMax,extraP
     preColRHSb=Sgoa.col(X);
 
     % initialise integration solver
-    NSD=NSDlinearPhase(20,20);
+    NSD=NSDlinearPhase(20);
 
     ColMatrixNSD=zeros(size(preColMatrix));
     ColRHSb=zeros(COLs,1);
+    tic;
     for m=1:COLs
         if messageFlag==1
            fprintf('Computing row %d of %d\n',m,COLs);
@@ -58,6 +59,7 @@ function [v_N, VHNA, X, coeffs] = HNAColOversample( kwave,Gamma,uinc,pMax,extraP
         end
         ColRHSb(m)=NSD.eval(preColRHSb(m));
     end
+    solveTime=toc;
    % fprintf('Condition number of matrix: %e',cond(ColMatrixNSD));
     ColRHS=RHSa-ColRHSb;
     warning('off','MATLAB:rankDeficientMatrix');

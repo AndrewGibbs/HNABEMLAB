@@ -5,10 +5,17 @@ classdef Projection < BoundaryFunction
         coeffs
         el
         Ndim
+        GOA
     end
     
     methods
-        function self=Projection(coeffs,basis)
+        function self=Projection(coeffs,basis, GOA)
+            if nargin==2
+                %add an option GOA to the solution
+                self.GOA=[];
+            else
+                self.GOA=GOA;
+            end
             if basis.numEls~=length(coeffs)
                 error('Dimensions of basis and coefficients vector do not match');
             end
@@ -19,6 +26,8 @@ classdef Projection < BoundaryFunction
            self.suppWidth=basis.side.L;
            self.Ndim=basis.numEls;
         end  
+        
+        F = FarField( self, theta );
         
         function val=eval(self,s)
             s=s(:);

@@ -19,8 +19,8 @@ standartMethodPolynomialDegree=12;
 
 %loop parameters
 P=[1:8];
-K=[1024];
-SampleScale=linspace(1,2,10);
+K=[32 64 128 256 512 1024];
+SampleScale=linspace(1,1.5,5);
 
 kCount=0;
 for kwave=K
@@ -55,7 +55,7 @@ for kwave=K
         for s=SampleScale
             sCount=sCount+1;
             
-            [v_N{pCount,kCount,sCount}, VHNA, X] = HNAColOversample( kwave,Gamma,uinc,p,s);
+            [v_N{pCount,kCount,sCount}, VHNA, X, T(pCount,kCount,sCount)] = HNAColOversample( kwave,Gamma,uinc,p,s);
             DOFs(pCount,kCount,sCount)=length(VHNA.el);
 %             DOFs_(pCount,kCount,sCount)=length(VHNA_.el);
 %             DOFs__(pCount,kCount,sCount)=length(VHNA__.el);
@@ -80,7 +80,7 @@ for kwave=K
             fprintf('\t\tError: %f\n', err(pCount,kCount,sCount));
             %save the output at each stage
             %save('ColTestErrorData','err','err_','err__', 'DOFs','DOFs_','DOFs__','CPs','CPs_','CPs__');
-            save('ColTestErrorData','err', 'DOFs','CPs');
+            save('ColTestErrorData','err', 'DOFs','CPs', 'T');
         end
     end
 end
