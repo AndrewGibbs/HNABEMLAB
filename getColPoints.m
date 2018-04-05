@@ -1,4 +1,4 @@
-function t = getColPoints( Vbasis, overSamplesPerMeshEl, scaler )
+function t = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type )
 %returns collocation points that have been evenly spread across basis
 %elements
  %ChebyshevRoots( 3, 'Tn', [1 2] )
@@ -12,6 +12,10 @@ function t = getColPoints( Vbasis, overSamplesPerMeshEl, scaler )
      error('Oversampling param must be at least one');
  end
  
+ if nargin <=3
+    type=('C');%chebyshev
+ end
+ 
     t=[];
     if isa(Vbasis,'HNAoverlappingMesh')
         E=[Vbasis.mesh{1}.el Vbasis.mesh{2}.el];
@@ -23,7 +27,14 @@ function t = getColPoints( Vbasis, overSamplesPerMeshEl, scaler )
     for m=1:length(M)
         %pts=ceil((m.pMax+1)*overSamplesPerMeshEl);
         pts=ceil(M(m)*overSamplesPerMeshEl);
-        s=sort(cos(pi*(2*(1:pts)-1)/(2*pts))).';
+        if strcmp(type,'C')%Chebyshev
+            s=sort(cos(pi*(2*(1:pts)-1)/(2*pts))).';
+        elseif strcmp(type,'U')%uniform
+            s=linspace(-1,1,pts+2).'; %add two extra points (endpoints)
+            s=s(2:(end-1)); %delete the extra two points
+        else
+            error('Point distribution type not recognised, must be uniform or Chebyshev');
+        end
         if mod(length(s),2)==0 %if even number of points
             mid=length(s)/2;
             s1=s(1:mid);

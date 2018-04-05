@@ -1,6 +1,7 @@
+
 P=[1:8];
-K=[64 128 256 512 1024 2048 4096];
-SampleScale=linspace(1,2,10);
+K=16*2.^(1:10);
+SampleScale=linspace(1,1.5,6);
 %now plot stuff.
 k_=0;
 lines={'b.-','ko-','rx-','g+-','c*-','ms-','yd-','bv-'};
@@ -34,3 +35,15 @@ for k=K
     %ylim([10^-2.5,10^.5]);
     hold off;
 end
+
+
+
+figure(k_+1);
+yyaxis left
+semilogx(K,err(8,:,2),'x');
+ylabel('Relative error')
+yyaxis right
+semilogx(K,T(8,:,2),'o');
+ylabel('CPU seconds')
+xlabel('k')
+title('p=8, oversampling by 10%');

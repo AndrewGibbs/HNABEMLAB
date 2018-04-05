@@ -19,8 +19,8 @@ standartMethodPolynomialDegree=12;
 
 %loop parameters
 P=[1:8];
-K=[32 64 128 256 512 1024];
-SampleScale=linspace(1,1.5,5);
+K=16*2.^(1:10);
+SampleScale=linspace(1,1.5,6);
 
 kCount=0;
 for kwave=K
@@ -55,7 +55,7 @@ for kwave=K
         for s=SampleScale
             sCount=sCount+1;
             
-            [v_N{pCount,kCount,sCount}, VHNA, X, T(pCount,kCount,sCount)] = HNAColOversample( kwave,Gamma,uinc,p,s);
+            [v_N{pCount,kCount,sCount}, VHNA, X, ~,T(pCount,kCount,sCount)] = HNAColOversample( kwave,Gamma,uinc,p,s);
             DOFs(pCount,kCount,sCount)=length(VHNA.el);
 %             DOFs_(pCount,kCount,sCount)=length(VHNA_.el);
 %             DOFs__(pCount,kCount,sCount)=length(VHNA__.el);

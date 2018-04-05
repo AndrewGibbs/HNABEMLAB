@@ -4,6 +4,7 @@ classdef GeometricalOpticsFunction < BoundaryFunction
     properties
         uinc
         phaseLinear
+        phase
     end
     
     methods
@@ -20,18 +21,18 @@ classdef GeometricalOpticsFunction < BoundaryFunction
             self.oscillator=@(s) self.uinc.oscillator(self.domain.trace(s));
             self.supp=[0 domain.L];
             self.suppWidth=self.domain.L;
+            
+            phase = G{@(s) uinc.phase(trace(s)), };
         end
         
         function [val, valNonOsc]=eval(self,s)
             %get Neumann data
             [Neu, NeuNonOsc]=self.uinc.NeuTrace(s,self.domain);
             %double it
-            val=2*Neu;  valNonOsc=2*NeuNonOsc;
+            val=2*Neu; 
+            valNonOsc=2*NeuNonOsc;
         end
-        
-        function g=phase(self,s) %poor man's phase function
-            g=self.uinc.phase(trace(s));
-        end
+       
     end
     
 end

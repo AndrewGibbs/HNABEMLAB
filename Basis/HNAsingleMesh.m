@@ -6,8 +6,12 @@ classdef HNAsingleMesh <basis
     end
     
     methods
-        function self=HNAsingleMesh(side, pMax, kwave, alphaDist, nLayers, sigmaGrad)
+        function self=HNAsingleMesh(side, pMax, kwave, alphaDist, nLayers, sigmaGrad, oscNearEndPoints)
             %store key parameters
+            if nargin<=6
+                oscNearEndPoints=0;
+            end
+                
             self.pMax=pMax;
             self.nLayers=nLayers;
             self.sigmaGrad=sigmaGrad;
@@ -44,7 +48,16 @@ classdef HNAsingleMesh <basis
                     else
                         alphaDistUsed=1;
                         elCount=elCount+1;
-                        self.el(elCount)=baseFnHNA(kwave,p,mesh.el(m),0,mesh.side);
+                        if oscNearEndPoints==1
+                            if mesh.el(m).distL<mesh.el(m).distR %closer to left hand endpoint
+                                pm=1;
+                            else
+                                pm=-1;
+                            end
+                        else
+                            pm=0;
+                        end
+                        self.el(elCount)=baseFnHNA(kwave,p,mesh.el(m),pm,mesh.side);
                         mesh.el(m).osc=0;
                         self.meshDOFs(m)=self.meshDOFs(m)+1;
                     end

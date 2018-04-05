@@ -1,0 +1,36 @@
+function [v, psi] = ColHNA(Operator, V, uinc, Gamma, varagin)
+%computes oversampled collocation projection using HNA frame
+    Nquad = 15;
+    %with RHS data
+    f=DirichletData(uinc,Gamma);
+    %construct Geometrical optics approximation on Gamma
+    GOA=GeometricalOpticsApprox(uinc,Gamma);
+    
+    DOFs=length(VHNA.el);
+    
+    %** should eventually find a way to partition the basis into mesh
+    %elements with + or - phase, so that quadrature can be reused.
+    
+    
+    for n=1:length(X)
+        logSingInfo=Singularity1D(X(n), 'log');
+        for m=1:length(V)
+            SPs=[]; SPOs=[];
+            %analytic extension of non-osc component of kernel:
+            amp = @(y) besselh(0,1,kwave*sgn*(y-X(n)))./exp(kwave*sgn*(y-X(n))) .* evalNonOscAnal(y);
+            %and the corresponding phase:
+            phase1 = {@(y) sgn*(y-X(n))+V.pm*y, @(y) sgn+V.pm, @(y) 0};
+            %now get weights and nodes:
+            [ z1, w1 ] = NSD45( VHNA.el(m).supp(1), VHNA.el(m).supp(2), freq, Nquad, phase1, 'fSingularities',logSingInfo);
+            %and evaluate integral:
+            colMatrix(n,m) = w1.'*amp(z1);
+        end
+        phase2 = {@(y) sgn*(y-X(n)) + GOA.phaseLinear(1)*y + GOA.phaseLinear(2), @(y) sgn+GOA.phaseLinear(1), @(y) 0};
+        [ z2, w2 ] = NSD45( VHNA.el(m).supp(1), VHNA.el(m).supp(2), freq, Nquad, phase1, 'fSingularities',logSingInfo);
+        RHS()n
+    end
+    
+    %use least squares with Matlab's built in SVD to get coefficients
+    
+end
+
