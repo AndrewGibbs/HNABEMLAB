@@ -8,6 +8,10 @@ function [v, psi, ColMatrix, ColRHS] = ColHNA(Operator, HNAbasis, uinc, Gamma, v
     
     DOFs=length(HNAbasis.el);
     
+    %get collocation points:
+    
+    
+    
     %** should eventually find a way to partition the basis into mesh
     %elements with + or - phase, so that quadrature can be reused.
     

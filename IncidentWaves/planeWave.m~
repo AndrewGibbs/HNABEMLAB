@@ -12,7 +12,7 @@ classdef planeWave < waveR2
            self.kwave=kwave;
            self.phaseLinear=direction;
            self.d=direction(:).';
-           self.phase = {@(X) X*self.d, @(X) repmat(self.d,size(X)), @(X) 0};
+           self.phase = {@(X) X*self.d, @(X) repmat(self.d,size(X)), @(X) repmat(self.d,size(X))};
         end
 
 %         function g=phase(self,X)

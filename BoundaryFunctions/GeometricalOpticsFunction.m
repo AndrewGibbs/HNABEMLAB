@@ -22,7 +22,9 @@ classdef GeometricalOpticsFunction < BoundaryFunction
             self.supp=[0 domain.L];
             self.suppWidth=self.domain.L;
             
-            phase = G{@(s) uinc.phase(trace(s)), };
+            self.phase = {@(s) uinc.phase{1}(self.domain.trace(s)),...
+                            @(s) domain.dSv.'*uinc.phase{2}(self.domain.trace(s)),...
+                            };
         end
         
         function [val, valNonOsc]=eval(self,s)
