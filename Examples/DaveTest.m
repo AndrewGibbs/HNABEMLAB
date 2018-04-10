@@ -30,7 +30,7 @@ S=SingleLayer(kwave,Gamma);
 %construct Geometrical optics approximation on Gamma
 GOA=GeometricalOpticsApprox(uinc,Gamma);
 
-X = getColPoints( VHNA, 2, 1, 'U');
+X = getColPoints( VHNA, 1.2, 1, 'C');
 COLs=length(X);
 
 preColMatrix=[];
@@ -56,7 +56,7 @@ Sgoa=S*GOA;
 preColRHSb=Sgoa.col(X);
 
 % initialise integration solver
-NSD=NSDlinearPhase(20);
+NSD=NSDlinearPhase(15);
 
 ColMatrixNSD=zeros(size(preColMatrix));
 ColRHSb=zeros(COLs,1);

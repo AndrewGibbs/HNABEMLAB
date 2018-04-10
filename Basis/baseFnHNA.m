@@ -26,6 +26,7 @@ classdef  baseFnHNA < BoundaryFunction
             self.normaliser=sqrt((2*p + 1)/2);
             self.oscillator=@(s) exp(1i*kwave*pm*s);
             self.domain=side;
+            self.phase = {@(x) pm*x, @(x) pm, @(x) 0};
         end
         
         function [y, yNonOsc]=eval(self,x)
@@ -38,10 +39,6 @@ classdef  baseFnHNA < BoundaryFunction
         
         function y = evalNonOscAnal(self,x)
             y = self.normaliser*sqrt(2/self.L)*legendre(self.p, 2*((x-self.a)./(self.L)) -1);
-        end
-        
-        function G = phase
-            G = {@(x) pm*x, @(x) pm, @(x) 0};
         end
     end
     

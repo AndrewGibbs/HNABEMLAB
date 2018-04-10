@@ -3,7 +3,6 @@ classdef planeWave < waveR2
     
     properties
         d
-        phase
     end
     
     methods
@@ -12,7 +11,10 @@ classdef planeWave < waveR2
            self.kwave=kwave;
            self.phaseLinear=direction;
            self.d=direction(:).';
-           self.phase = {@(X) X*self.d, @(X) repmat(self.d,size(X)), @(X) 0};
+           self.phasePD{1,1} = @(X) X*(self.d.');
+           self.phasePD{2,1} = @(X) repmat(self.d(1),[size(X,1) 1]);
+           self.phasePD{1,2} = @(X) repmat(self.d(2),[size(X,1) 1]);
+           self.phasePD{2,2} = @(X) repmat(0,[size(X,1) 1]);
         end
 
 %         function g=phase(self,X)

@@ -4,7 +4,7 @@ classdef (Abstract) waveR2
     properties
         kwave
         phaseLinear
-        phase
+        phasePD
     end
     
     methods

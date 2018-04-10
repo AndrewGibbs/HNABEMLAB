@@ -1,6 +1,6 @@
-function [v, psi, ColMatrix, ColRHS] = ColHNA(Operator, HNAbasis, uinc, Gamma, varagin)
+function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, HNAbasis, uinc, Gamma, varargin)
 %computes oversampled collocation projection using HNA basis/frame
-    Nquad = 15;
+    kwave = uinc.kwave;
     %with RHS data
     f=DirichletData(uinc,Gamma);
     %construct Geometrical optics approximation on Gamma
@@ -8,37 +8,48 @@ function [v, psi, ColMatrix, ColRHS] = ColHNA(Operator, HNAbasis, uinc, Gamma, v
     
     DOFs=length(HNAbasis.el);
     
-    %get collocation points:
+    %defaults:
+    Nquad = 15;
+    scaler=1;
+    colType='C';
+    overSamplesPerMeshEl=1;
+    
+    for j=1:length(varargin)
+        if ischar(varargin{j})
+           lowerCaseArg=lower(varargin{j});
+           switch lowerCaseArg
+               case 'oversample'
+                   overSamplesPerMeshEl=varargin{j+1};
+               case 'coltype'
+                   colType=varargin{j+1};
+               case 'quadpoints'
+                   Nquad=varargin{j+1};
+           end
+        end
+    end
     
     
+    %get collocation points.
+    X = getColPoints( HNAbasis, overSamplesPerMeshEl, scaler, colType);
     
     %** should eventually find a way to partition the basis into mesh
-    %elements with + or - phase, so that quadrature can be reused.
+    %elements with + or - phase, so that quadrature points can be reused.
     
+    %initialise main bits:
+    colRHS=zeros(length(X),1);
+    colMatrix=zeros(length(X),length(HNAbasis.el));
     
-    for n=1:length(X)
-        logSingInfo=Singularity1D(X(n), Operator.singularity);
-        for m=1:length(HNAbasis)
-            
-            %analytic extension of non-osc component of kernel:
-            amp1 = @(y) Operator.kernelNonOscAnal(X(n),y) .* evalNonOscAnal(y);
-            %and the corresponding phase:
-            phase1 = OpFunAddPhase(Operator,HNAbasis.el(m),X(n));
-            %now get weights and nodes:
-            [ z1, w1 ] = NSD45( HNAbasis.el(m).a, HNAbasis.el(m).b, freq, Nquad, phase1,...
-                        'fSingularities', logSingInfo, 'stationary points', [], 'order', []);
-            %and evaluate integral:
-            colMatrix(n,m) = (w1.'*amp1(z1));
-        end
-        phase2 = {@(y) sgn*(y-X(n)) + GOA.phaseLinear(1)*y + GOA.phaseLinear(2), @(y) sgn+GOA.phaseLinear(1), @(y) 0};
-        [ z2, w2 ] = NSD45( HNAbasis.el(m).supp(1), HNAbasis.el(m).supp(2), freq, Nquad, phase2, 'fSingularities',logSingInfo);
-        [~, valNonOsc]=GOA.eval(self,z2);
-        %and evaluate the standard data and subtract the leading order integral:
-        RHS(n) = f.eval(X) - w2.'*(amp2(z2).*valNonOsc);
+    %start the main double loop:
+    for m=1:length(X)
+        for n=1:length(HNAbasis.el)
+           colMatrix(m,n) = colEval(Operator,HNAbasis.el(n),X(m));
+        end 
+        colRHS(m) = f.eval(X(m)) - colEval(Operator,GOA,X(m));
+        fprintf('\n%.1f%%',100*m/length(X));
     end
     
     %use least squares with Matlab's built in SVD to get coefficients
-    coeffs=ColMatrix\ColRHS;
+    coeffs=colMatrix\colRHS;
     v_N=Projection(coeffs,HNAbasis);
     
 end

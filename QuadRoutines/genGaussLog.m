@@ -26,4 +26,3 @@ function [ X, W, R ] = genGaussLog( n,a,b,width,SingAt_LR )
     end
 
 end
-

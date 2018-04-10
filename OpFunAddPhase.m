@@ -1,19 +1,22 @@
-function G = OpFunAddPhase(Op,Fun,x)
+function G = OpFunAddPhase(Op,Fun,x, xGEy)
 %for an operator S and function f with known phases, computes the phase of
 %the integrand of Sf(x)
+
+% ** hard code this for now:
+OperatorDerivs = 3;
     
     %add common derivatives
-    for n=min(length(Op.phase),length(Fun.phase))
-        G{n} = @(y) Op.phase{n}(x,y) + Fun.phase{n}(y);
+    for n=1:min([OperatorDerivs+1 length(Fun.phase)])
+        G{n} = @(y) Op.phaseAnalDeriv(x,y,n-1,xGEy) + Fun.phase{n}(y);%phaseAnalDeriv(s,t,n-1,xGEy)
     end
     
     %and fill in the rest
-    if length(Op.phase)>length(Fun.phase)
-        for n=length(Fun.phase)+1 : length(Op.phase)
-            G{n} = @(y) Op.phase{n}(x,y);
+    if OperatorDerivs+1>length(Fun.phase)
+        for n=length(Fun.phase)+1 : OperatorDerivs
+            G{n} = @(y) Op.phaseAnalDeriv(x,y,n-1,xGEy);
         end
-    elseif length(Op.phase)<length(Fun.phase)
-        for n=length(Op.phase)+1 : length(Fun.phase)
+    elseif OperatorDerivs+1<length(Fun.phase)
+        for n=OperatorDerivs+1 : length(Fun.phase)
             G{n} = @(y) Fun.phase{n}(y);
         end
     end
