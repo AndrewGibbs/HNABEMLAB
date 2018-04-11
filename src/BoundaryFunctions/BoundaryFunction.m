@@ -11,11 +11,15 @@ classdef (Abstract) BoundaryFunction
         suppWidth %measure of support
         domain %side on which the support lives, when parametrised, supp is a subset
         oscillator %required for any oscillatory integration
-        phase
+        %phase
+        a
+        b
     end
     
     methods 
         eval(obj)
+        nonOscAnal(obj)
+        phaseAnal(obj)
         
         function ResBasFn=restrictTo(self,ResDomain,ResWidth)
 %             ResBasFn=copy(self);

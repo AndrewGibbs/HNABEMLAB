@@ -15,7 +15,7 @@ Gamma=edge(vertices);
 uinc=planeWave(kwave,[1 1]./sqrt(2));
     
 %make an HNA basis on Gamma
-pMax=5; nLayers=2*(pMax+1)-1; sigmaGrad=0.15; throwAwayParam=0;
+pMax=2; nLayers=2*(pMax+1)-1; sigmaGrad=0.15; throwAwayParam=0;
 VHNA=HNAsingleMesh(Gamma,pMax,kwave, throwAwayParam, nLayers, sigmaGrad,1);
 DOFs=length(VHNA.el);
 %define the single layer 'operator' object

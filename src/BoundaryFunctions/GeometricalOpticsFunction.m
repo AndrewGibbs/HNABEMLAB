@@ -4,8 +4,6 @@ classdef GeometricalOpticsFunction < BoundaryFunction
     properties
         uinc
         phaseLinear
-        a
-        b
     end
     
     methods
@@ -23,17 +21,17 @@ classdef GeometricalOpticsFunction < BoundaryFunction
             self.supp=[0 domain.L];
             self.suppWidth=self.domain.L;
             
-            self.phase{1} = @(s) uinc.phasePD{1,1}(self.domain.trace(s));
-            self.phase{2} = @(s) domain.dSv(1)*uinc.phasePD{2,1}(self.domain.trace(s)) ...
-                                 + domain.dSv(2)*uinc.phasePD{1,2}(self.domain.trace(s));
-            if length(uinc.phasePD{1,1})>2
-                self.phase{3} = @(s)  domain.dSv(1)^2*uinc.phasePD{3,1}(self.domain.trace(s)) ...
-                                    + domain.dSv(2)^2*uinc.phasePD{1,3}(self.domain.trace(s)) ...
-                                    + 2*domain.dSv(1)*domain.dSv(2)*uinc.phasePD{2,2}(self.domain.trace(s));
-            end
-            if length(uinc.phasePD{1,1})>3
-                error('Havent coded for such high partial derivatives yet');
-            end
+%             self.phase{1} = @(s) uinc.phasePD{1,1}(self.domain.trace(s));
+%             self.phase{2} = @(s) domain.dSv(1)*uinc.phasePD{2,1}(self.domain.trace(s)) ...
+%                                  + domain.dSv(2)*uinc.phasePD{1,2}(self.domain.trace(s));
+%             if length(uinc.phasePD{1,1})>2
+%                 self.phase{3} = @(s)  domain.dSv(1)^2*uinc.phasePD{3,1}(self.domain.trace(s)) ...
+%                                     + domain.dSv(2)^2*uinc.phasePD{1,3}(self.domain.trace(s)) ...
+%                                     + 2*domain.dSv(1)*domain.dSv(2)*uinc.phasePD{2,2}(self.domain.trace(s));
+%             end
+%             if length(uinc.phasePD{1,1})>3
+%                 error('Havent coded for such high partial derivatives yet');
+%             end
             self.a = self.supp(1);
             self.b = self.supp(2);
         end
@@ -53,6 +51,22 @@ classdef GeometricalOpticsFunction < BoundaryFunction
             [~,NeuNonOsc]=self.uinc.NeuTrace(s,self.domain);
             %double it
             valNonOsc=2*NeuNonOsc;
+        end
+        
+        function g = phaseAnal(self,s,deriv,~)
+            switch deriv
+                case 0 
+                    g = self.uinc.phasePD{1,1}(self.domain.trace(s));
+                case 1
+                    g = self.domain.dSv(1)*self.uinc.phasePD{2,1}(self.domain.trace(s)) ...
+                         + self.domain.dSv(2)*self.uinc.phasePD{1,2}(self.domain.trace(s));
+                case 2
+                    g =  self.domain.dSv(1)^2*self.uinc.phasePD{3,1}(self.domain.trace(s)) ...
+                          + self.domain.dSv(2)^2*self.uinc.phasePD{1,3}(self.domain.trace(s)) ...
+                          + 2*self.domain.dSv(1)*self.domain.dSv(2)*self.uinc.phasePD{2,2}(self.domain.trace(s));
+                otherwise
+                    error('Havent coded for such high partial derivatives yet');
+            end
         end
        
     end

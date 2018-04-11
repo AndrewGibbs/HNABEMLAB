@@ -1,4 +1,4 @@
-function I = colEval(Op,fun,x)
+function I = colEval(Op,fun,x, maxSPorder,Nquad)
 
 %function which evalutes integral Sf(x), essentially just a wrapper for
 %NSD45 which ensures that the phase is always the analytic continuation of
@@ -7,14 +7,13 @@ function I = colEval(Op,fun,x)
 
         logSingInfo=Singularity1D(x, Op.singularity);
         kwave = Op.kwave;
-        Nquad = 15;
         
         %analytic extension of non-osc components of kernel:
         amp_a = @(y) Op.kernelNonOscAnal(x,y, true) .* fun.evalNonOscAnal(y);
         amp_b = @(y) Op.kernelNonOscAnal(x,y, false) .* fun.evalNonOscAnal(y);
         %and the corresponding phases:
-        phase_a = OpFunAddPhase(Op,fun,x,true);
-        phase_b = OpFunAddPhase(Op,fun,x,false);
+        phase_a = OpFunAddPhase(Op,fun,x,true, maxSPorder+1);
+        phase_b = OpFunAddPhase(Op,fun,x,false, maxSPorder+1);
         
     if  fun.a < x && x < fun.b
         %need to split the integral, as integrand not analytic at z=x

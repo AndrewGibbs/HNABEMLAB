@@ -13,6 +13,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, HNAbasis, uinc, Gamma,
     scaler=1;
     colType='C';
     overSamplesPerMeshEl=1;
+    maxSPorder=0;
     
     for j=1:length(varargin)
         if ischar(varargin{j})
@@ -24,6 +25,8 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, HNAbasis, uinc, Gamma,
                    colType=varargin{j+1};
                case 'quadpoints'
                    Nquad=varargin{j+1};
+               case 'max stationary point order'
+                   maxSPorder=varargin{j+1};
            end
         end
     end
@@ -42,9 +45,9 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, HNAbasis, uinc, Gamma,
     %start the main double loop:
     for m=1:length(X)
         for n=1:length(HNAbasis.el)
-           colMatrix(m,n) = colEval(Operator,HNAbasis.el(n),X(m));
+           colMatrix(m,n) = colEval(Operator,HNAbasis.el(n),X(m),maxSPorder,Nquad);
         end 
-        colRHS(m) = f.eval(X(m)) - colEval(Operator,GOA,X(m));
+        colRHS(m) = f.eval(X(m)) - colEval(Operator,GOA,X(m), maxSPorder,Nquad);
         fprintf('\n%.1f%%',100*m/length(X));
     end
     

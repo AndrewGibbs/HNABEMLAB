@@ -6,6 +6,8 @@ classdef  baseFnHNA < BoundaryFunction
         pm      %essentially the phase function, can be {1,-1,0}
         normaliser
         phaseLinear
+        a       %left-hand endpoints of the support of the Legendre bsais element
+        b       %right-hand endpoints of the support of the Legendre bsais element
         L       %original width of Legendre basis element
     end
     
@@ -39,14 +41,14 @@ classdef  baseFnHNA < BoundaryFunction
             y = self.normaliser*sqrt(2/self.L)*legendre(self.p, 2*((x-self.a)./(self.L)) -1);
         end
         
-        function g = phaseAnal(self,s,deriv,~)
+        function g = phaseAnal(x,deriv,xGEy)
             switch deriv
                 case 0
-                    g = self.pm*s;
+                    g = pm*x
                 case 1
-                    g = self.pm;
+                    pm
                 otherwise
-                    g = 0;
+                    
             end
         end
     end
