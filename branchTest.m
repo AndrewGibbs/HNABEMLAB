@@ -1,7 +1,5 @@
 clc;
 clear classes;
-addpath ..;
-addPaths();
 messageFlag=1;
 %wavenumber
 kwave=128;
@@ -17,14 +15,14 @@ Gamma=edge(vertices);
 uinc=planeWave(kwave,[1 1]./sqrt(2));
     
 %make an HNA basis on Gamma
-pMax=4; nLayers=2*(pMax+1)-1; sigmaGrad=0.15; throwAwayParam=0;
+pMax=5; nLayers=2*(pMax+1)-1; sigmaGrad=0.15; throwAwayParam=0;
 VHNA=HNAsingleMesh(Gamma,pMax,kwave, throwAwayParam, nLayers, sigmaGrad,1);
 DOFs=length(VHNA.el);
 %define the single layer 'operator' object
 S=singleLayer(kwave,Gamma);
 
 tic;
-[v_N, GOA, colMatrix, colRHS] = ColHNA(S, VHNA, uinc, Gamma,'oversample',1.2);
+[v_N, GOA, colMatrix, colRHS] = ColHNA(S, VHNA, uinc, Gamma,'oversample',1.15);
 toc
 
 %plot the output
