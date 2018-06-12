@@ -4,6 +4,7 @@ classdef Projection < BoundaryFunction
     properties
         coeffs
         el
+        elSide
         Ndim
         GOA
     end
@@ -21,18 +22,21 @@ classdef Projection < BoundaryFunction
             end
             self.coeffs=coeffs;
            self.el=basis.el; 
-           self.domain=basis.side;
-           self.supp=[0 basis.side.L];
-           self.suppWidth=basis.side.L;
+           self.elSide=basis.elSide; 
+           self.domain=basis.obstacle;
+           self.supp=basis.obstacle.supp;
+           self.suppWidth=basis.obstacle.L;
            self.Ndim=basis.numEls;
         end  
         
         F = FarField( self, theta );
         
-        function val=eval(self,s)
+        function val=eval(self,s, side)
             s=s(:);
             val=zeros(length(s),1);
-           for j=1:self.Ndim
+            allDofs = 1:self.Ndim;
+            sideDofs = allDofs(self.elSide == side);
+           for j=sideDofs
                val=val+self.el(j).eval(s)*self.coeffs(j);
            end
         end

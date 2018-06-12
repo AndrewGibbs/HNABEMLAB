@@ -15,21 +15,22 @@ classdef DirichletFunction < BoundaryFunction
             
             %now deal with abstract function properties
             self.oscillator=@(s) self.uinc.oscillator(self.domain.trace(s));
-            self.supp=[0 domain.L];
+            self.supp=[zeros(domain.numSides,1) domain.L];
             self.suppWidth=self.domain.L;
 
-            if ~isequal(uinc.phaseLinear,[])
-                self.phaseLinear=[self.domain.dSv*uinc.phaseLinear.'  self.domain.P1*uinc.phaseLinear.'];
-            end
+%             if ~isequal(uinc.phaseLinear,[])
+%                 self.phaseLinear=[self.domain.dSv*uinc.phaseLinear.'  self.domain.P1*uinc.phaseLinear.'];
+%             end
         end
         
-        function [yOsc, y]=eval(self,s)
-            [yOsc, y]=self.uinc.DirTrace(s,self.domain);
+        function [yOsc, y]=eval(self,s, sSide)
+            if nargin ==2 || isa(self.domain,'edge')
+                [yOsc, y]=self.uinc.DirTrace(s,self.domain);
+            else
+                [yOsc, y]=self.uinc.DirTrace(s,self.domain.side{sSide});
+            end
         end
 
-        function g=phase(self,s) %poor man's phase function
-            g=self.uinc.phase(trace(s));
-        end
     end
     
 end

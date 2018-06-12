@@ -14,6 +14,7 @@ classdef (Abstract) BoundaryFunction
         %phase
         a
         b
+        phaseMaxStationaryPointOrder
     end
     
     methods 
@@ -38,6 +39,14 @@ classdef (Abstract) BoundaryFunction
                 I=BEMintegral2D(f.domain, f.kernel, g, f.boundaryFn);
             elseif isa(f,'BoundaryFunction')
                 I=InnerProduct1D( f, g);
+            end
+        end
+        
+        function supp = getSupp(self,side)
+            if isa(self.domain,'edge')
+                supp = self.supp;
+            elseif isa(self.domain,'polygon')
+                supp = self.supp(side,:);
             end
         end
     end

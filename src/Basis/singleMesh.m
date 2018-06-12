@@ -42,11 +42,13 @@ classdef singleMesh  < mesh
             
             %now split elements based on hMax
             m=1;
+            newNumEls = self.numEls;
             while hMax<self.maxWidth
                  %elPreSplit=self.el;
                  %for m=1:length(self.el)
                     if hMax<inf && self.el(m).width>hMax
                         splits=ceil( self.el(m).width/hMax); %split interval this many times
+                        newNumEls = newNumEls + splits - 1;
                         for n=1:splits
                             splitEls(n).interval=[self.el(m).interval(1)+(n-1)*self.el(m).width/splits self.el(m).interval(1)+n*self.el(m).width/splits   ];
                             splitEls(n).gradIndex=self.el(m).gradIndex;
@@ -62,7 +64,7 @@ classdef singleMesh  < mesh
                  m=m+1;
             end
             
-%            self.numEls=length(self.el);
+            %self.numEls=length(self.el);
             
              %now construct corner distances
              for m=1:length(self.el)
@@ -75,8 +77,8 @@ classdef singleMesh  < mesh
                 
             
             %reconstruct 'points' of mesh given new elements
-            self.points=zeros(1,self.numEls+1);
-            for m=1:self.numEls
+            self.points=zeros(1,newNumEls+1);
+            for m=1:newNumEls
                 self.points(m)=self.el(m).interval(1);
             end
             self.points(end)=self.el(end).interval(2);            

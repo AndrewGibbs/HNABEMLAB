@@ -3,7 +3,7 @@ classdef (Abstract) basis <handle
     
     properties
         el
-        side
+        obstacle
         mesh
         pMax
         nLayers

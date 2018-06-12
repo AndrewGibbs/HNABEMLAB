@@ -11,10 +11,7 @@ classdef planeWave < waveR2
            self.kwave=kwave;
            self.phaseLinear=direction;
            self.d=direction(:).';
-           self.phasePD{1,1} = @(X) X*(self.d.');
-           self.phasePD{2,1} = @(X) repmat(self.d(1),[size(X,1) 1]);
-           self.phasePD{1,2} = @(X) repmat(self.d(2),[size(X,1) 1]);
-           self.phasePD{2,2} = @(X) repmat(0,[size(X,1) 1]);
+           self.phaseMaxStationaryPointOrder=0;
         end
 
 %         function g=phase(self,X)
@@ -37,6 +34,35 @@ classdef planeWave < waveR2
 %             %actually, just need to be consistent with normal direction
 %             val=2*self.NeuTrace(self,s,boundary);
 %         end
+        function g = phasePD(self,X,xDers,yDers)
+            zeroOption = repmat(0,[size(X,1) 1]);
+            switch xDers
+                case 0
+                    switch yDers
+                        case 0
+                            g = X*(self.d.');
+                        case 1
+                            g = repmat(self.d(2),[size(X,1) 1]);
+                        otherwise
+                            g = zeroOption;
+                    end
+                case 1
+                        switch yDers
+                            case 0
+                                g = repmat(self.d(1),[size(X,1) 1]);
+                            case 1
+                                g = zeroOption;
+                            otherwise
+                                g = zeroOption;
+                        end
+                otherwise
+                    g = zeroOption;
+            end
+        end
+        
+        function x = sourceVsnormal(self,side)
+            x = sign((self.d)*(side.nv.'));
+        end
     end
     
 end

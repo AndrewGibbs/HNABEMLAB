@@ -1,7 +1,22 @@
-function t = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type )
+function [t, onSide] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type )
 %returns collocation points that have been evenly spread across basis
 %elements
  %ChebyshevRoots( 3, 'Tn', [1 2] )
+ 
+ if isa(Vbasis.obstacle,'polygon')
+     %call self recursively
+     t = [];
+     onSide = [];
+     side = [];
+     for n = 1:Vbasis.obstacle.numSides
+         t_=getColPoints( Vbasis.edgeBasis{n}, overSamplesPerMeshEl, scaler, type );
+         t = [t; t_];
+         onSide((length(onSide)+1):(length(onSide)+length(t_))) = n;
+     end
+     return;
+ end
+ 
+ 
  if nargin <=1
      overSamplesPerMeshEl=1;
  end
@@ -53,5 +68,6 @@ function t = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type )
         %now scale everything onto the mesh element:
         t=[t; E(m).interval(1)+E(m).width*.5*(s+1);];
     end
+    onSide = ones(size(t));
 end
 

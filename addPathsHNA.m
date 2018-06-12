@@ -8,4 +8,3 @@ function addPathsHNA(  )
     addpath(genpath('/Users/andrew/Dropbox/Andrew-Daan/code/NSD/src'));
 
 end
-

@@ -5,14 +5,14 @@ classdef HNAoverlappingMesh <basis
     end
     
     methods
-        function self=HNAoverlappingMesh(side, pMax, kwave, nLayers, sigmaGrad)
+        function self=HNAoverlappingMesh(obstacle, pMax, kwave, nLayers, sigmaGrad)
             %store key parameters
             self.pMax=pMax;
             self.nLayers=nLayers;
             self.sigmaGrad=sigmaGrad;
             
             %first construct the mesh
-            mesh1=meshSide(side, nLayers, sigmaGrad);
+            mesh1=meshSide(obstacle, nLayers, sigmaGrad);
             mesh2=-mesh1;
             
             self.meshDOFs{1}=zeros(1,length(mesh1.el));
@@ -39,7 +39,7 @@ classdef HNAoverlappingMesh <basis
             end
             
 %            self.numEls=elCount;
-            self.side=side;
+            self.obstacle=obstacle;
             self.mesh{1}=mesh1;
             self.mesh{2}=mesh2;
         end

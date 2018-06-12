@@ -1,13 +1,11 @@
-classdef edge < handle
+classdef edge < scatteringObject
     %Screen object
     
     properties
         P1 %endpoint
         P2 %endpoint
-        L   %length of screen
         dSv  %gradient of screen
         nv   %outward normal
-        supp
     end
     
     methods
@@ -24,9 +22,10 @@ classdef edge < handle
             self.dSv=(self.P2-self.P1)/self.L;
             self.nv=[self.dSv(2) -self.dSv(1)];
             self.supp=[0 self.L];
+            self.numSides = 1; % screen has one side by default
         end
         
-        function y=trace(self,s)
+        function y=trace(self,s,~)
             if min(size(s))~=1
                 error('Trace input must be a vector');
             end
@@ -47,11 +46,11 @@ classdef edge < handle
             if min(size(s))~=1
                 error('Normal trace input must be a vector');
             end
-            if ~(min(s)<0 || max(s)>self.L)
-                y=repmat(self.nv,size(s));
-            else
-                error('Parameter value outside of range');
-            end
+%             if ~(min(s)<0 || max(s)>self.L)
+                 y=repmat(self.nv,size(s));
+%             else
+%               error('Parameter value outside of range');
+%             end
         end
         
         function R = dist(self,s,t)
@@ -65,7 +64,7 @@ classdef edge < handle
             R = abs(self.trace(s)-self.trace(t));
         end
         
-        function R = distAnal(self,s,t,deriv,sGEt)
+        function R = distAnal(self,s,t,deriv,sGEt,~,~)
             if ~isequal(size(s),size(t)) && (max(size(t))>1 && max(size(s))>1 )
                 error('param vectors for distance function must be compatible');
             end
@@ -107,29 +106,29 @@ classdef edge < handle
         end
           
         
-        function sourceCheck(self,source)
-            %code which ensures wave is in upper-half plane
-            if isa(source,'SingleLayerR2') %beam source basically
-                dot1=(self.P1-source.domain{2}.P1)*(self.nv.');
-                dot2=(self.P1-source.domain{2}.P2)*(self.nv.');
-                if sign(dot1)==-1*sign(dot2)
-                    error('Source appears to cross half-line, havent coded for this');
-                elseif sign(dot1)>0
-                    self.nv=-self.nv;
-                    warning('Normal direction changed to face source');
-                end
-            elseif isa(source,'planeWave')
-                if source.d*(self.nv.')>0
-                    self.nv=-self.nv;
-                end
-            elseif isa(source,'pointSource')
-                if (self.P1-source.s)*(self.nv.')>0
-                    self.nv=-self.nv;
-                end
-            else
-                error('Source not classified');
-            end
-        end
+%         function sourceCheck(self,source)
+%             %code which ensures wave is in upper-half plane
+%             if isa(source,'SingleLayerR2') %beam source basically
+%                 dot1=(self.P1-source.domain{2}.P1)*(self.nv.');
+%                 dot2=(self.P1-source.domain{2}.P2)*(self.nv.');
+%                 if sign(dot1)==-1*sign(dot2)
+%                     error('Source appears to cross half-line, havent coded for this');
+%                 elseif sign(dot1)>0
+%                     self.nv=-self.nv;
+%                     warning('Normal direction changed to face source');
+%                 end
+%             elseif isa(source,'planeWave')
+%                 if source.d*(self.nv.')>0
+%                     self.nv=-self.nv;
+%                 end
+%             elseif isa(source,'pointSource')
+%                 if (self.P1-source.s)*(self.nv.')>0
+%                     self.nv=-self.nv;
+%                 end
+%             else
+%                 error('Source not classified');
+%             end
+%         end
     end
     
 end

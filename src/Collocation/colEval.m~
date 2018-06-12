@@ -106,7 +106,7 @@ function [I, I2] = colEval(Op,fun, funSide, sCol, colSide, Nquad)
                 I0 = (w0.'*amp(t));
             elseif  ismember(minCombo,[2 4]) %singularity close to b
                 b0 = b;
-                b = b0 - singularSplit;
+                b = b - singularSplit;
                 [t, w0] = NonOsc45(b, b0, kwave, Nquad, phase{1}, logSingInfo, singularSplit);
                 I0 = (w0.'*amp(t));
             end
@@ -130,9 +130,9 @@ function [I, I2] = colEval(Op,fun, funSide, sCol, colSide, Nquad)
         end
         
         I = (w.'*amp(z)) + I0;
-%         [X, W] = NonOsc45(a,b,kwave,Nquad,phase{1},logSingInfo, L);
-%         I2 = (W.'*amp(X)) + I0;
-        I2 = I;
+        [X, W] = NonOsc45(a,b,kwave,Nquad,phase{1},logSingInfo, L);
+        I2 = (W.'*amp(X)) + I0;
+        %I2 = I;
         
         if isnan(I)
             warning('PathFinder returned a NaN, so using standard quadrature insteasd :-(');
