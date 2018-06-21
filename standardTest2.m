@@ -3,7 +3,7 @@ clear classes;
 addPathsHNA();
 
 %wavenumber
-kwave=100;
+kwave=20;
 
 %define the scatterer
 vertices =   [0 0
@@ -34,8 +34,6 @@ DOFs=length(Vstd.el);
 %define the single layer 'operator' object
 S=singleLayer(kwave,Gamma);
 
-pMaxHNA = 6;
-
 tic;
 [v_N, GOA, ~,~, colMatrix, colRHS] = ColHNA(S, Vstd, uinc, Gamma,'progress','oversample',1);
 toc
@@ -54,7 +52,7 @@ for n = 1:Gamma.numSides
     figure(n);
     fs{n} = v_N.eval(s,n)-GOA.eval(s,n);
     
-    VHNA{n}=HNAsingleMesh(Gamma,pMaxHNA, kwave, throwAwayParam, nLayers, sigmaGrad,1);
+    VHNA{n}=HNAsingleMesh(Gamma.side{n},pMax, kwave, throwAwayParam, nLayers, sigmaGrad,1);
     v_HNA{n} = VHNA{n}.leastSquares(s,fs{n});
     %plot(s,real(v_N.eval(s.',n)),s,imag(v_N.eval(s.',n)),s,real(GOA.eval(s.',n)),s,imag(GOA.eval(s.',n))); ylim([-2*kwave 2*kwave]);
     plot(s,real(fs{n}),'*',s,real(v_HNA{n}.eval(s,1)),'.'); ylim([-2*kwave 2*kwave]);

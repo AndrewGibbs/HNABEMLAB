@@ -52,7 +52,7 @@ classdef pointSource < waveR2
         end
         
         function x = sourceVsnormal(self,side)
-            x = -sign((side.P1-self.source)*(side.nv.'));
+            x = sign((side.P1-self.source)*(side.nv.'));
         end
     end
     

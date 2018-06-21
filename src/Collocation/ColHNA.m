@@ -16,6 +16,7 @@ function [v_N, GOA, colMatrix, colRHS, colMatrix2, colRHS2] = ColHNA(Operator, V
     overSamplesPerMeshEl=1;
     messageFlag=false;
     standardBEMflag = false;
+    standardQuadFlag = false;
     % -----------------------
     
     for j=1:length(varargin)
@@ -32,6 +33,8 @@ function [v_N, GOA, colMatrix, colRHS, colMatrix2, colRHS2] = ColHNA(Operator, V
                    maxSPorder=varargin{j+1};
                case 'progress'
                    messageFlag = true;
+               case 'cg'
+                   standardQuadFlag = true;
            end
         end
     end
@@ -54,36 +57,28 @@ function [v_N, GOA, colMatrix, colRHS, colMatrix2, colRHS2] = ColHNA(Operator, V
     %initialise main bits:
     colRHS=zeros(length(X),1);
     colMatrix=zeros(length(X),length(Vbasis.el));
-%     
-%     %start the main double loop:
-%     for m=1:length(X)
-%         for n=1:length(Vbasis.el)
-%            colMatrix(m,n) = colEval(Operator, Vbasis.el(n), Vbasis.elSide(n), X(m), Xside(m), Nquad);
-%         end 
-%         if ~standardBEMflag
-%             colRHS(m) = f.eval(X(m),Xside(m)) - colEval(Operator,GOA,GOA.illumSides,X(m),Xside(m),Nquad);
-%         else
-%             colRHS(m) = f.eval(X(m),Xside(m));
-%         end
-%         if messageFlag
-%             fprintf('\n%.1f%%',100*m/length(X));
-%         end
-%     end
     colMatrix2 = colMatrix;
     colRHS2 = colRHS;
     for m=1:length(X)
-        for n=1:length(Vbasis.el)
-           [colMatrix(m,n), colMatrix2(m,n) ] = colEval(Operator, Vbasis.el(n), Vbasis.elSide(n), X(m), Xside(m), Nquad);
+        %manually do first entry of row
+        [colMatrix(m,1), quadData] = colEval(Operator, Vbasis.el(1), Vbasis.elSide(1), X(m), Xside(m), Nquad,[], standardQuadFlag);
+        for n=2:length(Vbasis.el)
+           if Vbasis.el(n).pm == Vbasis.el(n-1).pm && isequal(Vbasis.el(n).supp,Vbasis.el(n-1).supp)
+               %reuse quadrature from previous iteration of this loop,
+               %(phase and domain are the same)
+               colMatrix(m,n) = colEval(Operator, Vbasis.el(n), Vbasis.elSide(n), X(m), Xside(m), Nquad, quadData);
+               1+1;%abs(colMatrix(m,n) -colEval(Operator, Vbasis.el(n), Vbasis.elSide(n), X(m), Xside(m), Nquad,[]))<1E-12
+           else
+               %get fresh quadrature data
+               [colMatrix(m,n), quadData] = colEval(Operator, Vbasis.el(n), Vbasis.elSide(n), X(m), Xside(m), Nquad,[], standardQuadFlag);
+           end
         end 
         fX = f.eval(X(m),Xside(m));
         if ~standardBEMflag
-           [    SPsiX, SPsiX2] =  colEval(Operator,GOA,GOA.illumSides,X(m),Xside(m),Nquad);
+           SPsiX =  colEval(Operator,GOA,GOA.illumSides,X(m),Xside(m),Nquad,[], standardQuadFlag);
            colRHS(m)  = fX - SPsiX;
-           %colRHS2(m) = fX - SPsiX2;
-           colRHS2(m) = SPsiX2;
         else
            colRHS(m)  = fX;
-           colRHS2(m) = fX;
         end
         if messageFlag
             fprintf('\n%.1f%%',100*m/length(X));

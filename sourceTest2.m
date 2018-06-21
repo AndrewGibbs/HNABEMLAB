@@ -11,11 +11,11 @@ vertices=[0 0       %first vertex
 %create 'edge' object for the screen
 Gamma=edge(vertices);
 
-%inident plane wave
-uinc=planeWave(kwave,-[1 1]./sqrt(2));
+%inident point source
+uinc=pointSource(kwave,[.5 1]);
     
 %make an HNA basis on Gamma
-pMax=6; nLayers=2*(pMax+1)-1; sigmaGrad=0.15; throwAwayParam=0;
+pMax=4; nLayers=2*(pMax+1)-1; sigmaGrad=0.15; throwAwayParam=0;
 VHNA=HNAsingleMesh(Gamma,pMax,kwave, throwAwayParam, nLayers, sigmaGrad,1);
 DOFs=length(VHNA.el);
 %define the single layer 'operator' object
@@ -34,5 +34,5 @@ RHSerr = (abs(colRHS_CG - colRHS_NSD)./abs(colRHS_CG));
 
 %plot the output
 s=linspace(0,Gamma.L,500*kwave);
-figure(1); semilogy(s,abs(v_NSD.eval(s,1))./kwave); xlim([Gamma.supp(1)-.1 Gamma.supp(2)+.1] ); ylim([1E-4 1E7]); 
-figure(2); plot(s,real(v_NSD.eval(s,1))); xlim([Gamma.supp(1)-.1 Gamma.supp(2)+.1] ); ylim([-2*kwave 2*kwave]); 
+figure(1); semilogy(s,abs(v_CG.eval(s,1))./kwave); xlim([Gamma.supp(1)-.1 Gamma.supp(2)+.1] ); ylim([1E-4 1E7]); 
+figure(2); plot(s,real(v_CG.eval(s,1))); xlim([Gamma.supp(1)-.1 Gamma.supp(2)+.1] ); ylim([-2*kwave 2*kwave]); 

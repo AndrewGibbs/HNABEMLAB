@@ -16,8 +16,10 @@ function [stationaryPoints,orders,badPoints] = symbolicStationaryPoints(x, fun, 
     orders = NaN;
 
     if isa(fun,'GeometricalOpticsFunction')
-         [stationaryPoints,orders] = HNApolygonSpecialCasePWGOA(x,fun.domain.side{funSide},fun.uinc.d);
-          badPoints = nonAnalPoint(x,fun.domain.side{funSide});
+        if isa(fun.uinc,'planeWave')
+            [stationaryPoints,orders] = HNApolygonSpecialCasePWGOA(x,fun.domain.side{funSide},fun.uinc.d);
+            badPoints = nonAnalPoint(x,fun.domain.side{funSide});
+        end
     elseif isa(fun,'baseFnHNA')
         [stationaryPoints,orders] = HNApolygonSpecialCase(x,Edge,fun.pm);
           badPoints = nonAnalPoint(x,Edge);

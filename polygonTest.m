@@ -30,7 +30,7 @@ DOFs=length(VHNA.el);
 S=singleLayer(kwave,Gamma);
 
 tic;
-[v_N, GOA, colMatrix, colRHS, colMatrix2, colRHS2] = ColHNA(S, VHNA, uinc, Gamma,'oversample',1.25, 'progress');
+[v_N, GOA, colMatrix, colRHS, colMatrix2, colRHS2] = ColHNA(S, VHNA, uinc, Gamma,'oversample',1.2, 'progress');
 toc
 
 %plot the output
@@ -45,5 +45,3 @@ for n = 1:Gamma.numSides
     figure(n);
     semilogy(s,abs(v_N.eval(s,n))./kwave); %ylim([1E-4 1E7]); 
 end
-s=linspace(0,Gamma.L,500*kwave);
-semilogy(s,abs(v_N.eval(s))./kwave); xlim([Gamma.supp(1)-.1 Gamma.supp(2)+.1] ); ylim([1E-4 1E7]); 

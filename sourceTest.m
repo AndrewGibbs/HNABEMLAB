@@ -24,5 +24,10 @@ S=singleLayer(kwave,Gamma);
 [v_N, GOA, colMatrix, colRHS] = ColHNA(S, VHNA, uinc, Gamma,'oversample',1.15, 'progress');
 
 %plot the output
-s=linspace(0,Gamma.L,500*kwave);
-semilogy(s,abs(v_N.eval(s))./kwave); xlim([Gamma.supp(1)-.1 Gamma.supp(2)+.1] ); ylim([1E-7 1E7]); 
+s=linspace(0,Gamma.L,min(1000,10*kwave)).';
+semilogy(s,abs(v_N.eval(s,1))./kwave); xlim([Gamma.supp(1)-.1 Gamma.supp(2)+.1] ); ylim([1E-7 1E4]); 
+xlabel('s'); ylabel('|\partial u/\partial n - \partial u^i/\partial n|');
+
+figure(2); plot(s,real(v_N.eval(s,1)+GOA.eval(s,1)),s,imag(v_N.eval(s,1)+GOA.eval(s,1))); 
+xlim([Gamma.supp(1)-.1 Gamma.supp(2)+.1] ); ylim([-.05*kwave .05*kwave]);
+xlabel('s'); ylabel('\partial u/\partial n'); legend('real','imaginary');

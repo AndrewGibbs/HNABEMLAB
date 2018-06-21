@@ -57,32 +57,33 @@ classdef HNAsingleMesh <basis
             
             for m=1:length(mesh.el)
                 mesh.el(m).pMax=pMaxChoose( mesh.el(m).gradIndex, pMax, mesh.minDex );
-                for p=0:mesh.el(m).pMax
-                    if mesh.el(m).width>=alphaDist*2*pi/kwave 
-                        %previously compared against: min(mesh.el(m).distL,
-                        %mesh.el(m).distR). But have adjusted because a)
-                        %this is kind of wrong, and b) to agree with
-                        %Emile's thesis.
-                        for pm=[-1 1]
-                            elCount=elCount+1;
-                            self.el(elCount)=baseFnHNA(kwave,p,mesh.el(m),pm,mesh.side);
-                            self.meshDOFs(m)=self.meshDOFs(m)+1;
-                        end
-                        mesh.el(m).osc=1;
-                    else
-                        alphaDistUsed=1;
-                        elCount=elCount+1;
-                        if oscNearEndPoints==1
-                            if mesh.el(m).distL<mesh.el(m).distR %closer to left hand endpoint
-                                pm=1;
-                            else
-                                pm=-1;
-                            end
+                
+                %first establish which type of phase we want, given
+                %distance to the corners, and the alpha parameter for how
+                %much should be thrown away:
+                if mesh.el(m).width>=alphaDist*2*pi/kwave 
+                    PM = [-1 1];
+                else
+                    alphaDistUsed=1;
+                    if oscNearEndPoints==1
+                        if mesh.el(m).distL<mesh.el(m).distR %closer to left hand endpoint
+                            PM=1;
                         else
-                            pm=0;
+                            PM=-1;
                         end
+                    else
+                        PM=0;
+                    end
+                end
+                %previously compared against: min(mesh.el(m).distL,
+                %mesh.el(m).distR). But have adjusted because a)
+                %this is kind of wrong, and b) to agree with
+                %Emile's thesis.
+                for pm=PM
+                    for p=0:mesh.el(m).pMax
+                        elCount=elCount+1;
                         self.el(elCount)=baseFnHNA(kwave,p,mesh.el(m),pm,mesh.side);
-                        mesh.el(m).osc=0;
+                        mesh.el(m).osc=1;
                         self.meshDOFs(m)=self.meshDOFs(m)+1;
                     end
                 end
