@@ -80,17 +80,17 @@ function [I, quadDataOut] = colEval(Op,fun, funSide, sCol, colSide, Nquad, quadD
             %need to split the integral, as integrand not analytic at z=x
 
             if maxSPorder ==0
-                [ z1a, w1a ] = NSD45( a, sCol, kwave, Nquad, phase_a,'settlerad',rectrad,...
+                [ z1a, w1a ] = PathFinder( a, sCol, kwave, Nquad, phase_a,'settlerad',rectrad,...
                             'fSingularities', logSingInfo, 'stationary points', [], 'order', [],'minOscs',minOscs);
 
-                [ z1b, w1b ] = NSD45(sCol, b, kwave, Nquad, phase_b,'settlerad',rectrad,...
+                [ z1b, w1b ] = PathFinder(sCol, b, kwave, Nquad, phase_b,'settlerad',rectrad,...
                             'fSingularities', logSingInfo, 'stationary points', [], 'order', [],'minOscs',minOscs);
                 I = (w1a.'*amp_a(z1a)) + (w1b.'*amp_b(z1b));
 
             else
-                [ z1a, w1a ] = NSD45( a, sCol, kwave, Nquad, phase_a,'fSingularities', logSingInfo, 'settlerad', rectrad,'minOscs',minOscs);
+                [ z1a, w1a ] = PathFinder( a, sCol, kwave, Nquad, phase_a,'fSingularities', logSingInfo, 'settlerad', rectrad,'minOscs',minOscs);
 
-                [ z1b, w1b ] = NSD45(sCol, b, kwave, Nquad, phase_b,'fSingularities', logSingInfo, 'settlerad', rectrad,'minOscs',minOscs);
+                [ z1b, w1b ] = PathFinder(sCol, b, kwave, Nquad, phase_b,'fSingularities', logSingInfo, 'settlerad', rectrad,'minOscs',minOscs);
                 I = (w1a.'*amp_a(z1a)) + (w1b.'*amp_b(z1b));
             end
             
@@ -111,10 +111,10 @@ function [I, quadDataOut] = colEval(Op,fun, funSide, sCol, colSide, Nquad, quadD
             end
             %now get weights and nodes:
             if maxSPorder ==0
-                [ z_, w_ ] = NSD45( a, b, kwave, Nquad, phase,...
+                [ z_, w_ ] = PathFinder( a, b, kwave, Nquad, phase,...
                             'fSingularities', logSingInfo, 'stationary points', [], 'order', [], 'settlerad', rectrad,'minOscs',minOscs);
             else
-                [ z_, w_ ] = NSD45( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, 'settlerad', rectrad,'minOscs',minOscs);
+                [ z_, w_ ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, 'settlerad', rectrad,'minOscs',minOscs);
             end
             %and evaluate integral:
             I = w_.'*amp(z_);
@@ -162,9 +162,9 @@ function [I, quadDataOut] = colEval(Op,fun, funSide, sCol, colSide, Nquad, quadD
         end
         if isnan(stationaryPoints)
             %choose the rectangle sufficiently small that phase is analytic
-            [ z1, w1 ] = NSD45( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, 'settlerad', rectrad,'minOscs',minOscs);
+            [ z1, w1 ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, 'settlerad', rectrad,'minOscs',minOscs);
         else %stationary points are already known
-            [ z1, w1 ] = NSD45( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, 'stationary points', stationaryPoints, 'order', orders, 'settlerad', rectrad,'minOscs',minOscs);
+            [ z1, w1 ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, 'stationary points', stationaryPoints, 'order', orders, 'settlerad', rectrad,'minOscs',minOscs);
         end
         z = [t; z1];   w = [w0; w1];
         I = (w.'*amp(z));
