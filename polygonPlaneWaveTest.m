@@ -30,7 +30,7 @@ DOFs=length(VHNA.el);
 S=singleLayer(kwave,Gamma);
 
 tic;
-[v_N, GOA, colMatrix, colRHS, colMatrix2, colRHS2] = ColHNA(S, VHNA, uinc, Gamma,'oversample',1.2, 'progress');
+[v_N, GOA, colMatrix, colRHS] = ColHNA(S, VHNA, uinc, Gamma,'oversample',1.2, 'progress');
 toc
 
 %plot the output
