@@ -1,4 +1,4 @@
-function [v_N, GOA, colMatrix, colRHS, colMatrix2, colRHS2] = ColHNA(Operator, Vbasis, uinc, Gamma, varargin)
+function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, varargin)
 %computes oversampled collocation projection using HNA basis/frame
 
     %with RHS data
@@ -57,8 +57,6 @@ function [v_N, GOA, colMatrix, colRHS, colMatrix2, colRHS2] = ColHNA(Operator, V
     %initialise main bits:
     colRHS=zeros(length(X),1);
     colMatrix=zeros(length(X),length(Vbasis.el));
-    colMatrix2 = colMatrix;
-    colRHS2 = colRHS;
     for m=1:length(X)
         %manually do first entry of row
         [colMatrix(m,1), quadData] = colEval(Operator, Vbasis.el(1), Vbasis.elSide(1), X(m), Xside(m), Nquad,[], standardQuadFlag);
@@ -67,7 +65,6 @@ function [v_N, GOA, colMatrix, colRHS, colMatrix2, colRHS2] = ColHNA(Operator, V
                %reuse quadrature from previous iteration of this loop,
                %(phase and domain are the same)
                colMatrix(m,n) = colEval(Operator, Vbasis.el(n), Vbasis.elSide(n), X(m), Xside(m), Nquad, quadData);
-               1+1;%abs(colMatrix(m,n) -colEval(Operator, Vbasis.el(n), Vbasis.elSide(n), X(m), Xside(m), Nquad,[]))<1E-12
            else
                %get fresh quadrature data
                [colMatrix(m,n), quadData] = colEval(Operator, Vbasis.el(n), Vbasis.elSide(n), X(m), Xside(m), Nquad,[], standardQuadFlag);
