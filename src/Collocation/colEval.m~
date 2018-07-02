@@ -4,7 +4,7 @@ function [I, quadDataOut] = colEval(Op,fun, funSide, sCol, colSide, dist2a, dist
 %NSD45 which ensures that the phase is always the analytic continuation of
 %|x(s)-y(t)|
 
-    roundErrorThresh = 0;%1E-6;
+    roundErrorThresh = 1E-6;
     
     if nargin <= 9
         CGflag = false;
@@ -25,7 +25,7 @@ function [I, quadDataOut] = colEval(Op,fun, funSide, sCol, colSide, dist2a, dist
        end
        return;
     end
-    if min(dist2a,dist2b)/abs(sCol)<roundErrorThresh
+    if (fun.b-sCol)/sCol<roundErrorThresh
         b_roundErrorFlag = true;
     else
         b_roundErrorFlag = false;
@@ -53,7 +53,7 @@ function [I, quadDataOut] = colEval(Op,fun, funSide, sCol, colSide, dist2a, dist
         amp_a = @(y) Op.kernelNonOscAnal(sCol, y, true, colSide, funSide) .* fun.evalNonOscAnal(y, funSide);
         amp_b = @(y) Op.kernelNonOscAnal(sCol, y, false, colSide, funSide) .* fun.evalNonOscAnal(y, funSide);
         amp_a_flip = @(r) Op.kernelNonOscAnal(0, r, false, colSide, funSide).* fun.evalNonOscAnal(sCol + r, funSide);
-        amp_b_flip = @(r) Op.kernelNonOscAnal(0, r, false, colSide, funSide).* fun.evalNonOscAnal(sCol + r, funSide);
+        amp_b_flip = @(r) Op.kernelNonOscAnal(0, r, true, colSide, funSide).* fun.evalNonOscAnal(sCol + r, funSide);
         %and the corresponding phases:
         phase_a = OpFunAddPhase(Op, fun, funSide, sCol, colSide, true, maxSPorder+1);
         phase_b = OpFunAddPhase(Op, fun, funSide, sCol, colSide, false, maxSPorder+1);
@@ -107,11 +107,10 @@ function [I, quadDataOut] = colEval(Op,fun, funSide, sCol, colSide, dist2a, dist
                      I1 = (w1a.'*amp_a_flip(z1a));
                  
                     logSingInfo_flip_b = logSingInfo;
-                    logSingInfo_flip_b.position = 0;
+                    logSingInfo_flip_b.position = dist2b;
                     [ z1b, w1b ] = PathFinder(0, dist2b, kwave, Nquad, phase_b_flip,'settlerad',rectrad,...
                                 'fSingularities', logSingInfo_flip_b, 'stationary points', [], 'order', [],'minOscs',minOscs);
                     I2 = (w1b.'*amp_b_flip(z1b));
-                    1+1;
                 else
                     
                     [ z1a, w1a ] = PathFinder( a, sCol, kwave, Nquad, phase_a,'settlerad',rectrad,...

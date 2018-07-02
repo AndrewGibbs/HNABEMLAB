@@ -42,5 +42,4 @@ classdef Projection < BoundaryFunction
         end
     end
     
-    
 end

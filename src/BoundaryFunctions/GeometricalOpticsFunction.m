@@ -32,6 +32,8 @@ classdef GeometricalOpticsFunction < BoundaryFunction
             if isa(domain,'edge')
                 self.dirConst = -uinc.sourceVsnormal(domain);
                 self.illumSides = 1;
+                self.a = domain.supp(1);
+                self.b = domain.supp(2);
             else %on a polygon, zero on sides which can't 'see' inc wave
                 for n=1:domain.numSides
                     pre_dirConst = uinc.sourceVsnormal(domain.side{n});

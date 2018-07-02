@@ -1,4 +1,4 @@
-function [t, onSide] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type )
+function [t, onSide, tma, bmt] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type )
 %returns collocation points that have been evenly spread across basis
 %elements
  %ChebyshevRoots( 3, 'Tn', [1 2] )
@@ -6,11 +6,14 @@ function [t, onSide] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type 
  if isa(Vbasis.obstacle,'polygon')
      %call self recursively
      t = [];
+     tR = []; %new variable, distance to far corner of edge, to avoid rounding errors
      onSide = [];
      side = [];
      for n = 1:Vbasis.obstacle.numSides
-         t_=getColPoints( Vbasis.edgeBasis{n}, overSamplesPerMeshEl, scaler, type );
+         [t,~,tR] = getColPoints( Vbasis.edgeBasis{n}, overSamplesPerMeshEl, scaler, type );
          t = [t; t_];
+         tma = [tma; tma_];
+         bmt = [bmt; bmt_];
          onSide((length(onSide)+1):(length(onSide)+length(t_))) = n;
      end
      return;
@@ -31,7 +34,7 @@ function [t, onSide] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type 
     type=('C');%chebyshev
  end
  
-    t=[];
+    t = []; tma = []; bmt = [];
     if isa(Vbasis,'HNAoverlappingMesh')
         E=[Vbasis.mesh{1}.el Vbasis.mesh{2}.el];
         M=[Vbasis.meshDOFs{1} Vbasis.meshDOFs{2}];
@@ -66,8 +69,10 @@ function [t, onSide] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type 
         s3=1-(1-s3).*scaler;
         s=[s1;s2;s3;];
         %now scale everything onto the mesh element:
-        t=[t; E(m).interval(1)+E(m).width*.5*(s+1);];
+        t  = [t; E(m).interval(1)+E(m).width*.5*(s+1);];
+        %tR = [tR; E(m).distR + E(m).width*.5*(flipud(s)+1);];
+        tma = [tma; E(m).width*.5*(s+1);];
+        bmt = [bmt; E(m).width*.5*(flipud(s)+1);];
     end
     onSide = ones(size(t));
 end
-

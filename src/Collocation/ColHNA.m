@@ -49,7 +49,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     end
     
     %get collocation points.
-    [X, Xside] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, colType);
+    [X, Xside, Xdist2a, Xdist2b] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, colType);
     
     %** should eventually find a way to partition the basis into mesh
     %elements with + or - phase, so that quadrature points can be reused.
@@ -59,20 +59,20 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     colMatrix=zeros(length(X),length(Vbasis.el));
     for m=1:length(X)
         %manually do first entry of row
-        [colMatrix(m,1), quadData] = colEval(Operator, Vbasis.el(1), Vbasis.elSide(1), X(m), Xside(m), Nquad,[], standardQuadFlag);
+        [colMatrix(m,1), quadData] = colEval(Operator, Vbasis.el(1), Vbasis.elSide(1), X(m), Xside(m), Xdist2a(m), Xdist2b(m), Nquad,[], standardQuadFlag);
         for n=2:length(Vbasis.el)
            if Vbasis.el(n).pm == Vbasis.el(n-1).pm && isequal(Vbasis.el(n).supp,Vbasis.el(n-1).supp)
                %reuse quadrature from previous iteration of this loop,
                %(phase and domain are the same)
-               colMatrix(m,n) = colEval(Operator, Vbasis.el(n), Vbasis.elSide(n), X(m), Xside(m), Nquad, quadData);
+               colMatrix(m,n) = colEval(Operator, Vbasis.el(n), Vbasis.elSide(n), X(m), Xside(m), Xdist2a(m), Xdist2b(m), Nquad, quadData);
            else
                %get fresh quadrature data
-               [colMatrix(m,n), quadData] = colEval(Operator, Vbasis.el(n), Vbasis.elSide(n), X(m), Xside(m), Nquad,[], standardQuadFlag);
+               [colMatrix(m,n), quadData] = colEval(Operator, Vbasis.el(n), Vbasis.elSide(n), X(m), Xside(m), Xdist2a(m), Xdist2b(m), Nquad,[], standardQuadFlag);
            end
         end 
         fX = f.eval(X(m),Xside(m));
         if ~standardBEMflag
-           SPsiX =  colEval(Operator,GOA,GOA.illumSides,X(m),Xside(m),Nquad,[], standardQuadFlag);
+           SPsiX =  colEval(Operator, GOA,GOA.illumSides, X(m), Xside(m), X(m), X(1+length(X)-m), Nquad,[], standardQuadFlag);
            colRHS(m)  = fX - SPsiX;
         else
            colRHS(m)  = fX;
