@@ -64,6 +64,7 @@ classdef singleMesh  < mesh
                  m=m+1;
             end
             
+            newNumEls = length(self.el);
             %self.numEls=length(self.el);
             
              %now construct corner distances
@@ -83,6 +84,27 @@ classdef singleMesh  < mesh
             end
             self.points(end)=self.el(end).interval(2);            
 
+        end
+        
+        function [s, w] = getPoints(self,pointsPerWavelength,wavelength,distType)
+            %returns points with fixed number of nodes per mesh element,
+            % distributed by distType = 'U' for uniform, 'G' for Gauss
+            s = []; w=[];
+            for n = 1:length(self.el)
+                wavelengthsInElement = ceil(self.el(n).width/wavelength);
+                N = pointsPerWavelength*wavelengthsInElement;
+                if strcmp(distType,'U')
+                    s_ = linspace(self.points(n),self.points(n+1),N).';
+                    if n<length(self.el)
+                        s_ = s_(1:(end-1));
+                    end
+                elseif strcmp(distType,'G')
+                    [s_,w_] =gauss_quad(self.points(n),self.points(n+1),N);
+                end
+                s = [s; s_];
+                w = [w; w_];
+                clear s_ w_;
+            end
         end
         
     end

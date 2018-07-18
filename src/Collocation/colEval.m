@@ -4,7 +4,7 @@ function [I, quadDataOut] = colEval(Op,fun, funSide, sCol, colSide, dist2a, dist
 %NSD45 which ensures that the phase is always the analytic continuation of
 %|x(s)-y(t)|
 
-    roundErrorThresh = 0;%1E-6;
+    roundErrorThresh = 1E-6;
     
     if nargin <= 9
         CGflag = false;
@@ -52,15 +52,15 @@ function [I, quadDataOut] = colEval(Op,fun, funSide, sCol, colSide, dist2a, dist
         %analytic extension of non-osc components of kernel:
         amp_a = @(y) Op.kernelNonOscAnal(sCol, y, true, colSide, funSide) .* fun.evalNonOscAnal(y, funSide);
         amp_b = @(y) Op.kernelNonOscAnal(sCol, y, false, colSide, funSide) .* fun.evalNonOscAnal(y, funSide);
-        amp_a_flip = @(r) Op.kernelNonOscAnal(0, r, false, colSide, funSide).* fun.evalNonOscAnal(sCol + r, funSide);
-        amp_b_flip = @(r) Op.kernelNonOscAnal(0, r, false, colSide, funSide).* fun.evalNonOscAnal(sCol + r, funSide);
+        amp_a_flip = @(r) Op.kernelNonOscAnal(r, 0, true, colSide, funSide).* fun.evalNonOscAnal(sCol - r, funSide);
+        amp_b_flip = @(r) Op.kernelNonOscAnal(r, 0, true, colSide, funSide).* fun.evalNonOscAnal(sCol + r, funSide);
         %and the corresponding phases:
         phase_a = OpFunAddPhase(Op, fun, funSide, sCol, colSide, true, maxSPorder+1);
         phase_b = OpFunAddPhase(Op, fun, funSide, sCol, colSide, false, maxSPorder+1);
         %phase_b_flip = OpFunAddPhase(Op, fun, funSide, sCol, colSide, false, maxSPorder+1);
         
         for n = 1:length(phase_b)
-            phase_a_flip{n} = @(r) phase_a{n}(r+sCol);
+            phase_a_flip{n} = @(r) (-1)^(n+1)*phase_a{n}(sCol-r);
             phase_b_flip{n} = @(r) phase_b{n}(r+sCol);
         end
         
@@ -101,13 +101,15 @@ function [I, quadDataOut] = colEval(Op,fun, funSide, sCol, colSide, dist2a, dist
                 if b_roundErrorFlag
                     
                     logSingInfo_flip_a = logSingInfo;
-                    logSingInfo_flip_a.position = dist2a;
-                    [ z1a, w1a ] = PathFinder( 0, dist2a, kwave, Nquad, phase_a,'settlerad',rectrad,...
+                    logSingInfo_flip_a.position = 0;
+                    logSingInfo_flip_a.distFun = @(r) abs(r);
+                    [ z1a, w1a ] = PathFinder( 0, dist2a, kwave, Nquad, phase_a_flip,'settlerad',rectrad,...
                                 'fSingularities', logSingInfo_flip_a, 'stationary points', [], 'order', [],'minOscs',minOscs);
                      I1 = (w1a.'*amp_a_flip(z1a));
                  
                     logSingInfo_flip_b = logSingInfo;
                     logSingInfo_flip_b.position = 0;
+                    logSingInfo_flip_b.distFun = @(r) abs(r);
                     [ z1b, w1b ] = PathFinder(0, dist2b, kwave, Nquad, phase_b_flip,'settlerad',rectrad,...
                                 'fSingularities', logSingInfo_flip_b, 'stationary points', [], 'order', [],'minOscs',minOscs);
                     I2 = (w1b.'*amp_b_flip(z1b));
@@ -148,12 +150,16 @@ function [I, quadDataOut] = colEval(Op,fun, funSide, sCol, colSide, dist2a, dist
             if sCol <= a
                 amp = amp_b;
                 phase = phase_b;
+                phase_flip = phase_b_flip;
                 split = [0 1];
+                dist2end = dist2b;
             elseif b <= sCol
                 %analytic extension of non-osc component of kernel:
                 amp = amp_a;
                 phase = phase_a;
+                phase_flip = phase_a_flip;
                 split = [1 0];
+                dist2end = dist2a;
             else
                 %this error will probably never ever happen:
                 error('cant decide which is bigger of s and t');
@@ -161,9 +167,15 @@ function [I, quadDataOut] = colEval(Op,fun, funSide, sCol, colSide, dist2a, dist
             %now get weights and nodes:
             if maxSPorder ==0
                 [ z_, w_ ] = PathFinder( a, b, kwave, Nquad, phase,...
-                            'fSingularities', logSingInfo, 'stationary points', [], 'order', [], 'settlerad', rectrad,'minOscs',minOscs);
+                            'fSingularities', logSingInfo, 'stationary points', [], 'order', [], 'settlerad', rectrad,'minOscs',minOscs,'width',fun.suppWidth);
+                        
+%                 logSingInfo_flip = logSingInfo;
+%                 logSingInfo_flip.position = 0;
+%                 logSingInfo_flip.distFun = @(r) abs(r);
+%                 [ z_, w_ ] = PathFinder( 0, fun.suppWidth, kwave, Nquad, phase_flip,'settlerad',rectrad,...
+%                         'fSingularities', logSingInfo_flip, 'stationary points', [], 'order', [], 'minOscs', minOscs);
             else
-                [ z_, w_ ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, 'settlerad', rectrad,'minOscs',minOscs);
+                [ z_, w_ ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, 'settlerad', rectrad,'minOscs',minOscs,'width',fun.suppWidth);
             end
             %and evaluate integral:
             I = w_.'*amp(z_);
@@ -192,11 +204,13 @@ function [I, quadDataOut] = colEval(Op,fun, funSide, sCol, colSide, dist2a, dist
                 a0 = a;
                 a = a0 + singularSplit;
                 [t, w0] = NonOsc45(a0, a, kwave, Nquad, phase{1}, logSingInfo, singularSplit);
+                1+1;
                 %I0 = (w0.'*amp(t));
             elseif  ismember(minCombo,[2 4]) %singularity close to b
                 b0 = b;
                 b = b0 - singularSplit;
                 [t, w0] = NonOsc45(b, b0, kwave, Nquad, phase{1}, logSingInfo, singularSplit);
+                1+1;
                 %I0 = (w0.'*amp(t));
             end
         else
