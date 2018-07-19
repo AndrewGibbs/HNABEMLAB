@@ -1,7 +1,11 @@
-function [t, onSide, tma, bmt] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type )
+function [t, onSide, tma, bmt, X] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type, side )
 %returns collocation points that have been evenly spread across basis
 %elements
  %ChebyshevRoots( 3, 'Tn', [1 2] )
+ 
+ if nargin == 4
+     side = 1;
+ end
  
  if isa(Vbasis.obstacle,'polygon')
      %call self recursively
@@ -10,11 +14,11 @@ function [t, onSide, tma, bmt] = getColPoints( Vbasis, overSamplesPerMeshEl, sca
      onSide = [];
      side = [];
      for n = 1:Vbasis.obstacle.numSides
-         [t,~,tR] = getColPoints( Vbasis.edgeBasis{n}, overSamplesPerMeshEl, scaler, type );
+         [t,~,tR] = getColPoints( Vbasis.edgeBasis{n}, overSamplesPerMeshEl, scaler, type, n );
          t = [t; t_];
          tma = [tma; tma_];
          bmt = [bmt; bmt_];
-         onSide((length(onSide)+1):(length(onSide)+length(t_))) = n;
+         %onSide((length(onSide)+1):(length(onSide)+length(t_))) = n;
      end
      return;
  end
@@ -42,6 +46,7 @@ function [t, onSide, tma, bmt] = getColPoints( Vbasis, overSamplesPerMeshEl, sca
         E=Vbasis.mesh.el;
         M=Vbasis.meshDOFs;
     end
+    sCount = 0;
     for m=1:length(M)
         %pts=ceil((m.pMax+1)*overSamplesPerMeshEl);
         pts=ceil(M(m)*overSamplesPerMeshEl);
@@ -73,6 +78,10 @@ function [t, onSide, tma, bmt] = getColPoints( Vbasis, overSamplesPerMeshEl, sca
         %tR = [tR; E(m).distR + E(m).width*.5*(flipud(s)+1);];
         tma = [tma; E(m).width*.5*(s+1);];
         bmt = [bmt; E(m).width*.5*(flipud(s)+1);];
+        for s_=s.'
+            sCount = sCount + 1;
+            X(sCount) = collocationPoint(E(m),.5*(s_+1),side,m);
+        end
     end
-    onSide = ones(size(t));
+    onSide = ones(length(t),1);
 end

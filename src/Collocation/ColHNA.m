@@ -49,7 +49,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     end
     
     %get collocation points.
-    [X, Xside, Xdist2a, Xdist2b] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, colType);
+    [X, Xside, Xdist2a, Xdist2b, Xstruct] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, colType);
     
     %** should eventually find a way to partition the basis into mesh
     %elements with + or - phase, so that quadrature points can be reused.
@@ -68,7 +68,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
                1+1;
            else
                %get fresh quadrature data
-               [colMatrix(m,n), quadData] = colEval(Operator, Vbasis.el(n), Vbasis.elSide(n), X(m), Xside(m), Xdist2a(m), Xdist2b(m), Nquad,[], standardQuadFlag);
+               [colMatrix(m,n), quadData] = colEvalV2(Operator, Vbasis.el(n), Vbasis.elSide(n), Xstruct(m), Nquad,[], standardQuadFlag);
                 1+1;
            end
         end 

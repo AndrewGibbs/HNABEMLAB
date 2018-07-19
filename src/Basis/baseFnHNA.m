@@ -7,6 +7,7 @@ classdef  baseFnHNA < BoundaryFunction
         normaliser
         phaseLinear
         L       %original width of Legendre basis element
+        meshEl
     end
     
     methods 
@@ -25,6 +26,7 @@ classdef  baseFnHNA < BoundaryFunction
             self.oscillator=@(s) exp(1i*kwave*pm*s);
             self.domain=side;
             self.phaseMaxStationaryPointOrder=0;
+            self.meshEl = meshEl;
             %self.phase = {@(x) pm*x, @(x) pm, @(x) 0};
         end
         
