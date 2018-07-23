@@ -27,9 +27,9 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
        return;
     end
     
-    %intiialise variables for data structure:
-    z=[]; w=[]; z1a=[]; w1a=[]; z1b=[]; w1b=[];
-     split = [0 0];
+%     %intiialise variables for data structure:
+%     z=[]; w=[]; z1a=[]; w1a=[]; z1b=[]; w1b=[];
+%      split = [0 0];
 
     %main function:
         maxSPorder = max(Op.phaseMaxStationaryPointOrder(funSide == colPt.side), fun.phaseMaxStationaryPointOrder);
@@ -64,22 +64,22 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         amp = @(y) Op.kernelNonOscAnal(colPt.x, y, [], colPt.side, funSide) .* fun.evalNonOscAnal(y, funSide);
         phase = OpFunAddPhase(Op, fun, funSide, colPt.x, colPt.side, [], maxSPorder+1);
         
-    if ~isempty(quadDataIn)
-        if isequal(quadDataIn.split,[0 0])
-            I = (quadDataIn.w.'*amp(quadDataIn.z));
-        else
-            I = 0;
-            %add components seperately
-            if quadDataIn.split(1) == 1
-                I = I + quadDataIn.w1a.'*amp_a(quadDataIn.z1a);
-            end
-            if quadDataIn.split(2) == 1
-                I = I + quadDataIn.w1b.'*amp_b(quadDataIn.z1b);
-            end
-        end
-        quadDataOut = quadDataIn;
-        return;
-    end
+%     if ~isempty(quadDataIn)
+%         if isequal(quadDataIn.split,[0 0])
+%             I = (quadDataIn.w.'*amp(quadDataIn.z));
+%         else
+%             I = 0;
+%             %add components seperately
+%             if quadDataIn.split(1) == 1
+%                 I = I + quadDataIn.w1a.'*amp_a(quadDataIn.z1a);
+%             end
+%             if quadDataIn.split(2) == 1
+%                 I = I + quadDataIn.w1b.'*amp_b(quadDataIn.z1b);
+%             end
+%         end
+%         quadDataOut = quadDataIn;
+%         return;
+%     end
         
     if funSide == colPt.side
         
@@ -100,23 +100,34 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         if  a < colPt.x && colPt.x < b
             %need to split the integral, as integrand not analytic at z=x
 
-            logSingInfo_flip_a = logSingInfo;
-            logSingInfo_flip_a.position = 0;
-            logSingInfo_flip_a.distFun = @(r) abs(r);
-            [ z1a, w1a ] = PathFinder( 0, colPt.distMeshL, kwave, Nquad, phase_a_flip,'settlerad',rectrad,...
-                        'fSingularities', logSingInfo_flip_a, 'stationary points', SPin, 'order', SPOin,'minOscs',minOscs);
-             I1 = (w1a.'*amp_a_flip(z1a));
+           if ~isempty(quadDataIn)
+                w1a = quadDataIn.w1a;
+                w1b = quadDataIn.w1b;
+                z1a = quadDataIn.z1a;
+                z1b = quadDataIn.z1b;
+            else
+                logSingInfo_flip_a = logSingInfo;
+                logSingInfo_flip_a.position = 0;
+                logSingInfo_flip_a.distFun = @(r) abs(r);
+                [ z1a, w1a ] = PathFinder( 0, colPt.distMeshL, kwave, Nquad, phase_a_flip,'settlerad',rectrad,...
+                            'fSingularities', logSingInfo_flip_a, 'stationary points', SPin, 'order', SPOin,'minOscs',minOscs);
 
-            logSingInfo_flip_b = logSingInfo;
-            logSingInfo_flip_b.position = 0;
-            logSingInfo_flip_b.distFun = @(r) abs(r);
-            [ z1b, w1b ] = PathFinder(0, colPt.distMeshR, kwave, Nquad, phase_b_flip,'settlerad',rectrad,...
-                        'fSingularities', logSingInfo_flip_b, 'stationary points', SPin, 'order', SPOin,'minOscs',minOscs);
-            I2 = (w1b.'*amp_b_flip(z1b));
+                logSingInfo_flip_b = logSingInfo;
+                logSingInfo_flip_b.position = 0;
+                logSingInfo_flip_b.distFun = @(r) abs(r);
+                [ z1b, w1b ] = PathFinder(0, colPt.distMeshR, kwave, Nquad, phase_b_flip,'settlerad',rectrad,...
+                            'fSingularities', logSingInfo_flip_b, 'stationary points', SPin, 'order', SPOin,'minOscs',minOscs);
+                    
+                quadDataOut.w1a = w1a;
+                quadDataOut.w1b = w1b;
+                quadDataOut.z1a = z1a;
+                quadDataOut.z1b = z1b;
+           end
+                I1 = (w1a.'*amp_a_flip(z1a));
+                I2 = (w1b.'*amp_b_flip(z1b));
+                I = I1 + I2;
 
-            I = I1 + I2;
-            
-            split = [1 1];
+                %split = [1 1];
         else
             
             if colPt.distSideL < colPt.distSideR
@@ -149,12 +160,23 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 %this error will probably never ever happen:
                 error('cant decide which is bigger of s and t');
             end
-            %now get weights and nodes:
-            logSingInfo_flip = logSingInfo;
-            logSingInfo_flip.position = 0;
-            logSingInfo_flip.distFun = @(r) abs(r);
-            [ z_, w_ ] = PathFinder( a_shift, b_shift, kwave, Nquad, phase_flip,'settlerad',rectrad,...
-                    'fSingularities', logSingInfo_flip, 'stationary points', SPin, 'order', SPOin, 'minOscs', minOscs, 'width', fun.suppWidth);
+            
+            if ~isempty(quadDataIn)
+                w_ = quadDataIn.w_;
+                z_ = quadDataIn.z_;
+            else
+                %now get weights and nodes:
+                logSingInfo_flip = logSingInfo;
+                logSingInfo_flip.position = 0;
+                logSingInfo_flip.distFun = @(r) abs(r);
+                [ z_, w_ ] = PathFinder( a_shift, b_shift, kwave, Nquad, phase_flip,'settlerad',rectrad,...
+                        'fSingularities', logSingInfo_flip, 'stationary points', SPin, 'order', SPOin, 'minOscs', minOscs, 'width', fun.suppWidth);
+                    
+                quadDataOut.w_ = w_;
+                quadDataOut.z_ = z_;
+            end
+
+                
             %and evaluate integral:
             I = w_.'*amp_flip(z_);
             %now store in correct form:
@@ -216,6 +238,6 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         
     end
     
-    quadDataOut = struct('z',z,'w',w,'split',split,'z1a', z1a, 'w1a',w1a,'z1b', z1b, 'w1b', w1b);
+%    quadDataOut = struct('z',z,'w',w,'split',split,'z1a', z1a, 'w1a',w1a,'z1b', z1b, 'w1b', w1b);
             
 end

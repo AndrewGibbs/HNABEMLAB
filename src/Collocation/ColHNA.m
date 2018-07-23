@@ -61,10 +61,10 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
         %manually do first entry of row
         [colMatrix(m,1), quadData] = colEvalV2(Operator, Vbasis.el(1), Vbasis.elSide(1), Xstruct(m), Nquad,[], standardQuadFlag);
         for n=2:length(Vbasis.el)
-           if Vbasis.el(n).pm == Vbasis.el(n-1).pm && isequal(Vbasis.el(n).supp,Vbasis.el(n-1).supp) && 2+2==5
+           if Vbasis.el(n).pm == Vbasis.el(n-1).pm && isequal(Vbasis.el(n).supp,Vbasis.el(n-1).supp)% && 2+2==5
                %reuse quadrature from previous iteration of this loop,
                %(phase and domain are the same)
-               colMatrix(m,n) = colEval(Operator, Vbasis.el(n), Vbasis.elSide(n), X(m), Xside(m), Xdist2a(m), Xdist2b(m), Nquad, quadData);
+               colMatrix(m,n) = colEvalV2(Operator, Vbasis.el(n), Vbasis.elSide(n), Xstruct(m), Nquad, quadData, standardQuadFlag);
                1+1;
            else
                %get fresh quadrature data
