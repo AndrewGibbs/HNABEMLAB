@@ -59,7 +59,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     colMatrix=zeros(length(X),length(Vbasis.el));
     for m=1:length(X)
         %manually do first entry of row
-        [colMatrix(m,1), quadData] = colEval(Operator, Vbasis.el(1), Vbasis.elSide(1), X(m), Xside(m), Xdist2a(m), Xdist2b(m), Nquad,[], standardQuadFlag);
+        [colMatrix(m,1), quadData] = colEvalV2(Operator, Vbasis.el(1), Vbasis.elSide(1), Xstruct(m), Nquad,[], standardQuadFlag);
         for n=2:length(Vbasis.el)
            if Vbasis.el(n).pm == Vbasis.el(n-1).pm && isequal(Vbasis.el(n).supp,Vbasis.el(n-1).supp) && 2+2==5
                %reuse quadrature from previous iteration of this loop,
@@ -74,7 +74,11 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
         end 
         fX = f.eval(X(m),Xside(m));
         if ~standardBEMflag
-           SPsiX =  colEval(Operator, GOA,GOA.illumSides, X(m), Xside(m), X(m), X(1+length(X)-m), Nquad,[], standardQuadFlag);
+           Ystruct = Xstruct;
+           Ystruct(m).distMeshL = Ystruct(m).distSideL;
+           Ystruct(m).distMeshR = Ystruct(m).distSideR;
+         %  SPsiX =  colEval(Operator, GOA, GOA.illumSides, X(m), Xside(m), X(m), X(1+length(X)-m), Nquad,[], standardQuadFlag);
+           SPsiX = colEvalV2(Operator, GOA, GOA.illumSides, Ystruct(m), Nquad,[], standardQuadFlag);
            colRHS(m)  = fX - SPsiX;
         else
            colRHS(m)  = fX;
@@ -86,6 +90,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     
     %use least squares with Matlab's built in SVD to get coefficients
     coeffs=colMatrix\colRHS;
+    %coeffs = pseudo_backslash(colMatrix, colRHS, 1E-5);
     v_N=Projection(coeffs,Vbasis);
     
     if messageFlag
