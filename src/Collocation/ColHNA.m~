@@ -55,9 +55,9 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     %elements with + or - phase, so that quadrature points can be reused.
     
     %initialise main bits:
-    colRHS=zeros(length(Xstruct),1);
-    colMatrix=zeros(length(Xstruct),length(Vbasis.el));
-    for m=1:length(Xstruct)
+    colRHS=zeros(length(X),1);
+    colMatrix=zeros(length(X),length(Vbasis.el));
+    for m=1:length(X)
         %manually do first entry of row
         [colMatrix(m,1), quadData] = colEvalV2(Operator, Vbasis.el(1), Vbasis.elSide(1), Xstruct(m), Nquad,[], standardQuadFlag);
         for n=2:length(Vbasis.el)
@@ -71,7 +71,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
                [colMatrix(m,n), quadData] = colEvalV2(Operator, Vbasis.el(n), Vbasis.elSide(n), Xstruct(m), Nquad,[], standardQuadFlag);
            end
         end 
-        fX = f.eval(Xstruct(m).x,Xstruct(m).side);
+        fX = f.eval(X(m),Xside(m));
         if ~standardBEMflag
            Ystruct = Xstruct;
            Ystruct(m).distMeshL = Ystruct(m).distSideL;
@@ -83,7 +83,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
            colRHS(m)  = fX;
         end
         if messageFlag
-            fprintf('\n%.1f%%',100*m/length(Xstruct));
+            fprintf('\n%.1f%%',100*m/length(X));
         end
     end
     

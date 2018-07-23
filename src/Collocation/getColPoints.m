@@ -1,4 +1,4 @@
-function [t, onSide, tma, bmt, X] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type, side )
+function [ X] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type, side )
 %returns collocation points that have been evenly spread across basis
 %elements
  %ChebyshevRoots( 3, 'Tn', [1 2] )
