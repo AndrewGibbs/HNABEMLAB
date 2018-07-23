@@ -6,6 +6,7 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
 
 %sCol, colSide, dist2a, dist2b - all absorbed into X
 
+    roundErrorThresh = 1E-6;
     
     if nargin <= 9
         CGflag = false;
@@ -26,6 +27,12 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
        end
        return;
     end
+%     if min(dist2a,dist2b)/abs(colPt.x)<roundErrorThresh
+%         b_roundErrorFlag = true;
+%     else
+%         b_roundErrorFlag = false;
+%     end
+    b_roundErrorFlag = true;
     
     %intiialise variables for data structure:
     z=[]; w=[]; z1a=[]; w1a=[]; z1b=[]; w1b=[];
@@ -158,13 +165,13 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 logSingInfo_flip = logSingInfo;
                 logSingInfo_flip.position = 0;
                 logSingInfo_flip.distFun = @(r) abs(r);
-                [ z_, w_ ] = PathFinder( a_shift, b_shift, kwave, Nquad, phase_flip,'settlerad',rectrad,...
+                [ z_2, w_2 ] = PathFinder( a_shift, b_shift, kwave, Nquad, phase_flip,'settlerad',rectrad,...
                         'fSingularities', logSingInfo_flip, 'stationary points', [], 'order', [], 'minOscs', minOscs, 'width', fun.suppWidth);
             else
                 [ z_, w_ ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, 'settlerad', rectrad,'minOscs',minOscs,'width',fun.suppWidth);
             end
             %and evaluate integral:
-            I = w_.'*amp_flip(z_);
+            I = w_2.'*amp_flip(z_2);
             %now store in correct form:
             if colPt.x <= a
                 w1b = w_;
@@ -190,10 +197,12 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 a0 = a;
                 a = a0 + singularSplit;
                 [t, w0] = NonOsc45(a0, a, kwave, Nquad, phase{1}, logSingInfo, singularSplit);
+                %I0 = (w0.'*amp(t));
             elseif  ismember(minCombo,[2 4]) %singularity close to b
                 b0 = b;
                 b = b0 - singularSplit;
                 [t, w0] = NonOsc45(b, b0, kwave, Nquad, phase{1}, logSingInfo, singularSplit);
+                %I0 = (w0.'*amp(t));
             end
         else
             w0 = []; t = [];

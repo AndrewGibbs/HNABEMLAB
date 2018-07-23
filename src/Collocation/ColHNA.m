@@ -69,7 +69,6 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
            else
                %get fresh quadrature data
                [colMatrix(m,n), quadData] = colEvalV2(Operator, Vbasis.el(n), Vbasis.elSide(n), Xstruct(m), Nquad,[], standardQuadFlag);
-                1+1;
            end
         end 
         fX = f.eval(X(m),Xside(m));
