@@ -89,36 +89,32 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         %choose the rectangle sufficiently small that phase is analytic
         rectrad = .5*min(logSingInfo.distFun(a),logSingInfo.distFun(b));
         
+        if maxSPorder ==0
+            SPin = [];
+            SPOin = [];
+        else
+            SPin = NaN;
+            SPOin = NaN;
+        end
+        
         if  a < colPt.x && colPt.x < b
             %need to split the integral, as integrand not analytic at z=x
 
-            if maxSPorder ==0
-                    
-                    logSingInfo_flip_a = logSingInfo;
-                    logSingInfo_flip_a.position = 0;
-                    logSingInfo_flip_a.distFun = @(r) abs(r);
-                    [ z1a, w1a ] = PathFinder( 0, colPt.distMeshL, kwave, Nquad, phase_a_flip,'settlerad',rectrad,...
-                                'fSingularities', logSingInfo_flip_a, 'stationary points', [], 'order', [],'minOscs',minOscs);
-                     I1 = (w1a.'*amp_a_flip(z1a));
-                 
-                    logSingInfo_flip_b = logSingInfo;
-                    logSingInfo_flip_b.position = 0;
-                    logSingInfo_flip_b.distFun = @(r) abs(r);
-                    [ z1b, w1b ] = PathFinder(0, colPt.distMeshR, kwave, Nquad, phase_b_flip,'settlerad',rectrad,...
-                                'fSingularities', logSingInfo_flip_b, 'stationary points', [], 'order', [],'minOscs',minOscs);
-                    I2 = (w1b.'*amp_b_flip(z1b));
-                
-                I = I1 + I2;
+            logSingInfo_flip_a = logSingInfo;
+            logSingInfo_flip_a.position = 0;
+            logSingInfo_flip_a.distFun = @(r) abs(r);
+            [ z1a, w1a ] = PathFinder( 0, colPt.distMeshL, kwave, Nquad, phase_a_flip,'settlerad',rectrad,...
+                        'fSingularities', logSingInfo_flip_a, 'stationary points', SPin, 'order', SPOin,'minOscs',minOscs);
+             I1 = (w1a.'*amp_a_flip(z1a));
 
-            else
-                [ z1a, w1a ] = PathFinder( a, colPt.x, kwave, Nquad, phase_a,'fSingularities', logSingInfo, 'settlerad', rectrad,'minOscs',minOscs);
-                I1 = (w1a.'*amp_a(z1a)) ;
-                
-                [ z1b, w1b ] = PathFinder(colPt.x, b, kwave, Nquad, phase_b,'fSingularities', logSingInfo, 'settlerad', rectrad,'minOscs',minOscs);
-                I2 = (w1b.'*amp_b(z1b));
-                
-                I = I1 + I2;
-            end
+            logSingInfo_flip_b = logSingInfo;
+            logSingInfo_flip_b.position = 0;
+            logSingInfo_flip_b.distFun = @(r) abs(r);
+            [ z1b, w1b ] = PathFinder(0, colPt.distMeshR, kwave, Nquad, phase_b_flip,'settlerad',rectrad,...
+                        'fSingularities', logSingInfo_flip_b, 'stationary points', SPin, 'order', SPOin,'minOscs',minOscs);
+            I2 = (w1b.'*amp_b_flip(z1b));
+
+            I = I1 + I2;
             
             split = [1 1];
         else
@@ -154,15 +150,11 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 error('cant decide which is bigger of s and t');
             end
             %now get weights and nodes:
-            if maxSPorder ==0
-                logSingInfo_flip = logSingInfo;
-                logSingInfo_flip.position = 0;
-                logSingInfo_flip.distFun = @(r) abs(r);
-                [ z_, w_ ] = PathFinder( a_shift, b_shift, kwave, Nquad, phase_flip,'settlerad',rectrad,...
-                        'fSingularities', logSingInfo_flip, 'stationary points', [], 'order', [], 'minOscs', minOscs, 'width', fun.suppWidth);
-            else
-                [ z_, w_ ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, 'settlerad', rectrad,'minOscs',minOscs,'width',fun.suppWidth);
-            end
+            logSingInfo_flip = logSingInfo;
+            logSingInfo_flip.position = 0;
+            logSingInfo_flip.distFun = @(r) abs(r);
+            [ z_, w_ ] = PathFinder( a_shift, b_shift, kwave, Nquad, phase_flip,'settlerad',rectrad,...
+                    'fSingularities', logSingInfo_flip, 'stationary points', SPin, 'order', SPOin, 'minOscs', minOscs, 'width', fun.suppWidth);
             %and evaluate integral:
             I = w_.'*amp_flip(z_);
             %now store in correct form:
