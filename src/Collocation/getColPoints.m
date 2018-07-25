@@ -1,4 +1,4 @@
-function [ X] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type, side )
+function [ X, t, onSide] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type, side )
 %returns collocation points that have been evenly spread across basis
 %elements
  %ChebyshevRoots( 3, 'Tn', [1 2] )
@@ -8,17 +8,23 @@ function [ X] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type, side )
  end
  
  if isa(Vbasis.obstacle,'polygon')
-     %call self recursively
-     t = [];
-     tR = []; %new variable, distance to far corner of edge, to avoid rounding errors
+%      %call self recursively
+%      t = [];
+%      tR = []; %new variable, distance to far corner of edge, to avoid rounding errors
+%      onSide = [];
+%      side = [];
+     X = [];
      onSide = [];
-     side = [];
+     t =[];
      for n = 1:Vbasis.obstacle.numSides
-         [t,~,tR] = getColPoints( Vbasis.edgeBasis{n}, overSamplesPerMeshEl, scaler, type, n );
+         [X_,t_,~] = getColPoints( Vbasis.edgeBasis{n}, overSamplesPerMeshEl, scaler, type, n );
+%          t = [t; t_];
+%          tma = [tma; tma_];
+%          bmt = [bmt; bmt_];
+         onSide((length(onSide)+1):(length(onSide)+length(t_))) = n;
+         X = [X X_];
+         %onSide = [onSide; onSide_];
          t = [t; t_];
-         tma = [tma; tma_];
-         bmt = [bmt; bmt_];
-         %onSide((length(onSide)+1):(length(onSide)+length(t_))) = n;
      end
      return;
  end

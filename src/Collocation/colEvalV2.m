@@ -22,7 +22,12 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
     if length(funSide)>1
         I=0;
        for m=funSide
-          I = I + colEval(Op,fun, m, colPt.x, dist2b, colSide, Nquad, CGflag); 
+           if ~isempty(quadDataIn)
+                [I_, ~] = colEvalV2(Op,fun, m, colPt.x, dist2b, colSide, Nquad, quadDataIn{m}, CGflag); 
+           else
+               [I_, quadDataOut{m}] = colEvalV2(Op,fun, m, colPt.x, dist2b, colSide, Nquad, [], CGflag); 
+           end
+          I = I + I_;
        end
        return;
     end
@@ -190,43 +195,49 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         end
     else %no branch in phase
         
-        %different side singularity:
-        distFun = @(t) Op.domain.distAnal(colPt.x, t, 0, [], colPt.side, funSide);
-        %distR = Op.domain.distAnal(colPt.x, b, 0,[], colPt.side, funSide);
-        logSingInfo=singularity([], Op.singularity, distFun);
-        
-        [stationaryPoints, orders, branchPoints] = symbolicStationaryPoints(Op.domain.side{colPt.side}.trace(colPt.x), fun, funSide, phase);
-        [dangerTest, minCombo] =  min([abs(a-branchPoints(1)),abs(b-branchPoints(1)),abs(a-branchPoints(2)),abs(b-branchPoints(2))]);
-            singularDifference = 0;
-        if dangerTest < dangerZoneRad
-            singularDifference = singularSplit;
-            if ismember(minCombo,[1 3]) %singularity close to a
-                a0 = a;
-                a = a0 + singularSplit;
-                [t, w0] = NonOsc45(a0, a, kwave, Nquad, phase{1}, logSingInfo, singularSplit);
-            elseif  ismember(minCombo,[2 4]) %singularity close to b
-                b0 = b;
-                b = b0 - singularSplit;
-                [t, w0] = NonOsc45(b, b0, kwave, Nquad, phase{1}, logSingInfo, singularSplit);
+        if isempty(quadDataIn)
+            %different side singularity:
+            distFun = @(t) Op.domain.distAnal(colPt.x, t, 0, [], colPt.side, funSide);
+            %distR = Op.domain.distAnal(colPt.x, b, 0,[], colPt.side, funSide);
+            logSingInfo=singularity([], Op.singularity, distFun);
+
+            [stationaryPoints, orders, branchPoints] = symbolicStationaryPoints(Op.domain.side{colPt.side}.trace(colPt.x), fun, funSide, phase);
+            [dangerTest, minCombo] =  min([abs(a-branchPoints(1)),abs(b-branchPoints(1)),abs(a-branchPoints(2)),abs(b-branchPoints(2))]);
+                singularDifference = 0;
+            if dangerTest < dangerZoneRad
+                singularDifference = singularSplit;
+                if ismember(minCombo,[1 3]) %singularity close to a
+                    a0 = a;
+                    a = a0 + singularSplit;
+                    [t, w0] = NonOsc45(a0, a, kwave, Nquad, phase{1}, logSingInfo, singularSplit);
+                elseif  ismember(minCombo,[2 4]) %singularity close to b
+                    b0 = b;
+                    b = b0 - singularSplit;
+                    [t, w0] = NonOsc45(b, b0, kwave, Nquad, phase{1}, logSingInfo, singularSplit);
+                end
+            else
+                w0 = []; t = [];
             end
+            rectrad = .5*min(logSingInfo.distFun(a),logSingInfo.distFun(b));
+            %bodge this:
+            if isa(fun,'GeometricalOpticsFunction')
+               L =  fun.suppWidth(funSide) - singularDifference;
+            else
+                L = fun.L - singularDifference;
+            end
+    %         if isnan(stationaryPoints)
+    %             %choose the rectangle sufficiently small that phase is analytic
+    %             [ z1, w1 ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, 'settlerad', rectrad,'minOscs',minOscs);
+    %         else %stationary points are already known
+            [ z1, w1 ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, 'stationary points', stationaryPoints, 'order', orders, 'settlerad', rectrad,'minOscs',minOscs, 'width', fun.suppWidth);
+    %         end
+            z = [t; z1];   w = [w0; w1];
+            quadDataOut.z = z; quadDataOut.w = w;
         else
-            w0 = []; t = [];
+            z = quadDataIn.z;
+            w = quadDataIn.w;
         end
-        rectrad = .5*min(logSingInfo.distFun(a),logSingInfo.distFun(b));
-        %bodge this:
-        if isa(fun,'GeometricalOpticsFunction')
-           L =  fun.suppWidth(funSide) - singularDifference;
-        else
-            L = fun.L - singularDifference;
-        end
-        if isnan(stationaryPoints)
-            %choose the rectangle sufficiently small that phase is analytic
-            [ z1, w1 ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, 'settlerad', rectrad,'minOscs',minOscs);
-        else %stationary points are already known
-            [ z1, w1 ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, 'stationary points', stationaryPoints, 'order', orders, 'settlerad', rectrad,'minOscs',minOscs);
-        end
-        z = [t; z1];   w = [w0; w1];
-        I = (w.'*amp(z));
+            I = (w.'*amp(z));
         
         if isnan(I)
             warning('PathFinder returned a NaN, so using standard quadrature insteasd :-(');

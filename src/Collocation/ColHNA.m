@@ -61,11 +61,10 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
         %manually do first entry of row
         [colMatrix(m,1), quadData] = colEvalV2(Operator, Vbasis.el(1), Vbasis.elSide(1), Xstruct(m), Nquad,[], standardQuadFlag);
         for n=2:length(Vbasis.el)
-           if Vbasis.el(n).pm == Vbasis.el(n-1).pm && isequal(Vbasis.el(n).supp,Vbasis.el(n-1).supp)% && 2+2==5
+           if Vbasis.el(n).pm == Vbasis.el(n-1).pm && isequal(Vbasis.el(n).supp,Vbasis.el(n-1).supp) && 2+2==5
                %reuse quadrature from previous iteration of this loop,
                %(phase and domain are the same)
                colMatrix(m,n) = colEvalV2(Operator, Vbasis.el(n), Vbasis.elSide(n), Xstruct(m), Nquad, quadData, standardQuadFlag);
-               1+1;
            else
                %get fresh quadrature data
                [colMatrix(m,n), quadData] = colEvalV2(Operator, Vbasis.el(n), Vbasis.elSide(n), Xstruct(m), Nquad,[], standardQuadFlag);
@@ -76,7 +75,6 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
            Ystruct = Xstruct;
            Ystruct(m).distMeshL = Ystruct(m).distSideL;
            Ystruct(m).distMeshR = Ystruct(m).distSideR;
-         %  SPsiX =  colEval(Operator, GOA, GOA.illumSides, X(m), Xside(m), X(m), X(1+length(X)-m), Nquad,[], standardQuadFlag);
            SPsiX = colEvalV2(Operator, GOA, GOA.illumSides, Ystruct(m), Nquad,[], standardQuadFlag);
            colRHS(m)  = fX - SPsiX;
         else
