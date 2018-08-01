@@ -6,11 +6,11 @@ function [H,Hosc,HnonOsc] = besselhDecomp(NU,K,Z)
         error('Only first kind Hankel so far please');
     end
     
-    threshSmallMed = 1000;
+    threshSmallMed = -20;
     threshMedLarge = inf;
-    smallInds = find(abs(Z)<threshSmallMed);
-    medInds = find((abs(Z)>=threshSmallMed) .* (abs(Z)<threshMedLarge));
-    largeInds = find(abs(Z)>=threshMedLarge);
+    smallInds = find(imag(Z)>threshSmallMed);
+    medInds = find((imag(Z)<=threshSmallMed)) ;%.* (imag(Z)<=threshMedLarge));
+    %largeInds = find(imag(Z)>=threshMedLarge);
     
     if ~isempty(smallInds)
         H(smallInds) = besselh(NU,K,Z(smallInds));
@@ -20,9 +20,9 @@ function [H,Hosc,HnonOsc] = besselhDecomp(NU,K,Z)
     if ~isempty(medInds)
         [H(medInds), Hosc(medInds), HnonOsc(medInds)] = besselhExpn(NU,K,Z(medInds));
     end
-    if ~isempty(largeInds)
-        [H(largeInds), Hosc(largeInds), HnonOsc(largeInds)] = besselhAsmyp(NU, K, Z(largeInds));
-    end
+%     if ~isempty(largeInds)
+%         [H(largeInds), Hosc(largeInds), HnonOsc(largeInds)] = besselhAsmyp(NU, K, Z(largeInds));
+%     end
     
     if ~isequal(size(Z),size(H))
         Zsize = size(Z);
