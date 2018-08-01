@@ -13,30 +13,25 @@ classdef singleLayer
     
     methods
         function self = singleLayer(kwave,domain)
-%             if nargin == 2
-%                 analDerivs=3;
-%             end
             self.domain=domain;
             self.kwave=kwave;
-            %now make the phase and its derivatives
-            %sgn = @(s,t) sign(real(s-t));
-            %differentiating w.r.t 2nd variable 't':
-            %self.phase = @(s,t) self.domain.dist(s,t);
-%             for n=1:analDerivs
-%                 self.phaseAnalExtDerivs{n}=@(s,t) domain.distAnal...
-%             end
         end
         
         function g = phaseAnalDeriv(self,s,t,deriv,sGEt,sSide,tSide)
-%             if nargin == 5
-                g = self.domain.distAnal(s,t,deriv,sGEt,sSide,tSide);
-%             else
-%                 g = self.domain.distAnal(s,t,deriv);
-%             end
+            g = self.domain.distAnal(s,t,deriv,sGEt,sSide,tSide);
+        end
+        
+        function g = phaseAnalDerivCorner( self, sDist, t, t2corner, deriv, sSide, tSide)
+            g = self.domain.distAnalCorner( sDist, t, t2corner, deriv, sSide, tSide);
         end
         
         function K = kernel(self,s,t, sSide, tSide)
             %single layer kernel
+            if nargin == 2
+                %radial kernel, where s = |x-y|
+                K = 1i/4 * besselh(0,1,self.kwave*s);
+                return;
+            end
             if  sSide == tSide
                 K = 1i/4 * besselh(0,1,self.kwave*abs(s-t));
             else
@@ -53,6 +48,13 @@ classdef singleLayer
                 K = 1i/4 * besselh(0,1,self.kwave*self.domain.distAnal(s,t,0))./exp(1i*self.kwave*self.domain.distAnal(s,t,0));
             end
             
+        end
+        
+        function K = kernelNonOscAnalCorner(self, sDist, t, t2corner, sSide, tSide)
+            %non-oscillatory part of single layer kernel, extended for
+            %corner cases
+                K = 1i/4 * besselh(0,1,self.kwave*self.domain.distAnalCorner( sDist, t, t2corner, 0, sSide, tSide))...
+                    ./exp(1i*self.kwave*self.domain.distAnalCorner( sDist, t, t2corner, 0, sSide, tSide));        
         end
         
         function m = phaseMaxStationaryPointOrder(self,sameSide)

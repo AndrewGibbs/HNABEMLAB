@@ -7,7 +7,6 @@ classdef  baseFnHNA < BoundaryFunction
         normaliser
         phaseLinear
         L       %original width of Legendre basis element
-        meshEl
     end
     
     methods 

@@ -1,0 +1,7 @@
+function [outputArg1,outputArg2] = besselhAsmypConj(Hvk,kind, z)
+%uses conjugation to determine values of Hankel function in the region
+%where asymptotic estimates are not v
+outputArg1 = inputArg1;
+outputArg2 = inputArg2;
+end
+

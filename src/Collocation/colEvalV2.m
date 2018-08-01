@@ -47,8 +47,12 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         b = supp(2);
         
         %return an error if we are this close to a singularity/branch point
-        dangerZoneRad = 0.15*(b-a);
+        dangerZoneRad = 1E-3;%max(0.15*(b-a),dangerWidth);
         singularSplit = dangerZoneRad;
+        
+        p_max=12;
+        delta=.15;
+        dangerWidth = 1E-12;
       
         %analytic extension of non-osc components of kernel:
         amp_a = @(y) Op.kernelNonOscAnal(colPt.x, y, true, colPt.side, funSide) .* fun.evalNonOscAnal(y, funSide);
@@ -68,23 +72,6 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         %now the more general amp, for when there is no branch in [a,b]
         amp = @(y) Op.kernelNonOscAnal(colPt.x, y, [], colPt.side, funSide) .* fun.evalNonOscAnal(y, funSide);
         phase = OpFunAddPhase(Op, fun, funSide, colPt.x, colPt.side, [], maxSPorder+1);
-        
-%     if ~isempty(quadDataIn)
-%         if isequal(quadDataIn.split,[0 0])
-%             I = (quadDataIn.w.'*amp(quadDataIn.z));
-%         else
-%             I = 0;
-%             %add components seperately
-%             if quadDataIn.split(1) == 1
-%                 I = I + quadDataIn.w1a.'*amp_a(quadDataIn.z1a);
-%             end
-%             if quadDataIn.split(2) == 1
-%                 I = I + quadDataIn.w1b.'*amp_b(quadDataIn.z1b);
-%             end
-%         end
-%         quadDataOut = quadDataIn;
-%         return;
-%     end
         
     if funSide == colPt.side
         
@@ -195,6 +182,162 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         end
     else %no branch in phase
         
+        quadDataOut = [];
+        [stationaryPoints, orders, branchPoints] = symbolicStationaryPoints(Op.domain.side{colPt.side}.trace(colPt.x), fun, funSide, phase);
+        
+        SPin = stationaryPoints;
+        SPOin = orders;
+        
+        %determine if endpoint is close to singularity on neighbouring
+        %side:
+        
+        if min(abs(a-branchPoints(1)),abs(a-branchPoints(2))) < dangerZoneRad
+            singClose2a = true;
+        else
+            singClose2a = false;
+        end
+        
+        if min(abs(b-branchPoints(1)),abs(b-branchPoints(2))) < dangerZoneRad
+            singClose2b = true;
+        else
+            singClose2b = false;
+        end
+        
+        if singClose2a && singClose2b
+            %error('singularity is in a weird place');
+            if min(abs(a-branchPoints(1)),abs(a-branchPoints(2))) < min(abs(b-branchPoints(1)),abs(b-branchPoints(2)))
+                singClose2b = false;
+            else
+                singClose2a = false;
+            end
+        end
+        
+        if min(abs(a-branchPoints(1)),abs(a-branchPoints(2))) < min(abs(b-branchPoints(1)),abs(b-branchPoints(2))) 
+            singClose2a = true;
+        else
+            singClose2b = true;
+        end
+        
+        if ~singClose2a && ~ singClose2b %no singularity issues
+            
+            distFun = @(t) Op.domain.distAnal(colPt.x, t, 0, [], colPt.side, funSide);
+            %distR = Op.domain.distAnal(colPt.x, b, 0,[], colPt.side, funSide);
+            logSingInfo=singularity([], Op.singularity, distFun);
+            rectrad = .5*min(logSingInfo.distFun(a),logSingInfo.distFun(b));
+             [ z, w ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, ...
+                                    'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
+                                        rectrad,'minOscs',minOscs, 'width', fun.suppWidth);
+             I = (w.'*amp(z));
+             return;
+        end
+        
+        %if fun.suppWidth > 
+        %set corner as zero
+        
+        if length(fun.domain.L )>1
+            L = fun.domain.L(funSide);
+        else
+            L = fun.domain.L;
+        end
+            
+        if singClose2a %use flip_b
+            %amp_flip = amp_b_flip;
+            
+            if isa(fun,'GeometricalOpticsFunction')
+                a_shift = 0;
+                b_shift = fun.suppWidth(funSide);
+            else
+                a_shift = fun.meshEl.distL; %want dista
+                b_shift = fun.meshEl.distL + fun.suppWidth;
+            end
+            suppDistCorner = a_shift;
+            
+            colDistCorner = colPt.distMeshR;
+            
+            amp_corner = @(y) Op.kernelNonOscAnalCorner( colPt.distMeshR, a_shift, y, colPt.side, funSide) .* fun.evalNonOscAnal( y, funSide); %changed from (a_shift +y, funSide);
+            phaseCorner = OpFunAddPhaseCorner(Op, fun, funSide, colPt.distMeshR, a_shift, colPt.side, maxSPorder+1 ,L, false);
+            
+            
+        elseif singClose2b
+            %amp_flip = amp_a_flip;
+            
+            if isa(fun,'GeometricalOpticsFunction')
+                a_shift = 0;
+                b_shift = fun.suppWidth(funSide);
+            else
+                a_shift = fun.meshEl.distR;
+                b_shift = fun.meshEl.distR + fun.suppWidth;
+            end
+            suppDistCorner = a_shift;
+            
+            colDistCorner = colPt.distMeshL;
+            
+            amp_corner = @(y) Op.kernelNonOscAnalCorner( colPt.distMeshL, a_shift, y, colPt.side, funSide).* fun.evalNonOscAnal( L - y, funSide);  %changed from (a_shift -y, funSide);
+            phaseCorner = OpFunAddPhaseCorner(Op, fun, funSide, colPt.distMeshL, a_shift, colPt.side, maxSPorder+1 , L, true);
+        end
+        
+            %determine the location of the singularities after this change
+            %of variables
+            internalAngle = Op.domain.internalAngle(colPt.side,funSide);
+            sing_flip = mean(roots([1,2*suppDistCorner + colDistCorner*cos(internalAngle),suppDistCorner^2 + colDistCorner^2 + suppDistCorner*colDistCorner*cos(internalAngle)]));
+            R = @(yr) sqrt(colDistCorner^2 + (suppDistCorner + yr).^2 + cos(internalAngle)*colPt.distSideL*(suppDistCorner + yr));
+            logSingInfo_flip = singularity(sing_flip, Op.singularity, R);
+            rectRad = .5*min(logSingInfo_flip.distFun(a_shift), logSingInfo_flip.distFun(b_shift));
+            %determine location of new stationary points:
+            SP_flip1 = roots([1,2*suppDistCorner + colDistCorner*cos(internalAngle),suppDistCorner^2 + colDistCorner^2 + suppDistCorner*colDistCorner*cos(internalAngle)-1]);
+            %now sort these to make sure they're disjoint
+            [SP_flip2, orders2] = sortStationaryPoints(SP_flip1,1E-6);
+            %delete the dodgy wrong ones:
+            [SP_flip3, orders3] = deleteFalseStationaryPoints(phaseCorner{2}, SP_flip2, orders2);
+            %now remove stationary points that are far away from
+            %integration region:
+            [SP_flip4, orders4] = pruneStationaryPoints(a_shift, b_shift, rectRad, SP_flip3, orders3);
+            [ z, w ] = PathFinder( a_shift, b_shift, kwave, Nquad, phaseCorner,'fSingularities', logSingInfo_flip, 'stationary points', SP_flip4, 'order', orders4, 'settlerad', rectRad,'minOscs',minOscs, 'width', fun.suppWidth);
+            I = w.'*amp_corner(z);
+            
+        return;
+        % - - - -  - -- - - - - - -- - new old stuff - - - - - - - - - - %
+        internalAngle = Op.domain.internalAngle(colPt.side,funSide);
+        numSides = Op.domain.numSides;
+        gradeUp = false;
+        if funSide == numSides && colPt.side ==1
+            colDistCorner = colPt.distSideL;
+            suppDistCorner = fun.meshEl.distR;
+            gradeUp = true;
+        elseif funSide == 1 && colPt.side ==numSides
+            colDistCorner = colPt.distSideR;
+            suppDistCorner = fun.meshEl.distL;
+        elseif funSide > numSides
+            colDistCorner = colPt.distSideR;
+            suppDistCorner = fun.meshEl.distL;
+        else
+            colDistCorner = colPt.distSideL;
+            suppDistCorner = fun.meshEl.distR;
+            gradeUp = true;
+        end
+
+        R = @(yr) sqrt(colDistCorner^2 + (suppDistCorner + yr).^2 + cos(internalAngle)*colPt.distSideL*(suppDistCorner + yr));
+        sing_flip = mean(roots([1,2*suppDistCorner + colDistCorner*cos(internalAngle),suppDistCorner^2 + colDistCorner^2 + suppDistCorner*colDistCorner*cos(internalAngle)]));
+        logSingInfo_flip=singularity(sing_flip, Op.singularity, R);
+%         logSingInfo_flip = logSingInfo;
+%         logSingInfo_flip.position = 0;
+%         logSingInfo_flip.distFun = @(r) R(r);
+
+        rectrad = .5*min(logSingInfo_flip.distFun(a_shift), logSingInfo_flip.distFun(b_shift));
+        [ z_, w_ ] = PathFinder( a_shift, b_shift, kwave, Nquad, phase_flip,'settlerad',rectrad, ...
+                'fSingularities', logSingInfo_flip, 'stationary points', SPin, 'order', SPOin, 'minOscs', minOscs, 'width', fun.suppWidth);
+            
+         I = w_.'*amp_flip(z_);
+        
+        %now reformulate from zero
+        if length(fun.suppWidth)>1
+            side_n = funSide;
+        else
+            side_n = 1;
+        end
+        return;
+        
+        % -- -- - - old stuff below -- - - - -- -- - -- -%
         if isempty(quadDataIn)
             %different side singularity:
             distFun = @(t) Op.domain.distAnal(colPt.x, t, 0, [], colPt.side, funSide);
@@ -203,8 +346,51 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
 
             [stationaryPoints, orders, branchPoints] = symbolicStationaryPoints(Op.domain.side{colPt.side}.trace(colPt.x), fun, funSide, phase);
             [dangerTest, minCombo] =  min([abs(a-branchPoints(1)),abs(b-branchPoints(1)),abs(a-branchPoints(2)),abs(b-branchPoints(2))]);
-                singularDifference = 0;
+            singularDifference = 0;
+            if length(fun.suppWidth)>1
+                side_n = funSide;
+            else
+                side_n = 1;
+            end
+            
             if dangerTest < dangerZoneRad
+                
+                if fun.suppWidth(side_n) < dangerWidth
+                    internalAngle = Op.domain.internalAngle(colPt.side,funSide);
+                    numSides = Op.domain.numSides;
+                    gradeUp = false;
+                    if funSide == numSides && colPt.side ==1
+                        colDistCorner = colPt.distSideL;
+                        suppDistCorner = fun.meshEl.distR;
+                        gradeUp = true;
+                    elseif funSide == 1 && colPt.side ==numSides
+                        colDistCorner = colPt.distSideR;
+                        suppDistCorner = fun.meshEl.distL;
+                    elseif funSide > numSides
+                        colDistCorner = colPt.distSideR;
+                        suppDistCorner = fun.meshEl.distL;
+                    else
+                        colDistCorner = colPt.distSideL;
+                        suppDistCorner = fun.meshEl.distR;
+                        gradeUp = true;
+                    end
+
+                    R = @(yr) sqrt(colDistCorner^2 + (suppDistCorner + yr).^2 + cos(internalAngle)*colPt.distSideL*(suppDistCorner + yr));
+
+                    [ yr_, w_ ] = GradedQuad( Nquad, p_max, delta );
+                    if gradeUp == true
+                        yr_ = flipud(yr_);
+                        w_ = flipud(w_);
+                    end
+                    yr = yr_*fun.suppWidth;
+                    w = w_*fun.suppWidth;
+                    I = w.'*(Op.kernel(R(yr)).*fun.evalNonOscAnal(yr+fun.meshEl.distL));
+                    quadDataOut = [];
+                    return;
+                    %possible source of rounding error. should instead use
+                    %Legendre on [-1,1] with different inputs, or [0,1], something.
+                end
+                
                 singularDifference = singularSplit;
                 if ismember(minCombo,[1 3]) %singularity close to a
                     a0 = a;
