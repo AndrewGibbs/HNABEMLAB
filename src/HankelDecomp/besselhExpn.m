@@ -1,13 +1,9 @@
 function [full,expBit,sum] = besselhExpn(v, kind, z)
 %computes asymptotic expansion of Hankel function of first kind order v
-% 
-%     if nargin == 2
-%         kind = 1;
-%     end
     
     %doesn't work so well for negative phase, so use DLMF analytic
     %continuation identity:
-    if min(min(angle(z)))<0
+    if min(min(angle(z)))<0 && kind == 1
         %split into negtive and positive bits
         [full,expBit,sum] = besselhAsmypConj(@(K,w) besselhExpn(v, K, w), kind, z);
         return;

@@ -6,8 +6,8 @@ function [H,Hosc,HnonOsc] = besselhDecomp(NU,K,Z)
         error('Only first kind Hankel so far please');
     end
     
-    threshSmallMed = 500;
-    threshMedLarge = 1000;
+    threshSmallMed = 1000;
+    threshMedLarge = inf;
     smallInds = find(abs(Z)<threshSmallMed);
     medInds = find((abs(Z)>=threshSmallMed) .* (abs(Z)<threshMedLarge));
     largeInds = find(abs(Z)>=threshMedLarge);
@@ -24,4 +24,10 @@ function [H,Hosc,HnonOsc] = besselhDecomp(NU,K,Z)
         [H(largeInds), Hosc(largeInds), HnonOsc(largeInds)] = besselhAsmyp(NU, K, Z(largeInds));
     end
     
+    if ~isequal(size(Z),size(H))
+        Zsize = size(Z);
+        H = reshape(H,Zsize);
+        Hosc = reshape(Hosc,Zsize);
+        HnonOsc = reshape(HnonOsc,Zsize);
+    end
 end
