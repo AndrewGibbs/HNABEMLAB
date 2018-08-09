@@ -10,7 +10,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     
     % -----------------------
     %defaults:
-    Nquad = 20;
+    Nquad = 40;
     scaler=1;
     colType='C';
     overSamplesPerMeshEl=1;

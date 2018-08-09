@@ -53,8 +53,10 @@ classdef singleLayer
         function K = kernelNonOscAnalCorner(self, sDist, t, t2corner, sSide, tSide)
             %non-oscillatory part of single layer kernel, extended for
             %corner cases
-                K = 1i/4 * besselh(0,1,self.kwave*self.domain.distAnalCorner( sDist, t, t2corner, 0, sSide, tSide))...
-                    ./exp(1i*self.kwave*self.domain.distAnalCorner( sDist, t, t2corner, 0, sSide, tSide));        
+%                 K = 1i/4 * besselh(0,1,self.kwave*self.domain.distAnalCorner( sDist, t, t2corner, 0, sSide, tSide))...
+%                     ./exp(1i*self.kwave*self.domain.distAnalCorner( sDist, t, t2corner, 0, sSide, tSide));       
+                [~,~,K_] = besselhDecomp(0,1,self.kwave*self.domain.distAnalCorner( sDist, t, t2corner, 0, sSide, tSide));
+                K = K_*1i/4;
         end
         
         function m = phaseMaxStationaryPointOrder(self,sameSide)
