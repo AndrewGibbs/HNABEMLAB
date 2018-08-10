@@ -47,7 +47,7 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         b = supp(2);
         
         %return an error if we are this close to a singularity/branch point
-        dangerZoneRad = 0.15;%max(0.15*(b-a),dangerWidth);
+        dangerZoneRad = 0.25;%max(0.15*(b-a),dangerWidth);
         singularSplit = dangerZoneRad;
         
         p_max=12;
