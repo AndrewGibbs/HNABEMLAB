@@ -321,11 +321,11 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 interval{1} = intersect( [0,singularBall(1)], [0 width] );
                 interval{2} = intersect( singularBall, [0 width] );
                 interval{3} = intersect( [singularBall(2) b_shift], [0 width] );
-                minOscsIvl = [minOscs inf minOscs];
+                minOscsIvl = []
                 for ivl=1:3
                     if length(interval{ivl})==2 
                         if interval{ivl}(2)>interval{ivl}(1) %check for +ve width
-                            [ z_{ivl}, w_{ivl} ] = PathFinder( interval{ivl}(1), interval{ivl}(2), kwave, Nquad, phaseCorner,'fSingularities', logSingInfo_flip, 'stationary points', SP_flip4, 'order', orders4, 'settlerad', rectRad, 'minOscs', minOscsIvl(ivl));
+                            [ z_{ivl}, w_{ivl} ] = PathFinder( interval{ivl}(1), interval{ivl}(2), kwave, Nquad, phaseCorner,'fSingularities', logSingInfo_flip, 'stationary points', SP_flip4, 'order', orders4, 'settlerad', rectRad,'minOscs',minOscsIvl);
                         else
                             z_{ivl} = [];
                             w_{ivl} = [];
