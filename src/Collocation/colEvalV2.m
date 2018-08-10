@@ -260,8 +260,8 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             
             colDistCorner = colPt.distSideR;
             
-            amp_corner = @(y) Op.kernelNonOscAnalCorner( colPt.distSideR, y, a_shift, colPt.side, funSide) .* fun.evalNonOscAnal( y, funSide); %changed from (a_shift +y, funSide);
-            phaseCorner = OpFunAddPhaseCorner(Op, fun, funSide, colPt.distSideR, a_shift, colPt.side, maxSPorder+1 ,L, false);
+            amp_corner = @(y) Op.kernelNonOscAnalCorner( colPt.distSideR, y, a_shift, colPt.side, funSide) .* fun.evalNonOscAnal( a + y, funSide); %changed from (a_shift +y, funSide);
+            phaseCorner = OpFunAddPhaseCorner(Op, fun, funSide, colPt.distSideR, a_shift, colPt.side, maxSPorder+1 , a, false);
             
             
         elseif singClose2b
@@ -280,8 +280,8 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             
             colDistCorner = colPt.distSideL;
             
-            amp_corner = @(y) Op.kernelNonOscAnalCorner( colPt.distSideL, y, a_shift, colPt.side, funSide).* fun.evalNonOscAnal( L - y, funSide);  %changed from (a_shift -y, funSide);
-            phaseCorner = OpFunAddPhaseCorner(Op, fun, funSide, colPt.distSideL, a_shift, colPt.side, maxSPorder+1 , L, true);
+            amp_corner = @(y) Op.kernelNonOscAnalCorner( colPt.distSideL, y, a_shift, colPt.side, funSide).* fun.evalNonOscAnal( b - y, funSide);  %changed from (a_shift -y, funSide);
+            phaseCorner = OpFunAddPhaseCorner(Op, fun, funSide, colPt.distSideL, a_shift, colPt.side, maxSPorder+1 , b, true);
         end
         
             %determine the location of the singularities after this change
@@ -299,12 +299,12 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             wavelength = 2*pi/kwave;
             minSingDist = 0.15;%wavelength;
             ballRad = 0.1/wavelength; %this was largely obtained just by trial and error...
-            if abs(imag(sing_flip(1)))<=minSingDist && a_shift <= real_sing_flip && real_sing_flip <= b_shift
+            if abs(imag(sing_flip(1)))<=minSingDist && 0 <= real_sing_flip && real_sing_flip <= width
                 %split integrals into three parts
                 singularBall = [real_sing_flip - ballRad, real_sing_flip + ballRad];
-                interval{1} = intersect( [0,singularBall(1)], [a_shift b_shift] );
-                interval{2} = intersect( singularBall, [a_shift b_shift] );
-                interval{3} = intersect( [singularBall(2) b_shift], [a_shift, b_shift] );
+                interval{1} = intersect( [0,singularBall(1)], [0 width] );
+                interval{2} = intersect( singularBall, [0 width] );
+                interval{3} = intersect( [singularBall(2) b_shift], [0 width] );
                 for ivl=1:3
                     if length(interval{ivl})==2 
                         if interval{ivl}(2)>interval{ivl}(1) %check for +ve width
@@ -324,7 +324,7 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 %now remove stationary points that are far away from
                 %integration region:
                 %[SP_flip4, orders4] = pruneStationaryPoints(a_shift, b_shift, rectRad, SP_flip3, orders3);
-                [ z, w ] = PathFinder( a_shift, b_shift, kwave, Nquad, phaseCorner,'fSingularities', logSingInfo_flip, 'stationary points', SP_flip4, 'order', orders4, 'settlerad', rectRad,'minOscs',minOscs, 'width', width);
+                [ z, w ] = PathFinder( 0, width, kwave, Nquad, phaseCorner,'fSingularities', logSingInfo_flip, 'stationary points', SP_flip4, 'order', orders4, 'settlerad', rectRad,'minOscs',minOscs, 'width', width);
             end 
             I = w.'*amp_corner(z);
         return;
