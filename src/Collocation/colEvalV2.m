@@ -212,11 +212,11 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             end
         end
         
-%         if min(abs(a-branchPoints(1)),abs(a-branchPoints(2))) < min(abs(b-branchPoints(1)),abs(b-branchPoints(2))) 
-%             singClose2a = true;
-%         else
-%             singClose2b = true;
-%         end
+        if min(abs(a-branchPoints(1)),abs(a-branchPoints(2))) < min(abs(b-branchPoints(1)),abs(b-branchPoints(2))) 
+            singClose2a = true;
+        else
+            singClose2b = true;
+        end
         
         if ~singClose2a && ~ singClose2b %no singularity issues
             if isa(fun,'GeometricalOpticsFunction')
@@ -258,10 +258,10 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             end
             suppDistCorner = a_shift;
             
-            colDistCorner = colPt.distMeshR;
+            colDistCorner = colPt.distSideR;
             
-            amp_corner = @(y) Op.kernelNonOscAnalCorner( colPt.distMeshR, a_shift, y, colPt.side, funSide) .* fun.evalNonOscAnal( y, funSide); %changed from (a_shift +y, funSide);
-            phaseCorner = OpFunAddPhaseCorner(Op, fun, funSide, colPt.distMeshR, a_shift, colPt.side, maxSPorder+1 ,L, false);
+            amp_corner = @(y) Op.kernelNonOscAnalCorner( colPt.distSideR, y, a_shift, colPt.side, funSide) .* fun.evalNonOscAnal( y, funSide); %changed from (a_shift +y, funSide);
+            phaseCorner = OpFunAddPhaseCorner(Op, fun, funSide, colPt.distSideR, a_shift, colPt.side, maxSPorder+1 ,L, false);
             
             
         elseif singClose2b
@@ -278,10 +278,10 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             end
             suppDistCorner = a_shift;
             
-            colDistCorner = colPt.distMeshL;
+            colDistCorner = colPt.distSideL;
             
-            amp_corner = @(y) Op.kernelNonOscAnalCorner( colPt.distMeshL, a_shift, y, colPt.side, funSide).* fun.evalNonOscAnal( L - y, funSide);  %changed from (a_shift -y, funSide);
-            phaseCorner = OpFunAddPhaseCorner(Op, fun, funSide, colPt.distMeshL, a_shift, colPt.side, maxSPorder+1 , L, true);
+            amp_corner = @(y) Op.kernelNonOscAnalCorner( colPt.distSideL, y, a_shift, colPt.side, funSide).* fun.evalNonOscAnal( L - y, funSide);  %changed from (a_shift -y, funSide);
+            phaseCorner = OpFunAddPhaseCorner(Op, fun, funSide, colPt.distSideL, a_shift, colPt.side, maxSPorder+1 , L, true);
         end
         
             %determine the location of the singularities after this change
@@ -298,7 +298,7 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             
             wavelength = 2*pi/kwave;
             minSingDist = 0.15;%wavelength;
-            ballRad = 0.01/kwave;
+            ballRad = 0.1/wavelength; %this was largely obtained just by trial and error...
             if abs(imag(sing_flip(1)))<=minSingDist && a_shift <= real_sing_flip && real_sing_flip <= b_shift
                 %split integrals into three parts
                 singularBall = [real_sing_flip - ballRad, real_sing_flip + ballRad];
