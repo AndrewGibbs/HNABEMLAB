@@ -225,21 +225,6 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             end
         end
         
-%         if grad2a && grad2b
-%             %error('singularity is in a weird place');
-%             if min(abs(a-branchPoints(1)),abs(a-branchPoints(2))) < min(abs(b-branchPoints(1)),abs(b-branchPoints(2)))
-%                 grad2b = false;
-%             else
-%                 grad2a = false;
-%             end
-%         end
-        
-%         if min(abs(a-branchPoints(1)),abs(a-branchPoints(2))) < min(abs(b-branchPoints(1)),abs(b-branchPoints(2))) 
-%             singClose2a = true;
-%         else
-%             singClose2b = true;
-%         end
-        
         if ~grad2a && ~ grad2b %no singularity issues
             if isa(fun,'GeometricalOpticsFunction')
                 width = fun.suppWidth(funSide);
@@ -257,12 +242,7 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
              return;
         end
         
-        %if fun.suppWidth > 
-        %set corner as zero
-        
-        if grad2a %use flip_b
-            %amp_flip = amp_b_flip;
-            
+        if grad2a
             if isa(fun,'GeometricalOpticsFunction')
                 a_shift = 0;
                 b_shift = fun.suppWidth(funSide);
@@ -313,9 +293,9 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             rectRad = .5*min(logSingInfo_flip.distFun(a_shift), logSingInfo_flip.distFun(b_shift));
             
             wavelength = 2*pi/kwave;
-            minSingDist = 0.15;%wavelength;
-            ballRad = 0.1/wavelength; %this was largely obtained just by trial and error...
-            if abs(imag(sing_flip(1)))<=minSingDist && 0 <= real_sing_flip && real_sing_flip <= width
+            minSingDist = 0.25;
+            ballRad = 0.25*wavelength; %this was largely obtained just by trial and error...
+            if abs(imag(sing_flip(1)))<=minSingDist && -minSingDist <= real_sing_flip && real_sing_flip <= width + minSingDist
                 %split integrals into three parts
                 singularBall = [real_sing_flip - ballRad, real_sing_flip + ballRad];
                 interval{1} = intersect( [0,singularBall(1)], [0 width] );

@@ -47,7 +47,7 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         b = supp(2);
         
         %return an error if we are this close to a singularity/branch point
-        dangerZoneRad = 0.15;%max(0.15*(b-a),dangerWidth);
+        dangerZoneRad = 0.25;%max(0.15*(b-a),dangerWidth);
         singularSplit = dangerZoneRad;
         
         p_max=12;
@@ -225,21 +225,6 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             end
         end
         
-%         if grad2a && grad2b
-%             %error('singularity is in a weird place');
-%             if min(abs(a-branchPoints(1)),abs(a-branchPoints(2))) < min(abs(b-branchPoints(1)),abs(b-branchPoints(2)))
-%                 grad2b = false;
-%             else
-%                 grad2a = false;
-%             end
-%         end
-        
-%         if min(abs(a-branchPoints(1)),abs(a-branchPoints(2))) < min(abs(b-branchPoints(1)),abs(b-branchPoints(2))) 
-%             singClose2a = true;
-%         else
-%             singClose2b = true;
-%         end
-        
         if ~grad2a && ~ grad2b %no singularity issues
             if isa(fun,'GeometricalOpticsFunction')
                 width = fun.suppWidth(funSide);
@@ -257,12 +242,7 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
              return;
         end
         
-        %if fun.suppWidth > 
-        %set corner as zero
-        
-        if grad2a %use flip_b
-            %amp_flip = amp_b_flip;
-            
+        if grad2a
             if isa(fun,'GeometricalOpticsFunction')
                 a_shift = 0;
                 b_shift = fun.suppWidth(funSide);
@@ -313,19 +293,19 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             rectRad = .5*min(logSingInfo_flip.distFun(a_shift), logSingInfo_flip.distFun(b_shift));
             
             wavelength = 2*pi/kwave;
-            minSingDist = 0.15;%wavelength;
-            ballRad = 0.1/wavelength; %this was largely obtained just by trial and error...
-            if abs(imag(sing_flip(1)))<=minSingDist && 0 <= real_sing_flip && real_sing_flip <= width
+            minSingDist = 0.25;
+            ballRad = 0.25*wavelength; %this was largely obtained just by trial and error...
+            if abs(imag(sing_flip(1)))<=minSingDist && -minSingDist <= real_sing_flip && real_sing_flip <= width
                 %split integrals into three parts
                 singularBall = [real_sing_flip - ballRad, real_sing_flip + ballRad];
                 interval{1} = intersect( [0,singularBall(1)], [0 width] );
                 interval{2} = intersect( singularBall, [0 width] );
                 interval{3} = intersect( [singularBall(2) b_shift], [0 width] );
-                minOscsIvl = []
+                minOscsIvl = [minOscs inf minOscs];
                 for ivl=1:3
                     if length(interval{ivl})==2 
                         if interval{ivl}(2)>interval{ivl}(1) %check for +ve width
-                            [ z_{ivl}, w_{ivl} ] = PathFinder( interval{ivl}(1), interval{ivl}(2), kwave, Nquad, phaseCorner,'fSingularities', logSingInfo_flip, 'stationary points', SP_flip4, 'order', orders4, 'settlerad', rectRad,'minOscs',minOscsIvl);
+                            [ z_{ivl}, w_{ivl} ] = PathFinder( interval{ivl}(1), interval{ivl}(2), kwave, Nquad, phaseCorner,'fSingularities', logSingInfo_flip, 'stationary points', SP_flip4, 'order', orders4, 'settlerad', rectRad, 'minOscs', minOscsIvl(ivl));
                         else
                             z_{ivl} = [];
                             w_{ivl} = [];
