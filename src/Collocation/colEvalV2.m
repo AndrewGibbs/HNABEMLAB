@@ -47,8 +47,8 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         b = supp(2);
         
         %return an error if we are this close to a singularity/branch point
-        dangerZoneRad = 0.25;%max(0.15*(b-a),dangerWidth);
-        singularSplit = dangerZoneRad;
+        dangerZoneRad = 0.25/kwave;%max(0.15*(b-a),dangerWidth);
+        %singularSplit = dangerZoneRad;
         
         p_max=12;
         delta=.15;
@@ -231,15 +231,21 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             else
                 width = fun.suppWidth;
             end
-            distFun = @(t) Op.domain.distAnal(colPt.x, t, 0, [], colPt.side, funSide);
-            %distR = Op.domain.distAnal(colPt.x, b, 0,[], colPt.side, funSide);
-            logSingInfo=singularity([], Op.singularity, distFun);
-            rectrad = .5*min(logSingInfo.distFun(a),logSingInfo.distFun(b));
-             [ z, w ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, ...
-                                    'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
-                                        rectrad,'minOscs',minOscs, 'width', width);
-             I = (w.'*amp(z));
-             return;
+            if width<minOscs*2*pi/kwave
+                distFun = @(t) Op.domain.distAnal(colPt.x, t, 0, [], colPt.side, funSide);
+                %distR = Op.domain.distAnal(colPt.x, b, 0,[], colPt.side, funSide);
+                logSingInfo=singularity([], Op.singularity, distFun);
+                rectrad = .5*min(logSingInfo.distFun(a),logSingInfo.distFun(b));
+                [ z, w ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, ...
+                                        'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
+                                            rectrad,'minOscs',inf, 'width', width);
+                                        %have changed minOscs to inf, to
+                                        %always use standard quad here ^^
+                I = (w.'*amp(z));
+            else
+                I = LevinQuick(a,b,amp,phase,kwave);
+            end
+            return;
         end
         
         if grad2a
@@ -292,10 +298,10 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             logSingInfo_flip = singularity(real_sing_flip, Op.singularity, R);
             rectRad = .5*min(logSingInfo_flip.distFun(a_shift), logSingInfo_flip.distFun(b_shift));
             
-            wavelength = 2*pi/kwave;
-            minSingDist = 0.25;
-            ballRad = 0.25*wavelength; %this was largely obtained just by trial and error...
-            if abs(imag(sing_flip(1)))<=minSingDist && -minSingDist <= real_sing_flip && real_sing_flip <= width + minSingDist
+            %wavelength = 2*pi/kwave;
+            minSingDist = dangerZoneRad;%0.1;
+            ballRad = minSingDist;%0.25*wavelength; %this was largely obtained just by trial and error...
+            if true %abs(imag(sing_flip(1)))<=minSingDist && -minSingDist <= real_sing_flip && real_sing_flip <= width + minSingDist
                 %split integrals into three parts
                 singularBall = [real_sing_flip - ballRad, real_sing_flip + ballRad];
                 interval{1} = intersect( [0,singularBall(1)], [0 width] );
