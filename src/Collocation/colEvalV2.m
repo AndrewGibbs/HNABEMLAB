@@ -47,7 +47,7 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         b = supp(2);
         
         %return an error if we are this close to a singularity/branch point
-        dangerZoneRad = 0.25/kwave;%max(0.15*(b-a),dangerWidth);
+        dangerZoneRad = .35;%0.25/kwave;%max(0.15*(b-a),dangerWidth);
         %singularSplit = dangerZoneRad;
         
         p_max=12;
@@ -231,11 +231,11 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             else
                 width = fun.suppWidth;
             end
+            distFun = @(t) Op.domain.distAnal(colPt.x, t, 0, [], colPt.side, funSide);
+            %distR = Op.domain.distAnal(colPt.x, b, 0,[], colPt.side, funSide);
+            logSingInfo=singularity([], Op.singularity, distFun);
+            rectrad = .5*min(logSingInfo.distFun(a),logSingInfo.distFun(b));
             if width<minOscs*2*pi/kwave
-                distFun = @(t) Op.domain.distAnal(colPt.x, t, 0, [], colPt.side, funSide);
-                %distR = Op.domain.distAnal(colPt.x, b, 0,[], colPt.side, funSide);
-                logSingInfo=singularity([], Op.singularity, distFun);
-                rectrad = .5*min(logSingInfo.distFun(a),logSingInfo.distFun(b));
                 [ z, w ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, ...
                                         'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
                                             rectrad,'minOscs',inf, 'width', width);
@@ -243,7 +243,20 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                                         %always use standard quad here ^^
                 I = (w.'*amp(z));
             else
-                I = LevinQuick(a,b,amp,phase,kwave);
+                %I = LevinQuick(a,b,amp,phase,kwave); 
+                %ditched the old Levin stuff...
+                if isempty(stationaryPoints)
+                    I = PathFinderChebWrap(a,b,kwave,Nquad,amp,phase,logSingInfo,stationaryPoints);
+                elseif a <= stationaryPoints && stationaryPoints <= b
+                     [ z, w ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, ...
+                                        'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
+                                            rectrad,'minOscs',minOscs, 'width', width);
+                                        %have changed minOscs to inf, to
+                                        %always use standard quad here ^^
+                    I = (w.'*amp(z));
+                else
+                    I = PathFinderChebWrap(a,b,kwave,Nquad,amp,phase,logSingInfo,stationaryPoints);
+                end
             end
             return;
         end
@@ -301,7 +314,7 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             %wavelength = 2*pi/kwave;
             minSingDist = dangerZoneRad;%0.1;
             ballRad = minSingDist;%0.25*wavelength; %this was largely obtained just by trial and error...
-            if true %abs(imag(sing_flip(1)))<=minSingDist && -minSingDist <= real_sing_flip && real_sing_flip <= width + minSingDist
+            if false %abs(imag(sing_flip(1)))<=minSingDist && -minSingDist <= real_sing_flip && real_sing_flip <= width + minSingDist
                 %split integrals into three parts
                 singularBall = [real_sing_flip - ballRad, real_sing_flip + ballRad];
                 interval{1} = intersect( [0,singularBall(1)], [0 width] );
@@ -335,8 +348,45 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 %now remove stationary points that are far away from
                 %integration region:
                 %[SP_flip4, orders4] = pruneStationaryPoints(a_shift, b_shift, rectRad, SP_flip3, orders3);
-                [ z, w ] = PathFinder( 0, width, kwave, Nquad, phaseCorner,'fSingularities', logSingInfo_flip, 'stationary points', SP_flip4, 'order', orders4, 'settlerad', rectRad,'minOscs',minOscs, 'width', width);
-                I = w.'*amp_corner(z);
+                %[ z, w ] = PathFinder( 0, width, kwave, Nquad, phaseCorner,'fSingularities', logSingInfo_flip, 'stationary points', SP_flip4, 'order', orders4, 'settlerad', rectRad,'minOscs',minOscs, 'width', width);
+                %I = w.'*amp_corner(z);
+                
+                Xoscs = findNonOscBit(phaseCorner{1},0,width,kwave,minOscs);
+                %logSingInfo_flip_1.position = 0;
+                logSingInfo_flip_1.blowUpType='nearLog';
+                logSingInfo_flip_1.distFun = @(r) abs(r-sing_flip(1));
+                
+                [x_, w_] = NonOsc45(0,Xoscs,kwave,Nquad,phaseCorner{1},logSingInfo_flip_1,Xoscs, minOscs);
+                I_1 = (w_.'*amp_corner(x_));
+                if Xoscs>=width
+                    I_2 = 0;
+                elseif ~isempty(SP_flip4)
+                    if SP_flip4<Xoscs
+                        I_2 = PathFinderChebWrapGrad(logSingInfo_flip, Xoscs, width, kwave, Nquad, amp_corner, phaseCorner);
+                    else
+                        if abs(sing_flip(1) - Xoscs) < dangerWidth
+                            error('Singularity dangerously close and not being acknowledged');
+                        end
+                        [ z, w ] = PathFinder( Xoscs, width, kwave, Nquad, phaseCorner,...
+                                        'stationary points', SP_flip4, 'order', orders4, 'settlerad', ...
+                                            rectRad, 'minOscs', minOscs, 'width', width);
+                        I_2 = (w.'*amp_corner(z));
+                    end
+%                 if ~isempty(SP_flip4)
+%                     if SP_flip4 > minOscs*2*pi/kwave && SP_flip4 <= b
+%                        % warning('ChebWrap cant handle stationary points for from a');
+%                         [ z, w ] = PathFinder( 0, width, kwave, Nquad, phaseCorner,...
+%                                         'stationary points', SP_flip4, 'order', orders4, 'settlerad', ...
+%                                             rectRad, 'minOscs', minOscs, 'width', width);
+%                         I = (w.'*amp_corner(z));
+%                     
+%                     else
+%                         I = PathFinderChebWrapGrad(logSingInfo_flip,0,width,kwave,Nquad,amp_corner,phaseCorner);
+%                     end
+                else
+                    I_2 = PathFinderChebWrapGrad(logSingInfo_flip,Xoscs,width,kwave,Nquad,amp_corner,phaseCorner);
+                end
+                I = I_1 + I_2;
             end 
             
      
