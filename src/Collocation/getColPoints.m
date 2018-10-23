@@ -1,4 +1,4 @@
-function [ X, t, onSide] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type, side )
+function [ X, t, onSide, W] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type, side )
 %returns collocation points that have been evenly spread across basis
 %elements
  %ChebyshevRoots( 3, 'Tn', [1 2] )
@@ -58,35 +58,40 @@ function [ X, t, onSide] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, t
         pts=ceil(M(m)*overSamplesPerMeshEl);
         if strcmp(type,'C')%Chebyshev
             s=sort(cos(pi*(2*(1:pts)-1)/(2*pts))).';
+            w =ones(pts,1)*pi./pts;
         elseif strcmp(type,'U')%uniform
             s=linspace(-1,1,pts+2).'; %add two extra points (endpoints)
             s=s(2:(end-1)); %delete the extra two points
+            w = ones(pts,1)/pts;
         else
             error('Point distribution type not recognised, must be uniform or Chebyshev');
         end
-        if mod(length(s),2)==0 %if even number of points
-            mid=length(s)/2;
-            s1=s(1:mid);
-            s2=[];
-            s3=s((mid+1):end);
-        else %odd number
-            mid=(length(s)+1)/2;
-            s1=s(1:(mid-1));
-            s2=s(mid);
-            s3=s((mid+1):end);
-        end
-        %now scale everything towards endpoints
-        s1=-1+(s1+1).*scaler;
-        s3=1-(1-s3).*scaler;
-        s=[s1;s2;s3;];
+%         if mod(length(s),2)==0 %if even number of points
+%             mid=length(s)/2;
+%             s1=s(1:mid);
+%             s2=[];
+%             s3=s((mid+1):end);
+%         else %odd number
+%             mid=(length(s)+1)/2;
+%             s1=s(1:(mid-1));
+%             s2=s(mid);
+%             s3=s((mid+1):end);
+%         end
+%         %now scale everything towards endpoints
+%         s1=-1+(s1+1).*scaler;
+%         s3=1-(1-s3).*scaler;
+%         s=[s1;s2;s3;];
         %now scale everything onto the mesh element:
         t  = [t; E(m).interval(1)+E(m).width*.5*(s+1);];
+        %w  = [w; E(m).width*w_*.5];
         %tR = [tR; E(m).distR + E(m).width*.5*(flipud(s)+1);];
         tma = [tma; E(m).width*.5*(s+1);];
         bmt = [bmt; E(m).width*.5*(flipud(s)+1);];
+        sSubCount = 0;
         for s_=s.'
             sCount = sCount + 1;
-            X(sCount) = collocationPoint(E(m),.5*(s_+1),side,m);
+            sSubCount = sSubCount+1;
+            X(sCount) = collocationPoint(E(m),.5*(s_+1),side,m,E(m).width*w(sSubCount)*.5);
         end
     end
     onSide = ones(length(t),1);

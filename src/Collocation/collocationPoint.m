@@ -10,10 +10,11 @@ classdef collocationPoint
         distMeshL
         distMeshR
         side
+        weight=1 % in (0,infty) option to include a weight for colloction point
     end
     
     methods
-        function self = collocationPoint(meshEl,s,side,meshIndex)
+        function self = collocationPoint(meshEl,s,side,meshIndex,weight)
             %choose the collocation point, and all relevant relative
             %distances
             
@@ -24,6 +25,9 @@ classdef collocationPoint
             self.distSideR = self.distMeshR + meshEl.distR;
             self.side = side;
             self.meshIndex = meshIndex;
+            if nargin == 5
+                self.weight = weight;
+            end
            
         end
     end

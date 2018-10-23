@@ -245,18 +245,43 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             else
                 %I = LevinQuick(a,b,amp,phase,kwave); 
                 %ditched the old Levin stuff...
+                if ~isempty(stationaryPoints)
+                    if  ~(a <= stationaryPoints && stationaryPoints <= b)
+                        stationaryPoints = [];
+                        orders = [];
+                    end
+                end
                 if isempty(stationaryPoints)
-                    I = PathFinderChebWrap(a,b,kwave,Nquad,amp,phase,logSingInfo,stationaryPoints);
-                elseif a <= stationaryPoints && stationaryPoints <= b
+                    %perhaps the phase is flat near the endpoints, so chop
+                    %off the first few oscillations:
+                    XoscL = findNonOscBit(phase{1},a,b,kwave,minOscs);
+                    XoscR = findNonOscBitR(phase{1},a,b,kwave,minOscs);
+                    if XoscR<XoscL
+                        %do the whole thing non-oscilllatorily
+                        [ z, w ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, ...
+                                        'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
+                                            rectrad,'minOscs',inf, 'width', width);
+                    else
+                        [ za, wa ] = PathFinder( a, XoscL, kwave, Nquad, phase,'fSingularities', logSingInfo, ...
+                                        'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
+                                            rectrad,'minOscs',inf, 'width', width);
+                                        
+                        [ z_mid, w_mid ] = PathFinder( XoscL, XoscR, kwave, Nquad, phase,'fSingularities', logSingInfo, ...
+                                        'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
+                                            rectrad,'minOscs',minOscs, 'width', width);
+                        [ zb, wb ] = PathFinder( XoscR, b, kwave, Nquad, phase,'fSingularities', logSingInfo, ...
+                                        'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
+                                           rectrad,'minOscs',inf, 'width', width);
+                         z = [za; z_mid; zb];
+                         w = [wa; w_mid; wb];
+                    end
+                    %I = PathFinderChebWrap(a,b,kwave,Nquad,amp,phase,logSingInfo,stationaryPoints);
+                else% a <= stationaryPoints && stationaryPoints <= b
                      [ z, w ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, ...
                                         'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
                                             rectrad,'minOscs',minOscs, 'width', width);
-                                        %have changed minOscs to inf, to
-                                        %always use standard quad here ^^
-                    I = (w.'*amp(z));
-                else
-                    I = PathFinderChebWrap(a,b,kwave,Nquad,amp,phase,logSingInfo,stationaryPoints);
                 end
+                I = (w.'*amp(z));
             end
             return;
         end

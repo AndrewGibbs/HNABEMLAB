@@ -8,6 +8,8 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     
     DOFs=length(Vbasis.el);
     
+    weighting = false;
+    
     % -----------------------
     %defaults:
     Nquad = 40;
@@ -35,6 +37,8 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
                    messageFlag = true;
                case 'cg'
                    standardQuadFlag = true;
+               case 'weight'
+                   weighting = true;
            end
         end
     end
@@ -85,9 +89,19 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
         end
     end
     
+    if weighting
+        for j=1:length(Xstruct)
+            w(j) = Xstruct(j).weight;
+        end
+        weightrix = diag(w);
+        %now weight LS system by weighted matrix
+        colRHS = weightrix * colRHS;
+        colMatrix = weightrix * colMatrix;
+    end
+    
     %use least squares with Matlab's built in SVD to get coefficients
-    coeffs=colMatrix\colRHS;
-    %coeffs = pseudo_backslash(colMatrix, colRHS, 1E-5);
+    %coeffs=colMatrix\colRHS;
+    coeffs = pseudo_backslash(colMatrix, colRHS, 1E-8);
     v_N=Projection(coeffs,Vbasis);
     
     if messageFlag
