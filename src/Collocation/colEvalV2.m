@@ -189,6 +189,10 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         end
     else %no branch in phase
         
+%         I = integral(@(z) amp(z).*exp(1i*kwave*phase{1}(z)), a, b, 'arrayValued', true,'RelTol',1e-13);
+%         quadDataOut = [];
+%         return;
+%         
         quadDataOut = [];
         [stationaryPoints, orders, branchPoints] = symbolicStationaryPoints(Op.domain.side{colPt.side}.trace(colPt.x), fun, funSide, phase);
         
@@ -236,7 +240,7 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             logSingInfo=singularity([], Op.singularity, distFun);
             rectrad = .5*min(logSingInfo.distFun(a),logSingInfo.distFun(b));
             if width<minOscs*2*pi/kwave
-                [ z, w ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, ...
+                [ z, w ] = PathFinder( a, b, kwave, Nquad, phase, ...
                                         'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
                                             rectrad,'minOscs',inf, 'width', width);
                                         %have changed minOscs to inf, to
@@ -258,18 +262,18 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                     XoscR = findNonOscBitR(phase{1},a,b,kwave,minOscs);
                     if XoscR<XoscL
                         %do the whole thing non-oscilllatorily
-                        [ z, w ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, ...
+                        [ z, w ] = PathFinder( a, b, kwave, Nquad, phase, ...
                                         'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
                                             rectrad,'minOscs',inf, 'width', width);
                     else
-                        [ za, wa ] = PathFinder( a, XoscL, kwave, Nquad, phase,'fSingularities', logSingInfo, ...
+                        [ za, wa ] = PathFinder( a, XoscL, kwave, Nquad, phase, ...
                                         'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
                                             rectrad,'minOscs',inf, 'width', width);
                                         
-                        [ z_mid, w_mid ] = PathFinder( XoscL, XoscR, kwave, Nquad, phase,'fSingularities', logSingInfo, ...
+                        [ z_mid, w_mid ] = PathFinder( XoscL, XoscR, kwave, Nquad, phase, ...
                                         'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
                                             rectrad,'minOscs',minOscs, 'width', width);
-                        [ zb, wb ] = PathFinder( XoscR, b, kwave, Nquad, phase,'fSingularities', logSingInfo, ...
+                        [ zb, wb ] = PathFinder( XoscR, b, kwave, Nquad, phase, ...
                                         'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
                                            rectrad,'minOscs',inf, 'width', width);
                          z = [za; z_mid; zb];
@@ -277,7 +281,7 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                     end
                     %I = PathFinderChebWrap(a,b,kwave,Nquad,amp,phase,logSingInfo,stationaryPoints);
                 else% a <= stationaryPoints && stationaryPoints <= b
-                     [ z, w ] = PathFinder( a, b, kwave, Nquad, phase,'fSingularities', logSingInfo, ...
+                     [ z, w ] = PathFinder( a, b, kwave, Nquad, phase, ...
                                         'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
                                             rectrad,'minOscs',minOscs, 'width', width);
                 end
@@ -381,7 +385,7 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 logSingInfo_flip_1.blowUpType='nearLog';
                 logSingInfo_flip_1.distFun = @(r) abs(r-sing_flip(1));
                 
-                [x_, w_] = NonOsc45(0,Xoscs,kwave,Nquad,phaseCorner{1},logSingInfo_flip_1,Xoscs, minOscs);
+                [x_, w_] = NonOsc45(0,Xoscs,kwave,Nquad,phaseCorner{1},[],minOscs);
                 I_1 = (w_.'*amp_corner(x_));
                 if Xoscs>=width
                     I_2 = 0;
