@@ -381,11 +381,11 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 %I = w.'*amp_corner(z);
                 
                 Xoscs = findNonOscBit(phaseCorner{1},0,width,kwave,minOscs);
-                %logSingInfo_flip_1.position = 0;
+                logSingInfo_flip_1.position = real(sing_flip(1));
                 logSingInfo_flip_1.blowUpType='nearLog';
                 logSingInfo_flip_1.distFun = @(r) abs(r-sing_flip(1));
                 
-                [x_, w_] = NonOsc45(0,Xoscs,kwave,Nquad,phaseCorner{1},[],minOscs);
+                [x_, w_] = NonOsc45(0,Xoscs,kwave,Nquad,phaseCorner{1},logSingInfo_flip_1,Xoscs);
                 I_1 = (w_.'*amp_corner(x_));
                 if Xoscs>=width
                     I_2 = 0;
