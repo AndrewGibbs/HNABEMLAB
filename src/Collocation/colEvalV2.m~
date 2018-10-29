@@ -125,6 +125,8 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 I1 = (w1a.'*amp_a_flip(z1a));
                 I2 = (w1b.'*amp_b_flip(z1b));
                 I = I1 + I2;
+
+                %split = [1 1];
         else
             
             if colPt.distSideL < colPt.distSideR
@@ -172,6 +174,7 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 quadDataOut.w_ = w_;
                 quadDataOut.z_ = z_;
             end
+
                 
             %and evaluate integral:
             I = w_.'*amp_flip(z_);
@@ -332,35 +335,38 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
             R = @(yr) sqrt(colDistCorner^2 + (suppDistCorner + yr).^2 - 2*cos(internalAngle)*colPt.distSideL*(suppDistCorner + yr));
             logSingInfo_flip = singularity(real_sing_flip, Op.singularity, R);
             rectRad = .5*min(logSingInfo_flip.distFun(a_shift), logSingInfo_flip.distFun(b_shift));
+
             
-            %now remove stationary points that are far away from
-            %integration region:
-
-            Xoscs = findNonOscBit(phaseCorner{1},0,width,kwave,minOscs);
-            logSingInfo_flip_1.position = real(sing_flip(1));
-            logSingInfo_flip_1.blowUpType='nearLog';
-            logSingInfo_flip_1.distFun = @(r) abs(r-sing_flip(1));
-
-            [x_, w_] = NonOsc45(0,Xoscs,kwave,Nquad,phaseCorner{1},logSingInfo_flip_1,Xoscs);
-            I_1 = (w_.'*amp_corner(x_));
-            if Xoscs>=width
-                I_2 = 0;
-            elseif ~isempty(SP_flip4)
-                if SP_flip4<Xoscs
-                    I_2 = PathFinderChebWrapGrad(logSingInfo_flip, Xoscs, width, kwave, Nquad, amp_corner, phaseCorner);
-                else
-                    if abs(sing_flip(1) - Xoscs) < dangerWidth
-                        error('Singularity dangerously close and not being acknowledged');
+                %now remove stationary points that are far away from
+                %integration region:
+                
+                Xoscs = findNonOscBit(phaseCorner{1},0,width,kwave,minOscs);
+                logSingInfo_flip_1.position = real(sing_flip(1));
+                logSingInfo_flip_1.blowUpType='nearLog';
+                logSingInfo_flip_1.distFun = @(r) abs(r-sing_flip(1));
+                
+                [x_, w_] = NonOsc45(0,Xoscs,kwave,Nquad,phaseCorner{1},logSingInfo_flip_1,Xoscs);
+                I_1 = (w_.'*amp_corner(x_));
+                if Xoscs>=width
+                    I_2 = 0;
+                elseif ~isempty(SP_flip4)
+                    if SP_flip4<Xoscs
+                        I_2 = PathFinderChebWrapGrad(logSingInfo_flip, Xoscs, width, kwave, Nquad, amp_corner, phaseCorner);
+                    else
+                        if abs(sing_flip(1) - Xoscs) < dangerWidth
+                            error('Singularity dangerously close and not being acknowledged');
+                        end
+                        [ z, w ] = PathFinder( Xoscs, width, kwave, Nquad, phaseCorner,...
+                                        'stationary points', SP_flip4, 'order', orders4, 'settlerad', ...
+                                            rectRad, 'minOscs', minOscs, 'width', width);
+                        I_2 = (w.'*amp_corner(z));
                     end
-                    [ z, w ] = PathFinder( Xoscs, width, kwave, Nquad, phaseCorner,...
-                                    'stationary points', SP_flip4, 'order', orders4, 'settlerad', ...
-                                        rectRad, 'minOscs', minOscs, 'width', width);
-                    I_2 = (w.'*amp_corner(z));
+                else
+                    I_2 = PathFinderChebWrapGrad(logSingInfo_flip,Xoscs,width,kwave,Nquad,amp_corner,phaseCorner);
                 end
-            else
-                I_2 = PathFinderChebWrapGrad(logSingInfo_flip,Xoscs,width,kwave,Nquad,amp_corner,phaseCorner);
-            end
-            I = I_1 + I_2;
+                I = I_1 + I_2;
+     
+        
     end
     
 %    quadDataOut = struct('z',z,'w',w,'split',split,'z1a', z1a, 'w1a',w1a,'z1b', z1b, 'w1b', w1b);
