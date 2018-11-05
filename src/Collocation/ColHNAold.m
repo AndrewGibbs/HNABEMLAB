@@ -54,12 +54,6 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     
     %get collocation points.
     [ Xstruct] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, colType);
-    %make a copy for RHSs, with wider domains
-    Ystruct = Xstruct;
-    for m = 1:length(Xstruct)
-       Ystruct(m).distMeshL = Ystruct(m).distSideL;
-       Ystruct(m).distMeshR = Ystruct(m).distSideR; 
-    end
     
     %** should eventually find a way to partition the basis into mesh
     %elements with + or - phase, so that quadrature points can be reused.
@@ -67,35 +61,32 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     %initialise main bits:
     colRHS=zeros(length(Xstruct),1);
     colMatrix=zeros(length(Xstruct),length(Vbasis.el));
-    numColPts = length(Xstruct);
-    numBasEls = length(Vbasis.el);
-    parfor m=1:numColPts
-        VbasisCopy = Vbasis;
-        fCopy = f;
-        colMatrixCol = zeros(1,numBasEls);
-        for n=1:numBasEls
+    parfor m=1:length(Xstruct)
+        for n=1:length(Vbasis.el)
         %manually do first entry of row
            if n==1
-               [colMatrixCol(n), quadData] = colEvalV2(Operator, VbasisCopy.el(1), VbasisCopy.elSide(1), Xstruct(m), Nquad,[], standardQuadFlag);
-           elseif VbasisCopy.el(n).pm == VbasisCopy.el(n-1).pm && isequal(VbasisCopy.el(n).supp,VbasisCopy.el(n-1).supp)
+               [colMatrix(m,n), quadData] = colEvalV2(Operator, Vbasis.el(1), Vbasis.elSide(1), Xstruct(m), Nquad,[], standardQuadFlag);
+           elseif Vbasis.el(n).pm == Vbasis.el(n-1).pm && isequal(Vbasis.el(n).supp,Vbasis.el(n-1).supp)
                %reuse quadrature from previous iteration of this loop,
                %(phase and domain are the same)
-               colMatrixCol(n) = colEvalV2(Operator, VbasisCopy.el(n), VbasisCopy.elSide(n), Xstruct(m), Nquad, quadData, standardQuadFlag);
+               colMatrix(m,n) = colEvalV2(Operator, Vbasis.el(n), Vbasis.elSide(n), Xstruct(m), Nquad, quadData, standardQuadFlag);
            else
                %get fresh quadrature data
-               [colMatrixCol(n), quadData] = colEvalV2(Operator, VbasisCopy.el(n), VbasisCopy.elSide(n), Xstruct(m), Nquad,[], standardQuadFlag);
+               [colMatrix(m,n), quadData] = colEvalV2(Operator, Vbasis.el(n), Vbasis.elSide(n), Xstruct(m), Nquad,[], standardQuadFlag);
            end
         end 
-        colMatrix(m,:) = colMatrixCol;
-        fX = fCopy.eval(Xstruct(m).x,Xstruct(m).side);
+        fX = f.eval(Xstruct(m).x,Xstruct(m).side);
         if ~standardBEMflag
+           Ystruct = Xstruct;
+           Ystruct(m).distMeshL = Ystruct(m).distSideL;
+           Ystruct(m).distMeshR = Ystruct(m).distSideR;
            SPsiX = colEvalV2(Operator, GOA, GOA.illumSides, Ystruct(m), Nquad,[], standardQuadFlag);
            colRHS(m)  = fX - SPsiX;
         else
            colRHS(m)  = fX;
         end
         if messageFlag
-            fprintf('\n%d/%d%',m,numColPts);
+            fprintf('\n%.1f%%',100*m/length(Xstruct));
         end
     end
     

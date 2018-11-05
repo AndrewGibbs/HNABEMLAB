@@ -50,8 +50,6 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         dangerZoneRad = .35;%0.25/kwave;%max(0.15*(b-a),dangerWidth);
         %singularSplit = dangerZoneRad;
         
-        p_max=12;
-        delta=.15;
         dangerWidth = 1E-12;
       
         %analytic extension of non-osc components of kernel:
@@ -227,61 +225,73 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         end
         
         if ~grad2a && ~ grad2b %no singularity issues
-            if isa(fun,'GeometricalOpticsFunction')
-                width = fun.suppWidth(funSide);
+            
+            if ~isempty(quadDataIn)
+                %load quad data and skip to the sum
+                z = quadDataIn.z;
+                w = quadDataIn.w;
             else
-                width = fun.suppWidth;
-            end
-            distFun = @(t) Op.domain.distAnal(colPt.x, t, 0, [], colPt.side, funSide);
-            %distR = Op.domain.distAnal(colPt.x, b, 0,[], colPt.side, funSide);
-            logSingInfo=singularity([], Op.singularity, distFun);
-            rectrad = .5*min(logSingInfo.distFun(a),logSingInfo.distFun(b));
-            if width<minOscs*2*pi/kwave
-                [ z, w ] = PathFinder( a, b, kwave, Nquad, phase, ...
-                                        'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
-                                            rectrad,'minOscs',inf, 'width', width);
-                                        %have changed minOscs to inf, to
-                                        %always use standard quad here ^^
-                I = (w.'*amp(z));
-            else
-                if ~isempty(stationaryPoints)
-                    if  ~(a <= stationaryPoints && stationaryPoints <= b)
-                        stationaryPoints = [];
-                        orders = [];
+                if isa(fun,'GeometricalOpticsFunction')
+                    width = fun.suppWidth(funSide);
+                else
+                    width = fun.suppWidth;
+                end
+                distFun = @(t) Op.domain.distAnal(colPt.x, t, 0, [], colPt.side, funSide);
+                %distR = Op.domain.distAnal(colPt.x, b, 0,[], colPt.side, funSide);
+                logSingInfo=singularity([], Op.singularity, distFun);
+                rectrad = .5*min(logSingInfo.distFun(a),logSingInfo.distFun(b));
+                if width<minOscs*2*pi/kwave
+                    [ z, w ] = PathFinder( a, b, kwave, Nquad, phase, ...
+                                            'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
+                                                rectrad,'minOscs',inf, 'width', width);
+                                            %have changed minOscs to inf, to
+                                            %always use standard quad here ^^
+                    %I = (w.'*amp(z));
+                else
+
+                    if ~isempty(stationaryPoints)
+                        if  ~(a <= stationaryPoints && stationaryPoints <= b)
+                            stationaryPoints = [];
+                            orders = [];
+                        end
+                    end
+                    if isempty(stationaryPoints)
+                        %perhaps the phase is flat near the endpoints, so chop
+                        %off the first few oscillations:
+                        XoscL = findNonOscBit(phase{1},a,b,kwave,minOscs);
+                        XoscR = findNonOscBitR(phase{1},a,b,kwave,minOscs);
+                        if XoscR<XoscL
+                            %do the whole thing non-oscilllatorily
+                            [ z, w ] = PathFinder( a, b, kwave, Nquad, phase, ...
+                                            'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
+                                                rectrad,'minOscs',inf, 'width', width);
+                        else
+                            [ za, wa ] = PathFinder( a, XoscL, kwave, Nquad, phase, ...
+                                            'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
+                                                rectrad,'minOscs',inf, 'width', width);
+
+                            [ z_mid, w_mid ] = PathFinder( XoscL, XoscR, kwave, Nquad, phase, ...
+                                            'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
+                                                rectrad,'minOscs',minOscs, 'width', width);
+                            [ zb, wb ] = PathFinder( XoscR, b, kwave, Nquad, phase, ...
+                                            'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
+                                               rectrad,'minOscs',inf, 'width', width);
+                             z = [za; z_mid; zb];
+                             w = [wa; w_mid; wb];
+                        end
+                        %I = PathFinderChebWrap(a,b,kwave,Nquad,amp,phase,logSingInfo,stationaryPoints);
+                    else% a <= stationaryPoints && stationaryPoints <= b
+                         [ z, w ] = PathFinder( a, b, kwave, Nquad, phase, ...
+                                            'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
+                                                rectrad,'minOscs',minOscs, 'width', width);
                     end
                 end
-                if isempty(stationaryPoints)
-                    %perhaps the phase is flat near the endpoints, so chop
-                    %off the first few oscillations:
-                    XoscL = findNonOscBit(phase{1},a,b,kwave,minOscs);
-                    XoscR = findNonOscBitR(phase{1},a,b,kwave,minOscs);
-                    if XoscR<XoscL
-                        %do the whole thing non-oscilllatorily
-                        [ z, w ] = PathFinder( a, b, kwave, Nquad, phase, ...
-                                        'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
-                                            rectrad,'minOscs',inf, 'width', width);
-                    else
-                        [ za, wa ] = PathFinder( a, XoscL, kwave, Nquad, phase, ...
-                                        'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
-                                            rectrad,'minOscs',inf, 'width', width);
-                                        
-                        [ z_mid, w_mid ] = PathFinder( XoscL, XoscR, kwave, Nquad, phase, ...
-                                        'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
-                                            rectrad,'minOscs',minOscs, 'width', width);
-                        [ zb, wb ] = PathFinder( XoscR, b, kwave, Nquad, phase, ...
-                                        'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
-                                           rectrad,'minOscs',inf, 'width', width);
-                         z = [za; z_mid; zb];
-                         w = [wa; w_mid; wb];
-                    end
-                    %I = PathFinderChebWrap(a,b,kwave,Nquad,amp,phase,logSingInfo,stationaryPoints);
-                else% a <= stationaryPoints && stationaryPoints <= b
-                     [ z, w ] = PathFinder( a, b, kwave, Nquad, phase, ...
-                                        'stationary points', stationaryPoints, 'order', orders, 'settlerad', ...
-                                            rectrad,'minOscs',minOscs, 'width', width);
-                end
-                I = (w.'*amp(z));
+                %save quad data
+                quadDataOut.z = z;
+                quadDataOut.w = w;
             end
+            
+            I = (w.'*amp(z));
             return;
         end
         
@@ -352,9 +362,16 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                     if abs(sing_flip(1) - Xoscs) < dangerWidth
                         error('Singularity dangerously close and not being acknowledged');
                     end
-                    [ z, w ] = PathFinder( Xoscs, width, kwave, Nquad, phaseCorner,...
-                                    'stationary points', SP_flip4, 'order', orders4, 'settlerad', ...
-                                        rectRad, 'minOscs', minOscs, 'width', width);
+                    if ~isempty(quadDataIn)
+                        z = quadDataIn.z;
+                        w = quadDataIn.w;
+                    else
+                        [ z, w ] = PathFinder( Xoscs, width, kwave, Nquad, phaseCorner,...
+                                        'stationary points', SP_flip4, 'order', orders4, 'settlerad', ...
+                                            rectRad, 'minOscs', minOscs, 'width', width);
+                        quadDataOut.z = z;
+                        quadDataOut.w = w;
+                    end
                     I_2 = (w.'*amp_corner(z));
                 end
             else

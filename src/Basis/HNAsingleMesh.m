@@ -106,7 +106,7 @@ classdef HNAsingleMesh <basis
             end
             
             if alphaDistUsed==0
-               warning('No basis elements removed, may lead to ill conditioning of discrete system UNLESS singular values are removed '); 
+%               warning('No basis elements removed, may lead to ill conditioning of discrete system UNLESS singular values are removed '); 
             end
 %            self.numEls=elCount;
             self.mesh=mesh;
