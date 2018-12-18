@@ -14,6 +14,7 @@ classdef (Abstract) BoundaryFunction
         b
         phaseMaxStationaryPointOrder
         meshEl
+        nodesPerWavelength = 10
     end
     
     methods 

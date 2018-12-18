@@ -105,6 +105,13 @@ classdef edge < scatteringObject
             %R = {@(s,t) sgn*(s-t), @(s,t) sgn, @(s,t) 0};
         end
           
+        function draw(self)
+           s = linspace(0,self.L);
+           Y = self.trace(s);
+           Y1 = Y(1,:);
+           Y2 = Y(2,:);
+           plot(Y1,Y2,'k','LineWidth',3);
+        end
         
 %         function sourceCheck(self,source)
 %             %code which ensures wave is in upper-half plane

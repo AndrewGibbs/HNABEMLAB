@@ -7,6 +7,8 @@ classdef GeometricalOpticsFunction < BoundaryFunction
         sourceVsnormal
         dirConst
         illumSides = []
+        nodes
+        weights
     end
     
     methods
@@ -46,9 +48,15 @@ classdef GeometricalOpticsFunction < BoundaryFunction
                     clear pre_dirConst;
                 end
             end
+            
+            [self.nodes, self.weights] = gauss_quad_wave_split2(self.a, self.b, self.nodesPerWavelength,  uinc.kwave, domain.L );
         end
         
         function NeuOsc = eval(self, s, onSide)
+            if nargin == 2
+                onSide = 1;
+            end
+              
             %get edge of onSide
             Edge = self.domain.getEdge(onSide);
             %compute result

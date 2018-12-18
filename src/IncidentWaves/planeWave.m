@@ -63,6 +63,10 @@ classdef planeWave < waveR2
         function x = sourceVsnormal(self,side)
             x = sign((self.d)*(side.nv.'));
         end
+        
+        function val = eval(self,X1,X2)
+            val = exp(1i*self.kwave*(self.d(1)*X1+self.d(2)*X2));
+        end
     end
     
 end

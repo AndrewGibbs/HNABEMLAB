@@ -1,4 +1,4 @@
-function out = intersect( A,B )
+function out = intersection( A,B )
     %ORIGINAL intersect code, returns 1 if AnB non-empty, zero otherwise.
     %boils down to four cases
 %     yn=0;
