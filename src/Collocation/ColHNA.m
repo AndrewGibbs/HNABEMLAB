@@ -111,8 +111,9 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     end
     
     %use least squares with Matlab's built in SVD to get coefficients
-    coeffs=colMatrix\colRHS;
-    %coeffs = pseudo_backslash(colMatrix, colRHS, 1E-8);
+    %coeffs=colMatrix\colRHS;
+    %or, use Daan's homemade SVD:
+    coeffs = pseudo_backslash(colMatrix, colRHS, 1E-8);
     v_N=Projection(coeffs,Vbasis);
     
     if messageFlag
