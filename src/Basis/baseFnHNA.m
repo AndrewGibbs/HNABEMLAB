@@ -37,6 +37,15 @@ classdef  baseFnHNA < BoundaryFunction
            %y=self.normaliser*sqrt(2/self.L)*(x>=self.supp(1)).*(x<=self.supp(2)).*legendre(self.p, 2*((x-self.a)./(self.L)) -1).*exp(self.pm*1i*self.kwave.*x) ;
         end
         
+        function y = evalNonOscAnalPivot(self,z,~,pivLminus_a)
+            %if b-a is small, but 0<<a, then rounding errors can occur.
+            %This function essentially returns
+            %evalNonOscAnal(self,pivL-x,~), in the case where pivL-x rounds
+            %to zero, avoiding the rounding error
+            newArg = pivLminus_a/self.L - z/self.L;
+            y = self.normaliser*sqrt(2/self.L)*legendre(self.p, 2*(newArg) -1);
+        end
+        
         function y = evalNonOscAnal(self,x,~)
             y = self.normaliser*sqrt(2/self.L)*legendre(self.p, 2*((x-self.a)./(self.L)) -1);
         end

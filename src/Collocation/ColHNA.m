@@ -85,7 +85,8 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
                %get fresh quadrature data
                [colMatrixCol(n), quadData] = colEvalV2(Operator, VbasisCopy.el(n), VbasisCopy.elSide(n), Xstruct(m), Nquad,[], standardQuadFlag);
            end
-        end 
+        end
+        %abs(colMatrixCol(n)-colEvalV2(Operator, VbasisCopy.el(n),VbasisCopy.elSide(n), Xstruct(m), Nquad,[],standardQuadFlag))>1e-8
         colMatrix(m,:) = colMatrixCol;
         fX = fCopy.eval(Xstruct(m).x,Xstruct(m).side);
         if ~standardBEMflag
