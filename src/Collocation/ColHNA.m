@@ -69,7 +69,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     colMatrix=zeros(length(Xstruct),length(Vbasis.el));
     numColPts = length(Xstruct);
     numBasEls = length(Vbasis.el);
-    parfor m=1:numColPts
+    for m=1:numColPts
         VbasisCopy = Vbasis;
         fCopy = f;
         colMatrixCol = zeros(1,numBasEls);
@@ -110,8 +110,8 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     end
     
     %use least squares with Matlab's built in SVD to get coefficients
-    %coeffs=colMatrix\colRHS;
-    coeffs = pseudo_backslash(colMatrix, colRHS, 1E-8);
+    coeffs=colMatrix\colRHS;
+    %coeffs = pseudo_backslash(colMatrix, colRHS, 1E-8);
     v_N=Projection(coeffs,Vbasis);
     
     if messageFlag
