@@ -159,9 +159,9 @@ function [I, quadDataOut] = colEvalV3(Op,fun, funSide, colPt, Nquad, quadDataIn,
             %there are four cases for the amp
             switch strcat(type_LR,type_ab)
                 case 'La'
-                    amp_star = amp_a;
-                case 'Lb'
                     amp_star = amp_b;
+                case 'Lb'
+                    amp_star = amp_a;
                 case 'Ra'
                     amp_star =  @(z) Op.kernelNonOscAnal(colPt.distSideR, z, true, colPt.side, funSide) .* fun.evalNonOscAnalPivot(z, funSide, L_minus_a);
                 case 'Rb'
@@ -173,7 +173,6 @@ function [I, quadDataOut] = colEvalV3(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 z_ = quadDataIn.z_;
             else
                 %now get weights and nodes:
-                logSingInfo_flip.distFun = @(r) abs(r);
                 [ z_, w_ ] = PathFinder( a_star, b_star, kwave, Nquad, phase_star,'settlerad',rectrad,...
                         'fSingularities', logSingInfo_star, 'stationary points', SPin, 'order', SPOin, 'minOscs', minOscs, 'width', fun.suppWidth);
                     
