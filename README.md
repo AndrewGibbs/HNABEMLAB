@@ -38,11 +38,12 @@ where  <img src="http://latex.codecogs.com/svg.latex?\Psi:=2\partial_n^+u^i" bor
 
 # Approxixmation
 
-We approximate <img src="http://latex.codecogs.com/svg.latex?\nu_N\approx v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}" border="0"/> using an HNA basis on a single mesh on <img src="http://latex.codecogs.com/svg.latex?\Gamma" border="0"/>, graded towards the endpoints to capture the singularities.
+We approximate <img src="http://latex.codecogs.com/svg.latex?\nu_N\approx~v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}" border="0"/> using an HNA basis on a single mesh on <img src="http://latex.codecogs.com/svg.latex?\Gamma" border="0"/>, graded towards the endpoints to capture the singularities.
 
-We solve our discrete system using an oversampled collocation method, as outlined in [2], taking around 40% more collocation points than basis elements. This leads to a rectangular system, which can be solved in a least-squares sense, via a truncated SVD, minimising
+We solve our discrete system using an oversampled collocation method, as outlined in [2], taking around 40% more collocation points <img src="http://latex.codecogs.com/svg.latex?\{s_m\}_{m=1}^M" border="0"/> than basis elements. This leads to a rectangular system, which can be solved in a least-squares sense, via a truncated SVD, minimising
 
-<img src="http://latex.codecogs.com/svg.latex?\sum_{m=1}^M|\mathcal{S}_k(\nu_N(s_m)+\Psi(\mathbf{x}(s_m)))-u^i(\mathbf{x}(s_m))|,\quad M\geq 1.4N" border="0"/>,
+<img src="http://latex.codecogs.com/svg.latex?\sum_{m=1}^M|\mathcal{S}_k(\nu_N(s_m)+\Psi(\mathbf{x}(s_m)))-u^i(\mathbf{x}(s_m))|," border="0"/>,
+for <img src="http://latex.codecogs.com/svg.latex?M\geq1.4N" border="0"/>
 
 # Example code
 ```matlab
