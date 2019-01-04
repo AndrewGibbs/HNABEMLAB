@@ -18,13 +18,17 @@ Solution satisfies the Helmholtz equation:
 
 which we can reformulate for <img src="http://latex.codecogs.com/svg.latex?[\partial_nu]:=\partial_n^+u - \partial_n^-u" border="0"/> as
 
+ <img src="http://latex.codecogs.com/svg.latex?\int_\Gamma H_0^{(1)}(k|\mathbf{x}-\mathbf{y}|)\partial_nu(\mathbf{y})\mathrm{d}s(\mathbf{y})" border="0"/>
+ 
+ <!---
 ![equation](https://latex.codecogs.com/gif.latex?%5Cint_%5CGamma%5Cfrac%7B%5Cmathrm%7Bi%7D%7D%7B4%7DH_0%5E%7B%281%29%7D%28k%7C%5Cmathbf%7Bx%7D-%5Cmathbf%7By%7D%7C%29%5B%5Cpartial_nu%5D%28%5Cmathbf%7By%7D%29%5Cmathrm%7Bd%7Ds%28%5Cmathbf%7By%7D%29%3Du%5Ei%28%5Cmathbf%7Bx%7D%29%2C%5Cquad%5Ctext%7Bon%20%7D%5CGamma.)
+-->
 
 The HNA Ansatz for the screen is
 
  <img src="http://latex.codecogs.com/svg.latex?[\partial_nu](\mathbf{x})(s):=v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}+\Psi(\mathbf{x}),\quad\text{on}\quad\Gamma" border="0"/>
 
-where ![equation](https://latex.codecogs.com/gif.latex?%5CPsi%3D%5Cfrac%7B%5Cpartial%20u%5Ei%7D%7B%5Cpartial%20n%7D), and <img src="http://latex.codecogs.com/svg.latex?v_\pm" border="0"/> are non-oscillatory [1].
+where  <img src="http://latex.codecogs.com/svg.latex?\Psi:=2\partial_n^+u^i" border="0"/>, and <img src="http://latex.codecogs.com/svg.latex?v_\pm" border="0"/> are non-oscillatory [1].
 
 # Approxixmation
 
