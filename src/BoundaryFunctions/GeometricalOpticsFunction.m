@@ -9,6 +9,7 @@ classdef GeometricalOpticsFunction < BoundaryFunction
         illumSides = []
         nodes
         weights
+        %meshEl
     end
     
     methods
@@ -50,6 +51,8 @@ classdef GeometricalOpticsFunction < BoundaryFunction
             end
             
             [self.nodes, self.weights] = gauss_quad_wave_split2(self.a, self.b, self.nodesPerWavelength,  uinc.kwave, domain.L );
+            
+            self.meshEl = wholeMeshSide(domain.L);
         end
         
         function NeuOsc = eval(self, s, onSide)
