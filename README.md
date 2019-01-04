@@ -51,14 +51,25 @@ which we can reformulate as
     tic;
     [v_N, GOA, colMatrix, colRHS] = ColHNA(S, VHNA, uinc, Gamma,'oversample', OverSample, 'progress');
     T = toc
+    
+    
+```
+Now plot the solution on the boundary:
 
-    %plot the output
+```matlab
+
     s=linspace(0,Gamma.L,min(1000,10000*kwave));
     figure;
     semilogy(s,abs(v_N.eval(s,1))); ylim([1E-2 1E3]);
     xlim([Gamma.supp(1)-.1 Gamma.supp(2)+.1] );
+    ylabel('|\partial u/\partial n - \Psi|')
 
-    %now plot the solution in the domain:
+```
+![HNABEMLAB](https://raw.github.com/AndrewGibbs/HNABEMLAB/master/boundaryPlot_k60.png)
+
+And plot the solution in the domain:
+
+```matlab
     figure;
     domainPlotPoints = min(1000,kwave*20);
     y = linspace(-1,1,domainPlotPoints);
@@ -71,3 +82,5 @@ which we can reformulate as
     shading interp;
     hold on;
     Gamma.draw;
+```
+![HNABEMLAB](https://raw.github.com/AndrewGibbs/HNABEMLAB/master/domainPlot_k60.png)
