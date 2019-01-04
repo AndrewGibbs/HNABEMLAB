@@ -10,6 +10,8 @@ Currently seems stable for screens with plane wave incidence. Can (in principle)
 
 # Problem statement & formulation
 
+This is outline *very* briefly here, for a full explanation, please see [1].
+
 For problems of scattering of an incident wave <img src="http://latex.codecogs.com/svg.latex?u^i(\mathbf{x})=\mathrm{e}^{\mathrm{i}k\mathbf{d}\cdot\mathbf{x}}" border="0"/> by a screen <img src="http://latex.codecogs.com/svg.latex?\Gamma" border="0"/>, we aim to compute the total field <img src="http://latex.codecogs.com/svg.latex?u:=u^i+u^s" border="0"/>, where <img src="http://latex.codecogs.com/svg.latex?u^s" border="0"/> is the scattered field.
 
 Our solution satisfies the exterior Helmholtz BVP:
@@ -56,7 +58,7 @@ First create instances of the fundamental objects which define our problem.
 ```
 As is standard for HNA methods, we approximate 
 
-<img src="http://latex.codecogs.com/svg.latex?\nu_N\approx~[\partial_nu](\mathbf{x}(s))-\Psi(\mathbf{x}(s))=v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}" border="0"/>
+<img src="http://latex.codecogs.com/svg.latex?\nu_N(s)\approx~[\partial_nu](\mathbf{x}(s))-\Psi(\mathbf{x}(s))=v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}" border="0"/>
 
 using an HNA basis on a single mesh on <img src="http://latex.codecogs.com/svg.latex?\Gamma" border="0"/>, graded towards the endpoints to capture the singularities.  Hence our solution
 
