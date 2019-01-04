@@ -81,7 +81,7 @@ Now plot the solution on the boundary:
 ```
 ![HNABEMLAB](https://raw.github.com/AndrewGibbs/HNABEMLAB/master/boundaryPlot_k60.png)
 
-And plot the solution in the domain:
+And plot the solution in the domain (this bit isn't frequency independent):
 
 ```matlab
     figure;
