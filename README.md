@@ -14,14 +14,15 @@ For problems of scattering of an incident wave <img src="http://latex.codecogs.c
 
 Our solution satisfies the exterior Helmholtz BVP:
 
- <img src="http://latex.codecogs.com/svg.latex?(\Delta+k^2)u=0\quad\text{in}\quad\mathbb{R}^2,\quad u|_\Gamma=0\quad\text{on}\quad\Gamma" border="0"/>
+ <img src="http://latex.codecogs.com/svg.latex?(\Delta+k^2)u=0\quad\text{in}\quad\mathbb{R}^2\setminus\Gamma," border="0"/>
+  <img src="http://latex.codecogs.com/svg.latex?u|_\Gamma^{~}=0\quad\text{on}\quad\Gamma" border="0"/>
  
  and <img src="http://latex.codecogs.com/svg.latex?u^s" border="0"/> satisfies the Sommerfeld radiation condition.
 <!---
 ![equation](https://latex.codecogs.com/gif.latex?%28%5CDelta&plus;k%5E2%29u%3D0%5Cquad%5Ctext%7Bin%20%7D%5Cmathbb%7BR%7D%5E2%5Csetminus%5CGamma%2C%20%5Cquad%20u%3D0%5Cquad%5Ctext%7Bon%20%7D%5CGamma)
 -->
 
-which we can reformulate for <img src="http://latex.codecogs.com/svg.latex?[\partial_nu]:=\partial_n^+u - \partial_n^-u" border="0"/> as
+This can be reformulated [1] for <img src="http://latex.codecogs.com/svg.latex?[\partial_nu]:=\partial_n^+u - \partial_n^-u" border="0"/> as
 
  <img src="http://latex.codecogs.com/svg.latex?\int_\Gamma^{~} H_0^{(1)}(k|\mathbf{x}-\mathbf{y}|)[\partial_nu](\mathbf{y})\mathrm{d}s(\mathbf{y}) = u^i(\mathbf{x}),\quad\text{on}\quad\Gamma" border="0"/>
  
@@ -37,9 +38,11 @@ where  <img src="http://latex.codecogs.com/svg.latex?\Psi:=2\partial_n^+u^i" bor
 
 # Approxixmation
 
-We approximate <img src="http://latex.codecogs.com/svg.latex?v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}" border="0"/> using an HNA basis on a single mesh on <img src="http://latex.codecogs.com/svg.latex?\Gamma" border="0"/>, graded towards the endpoints to capture the singularities.
+We approximate <img src="http://latex.codecogs.com/svg.latex?\nu_N\approx v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}" border="0"/> using an HNA basis on a single mesh on <img src="http://latex.codecogs.com/svg.latex?\Gamma" border="0"/>, graded towards the endpoints to capture the singularities.
 
-We solve our discrete system using an oversampled collocation method, as outlined in [2], taking around 40% more collocation points than basis elements. This leads to a rectangular system, which can be solved in a least-squares sense, via a truncated SVD.
+We solve our discrete system using an oversampled collocation method, as outlined in [2], taking around 40% more collocation points than basis elements. This leads to a rectangular system, which can be solved in a least-squares sense, via a truncated SVD, minimising
+
+<img src="http://latex.codecogs.com/svg.latex?\sum_{m=1}^M|\mathcal{S}_k(\nu_N(s_m)+\Psi(\mathbf{x}(s_m)))-u^i(\mathbf{x}(s_m))|,\quad M\geq 1.4N" border="0"/>,
 
 # Example code
 ```matlab
