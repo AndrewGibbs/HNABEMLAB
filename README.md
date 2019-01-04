@@ -6,11 +6,11 @@ Requires PathFinder (available from https://github.com/AndrewGibbs/NSDpackage) t
 
 For polygons (not yet thoroughly tested), requires Chebfun (https://github.com/chebfun/chebfun) to be on Matlab search path.
 
-Currently seems stable for screens with plane wave incidence. Can (in principle) also hand polygons, and point source incidence. Computes all of these in frequency independent time, using an HNA basis [1] and oscillatory quadrature routines [3], with oversampled collocation [2].
+Currently seems stable for screens with plane wave incidence. Can (in principle) also handle polygons, and point source incidence. Computes all of these in frequency independent time, using an HNA basis [1] and oscillatory quadrature routines [3], with oversampled collocation [2].
 
 # Problem statement & formulation
 
-For problems of scattering of an incident wave <img src="http://latex.codecogs.com/svg.latex?u^i=\mathrm{e}^{\mathrm{i}k\mathbf{d}\cdot\mathbf{x}}" border="0"/> by a screen <img src="http://latex.codecogs.com/svg.latex?\Gamma" border="0"/>, we aim to compute the total field <img src="http://latex.codecogs.com/svg.latex?u:=u^i+u^s" border="0"/>, where <img src="http://latex.codecogs.com/svg.latex?u^s" border="0"/> is the scattered field.
+For problems of scattering of an incident wave <img src="http://latex.codecogs.com/svg.latex?u^i(\mathbf{x})=\mathrm{e}^{\mathrm{i}k\mathbf{d}\cdot\mathbf{x}}" border="0"/> by a screen <img src="http://latex.codecogs.com/svg.latex?\Gamma" border="0"/>, we aim to compute the total field <img src="http://latex.codecogs.com/svg.latex?u:=u^i+u^s" border="0"/>, where <img src="http://latex.codecogs.com/svg.latex?u^s" border="0"/> is the scattered field.
 
 Solution satisfies the Helmholtz equation:
 
@@ -22,7 +22,7 @@ which we can reformulate for <img src="http://latex.codecogs.com/svg.latex?[\par
 
 The HNA Ansatz for the screen is
 
- <img src="http://latex.codecogs.com/svg.latex?[\partial_nu](\mathbf{x})(s):=v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}+\Psi(\mathbf{x}),\quad\text{on }\Gamma" border="0"/>
+ <img src="http://latex.codecogs.com/svg.latex?[\partial_nu](\mathbf{x})(s):=v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}+\Psi(\mathbf{x}),\quad\text{on}\quad\Gamma" border="0"/>
 
 where ![equation](https://latex.codecogs.com/gif.latex?%5CPsi%3D%5Cfrac%7B%5Cpartial%20u%5Ei%7D%7B%5Cpartial%20n%7D), and <img src="http://latex.codecogs.com/svg.latex?v_\pm" border="0"/> are non-oscillatory [1].
 
