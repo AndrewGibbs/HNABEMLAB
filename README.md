@@ -12,13 +12,18 @@ Currently seems stable for screens with plane wave incidence. Can (in principle)
 
 For problems of scattering of an incident wave <img src="http://latex.codecogs.com/svg.latex?u^i(\mathbf{x})=\mathrm{e}^{\mathrm{i}k\mathbf{d}\cdot\mathbf{x}}" border="0"/> by a screen <img src="http://latex.codecogs.com/svg.latex?\Gamma" border="0"/>, we aim to compute the total field <img src="http://latex.codecogs.com/svg.latex?u:=u^i+u^s" border="0"/>, where <img src="http://latex.codecogs.com/svg.latex?u^s" border="0"/> is the scattered field.
 
-Solution satisfies the Helmholtz equation:
+Our solution satisfies the exterior Helmholtz BVP:
 
+ <img src="http://latex.codecogs.com/svg.latex?(\Delta+k^2)u=0\quad\text{in}\quad\mathbb{R}^2,\quad u|_\Gamma=0\quad\text{on}\quad\Gamma" border="0"/>
+ 
+ and <img src="http://latex.codecogs.com/svg.latex?u^s" border="0"/> satisfies the Sommerfeld radiation condition.
+<!---
 ![equation](https://latex.codecogs.com/gif.latex?%28%5CDelta&plus;k%5E2%29u%3D0%5Cquad%5Ctext%7Bin%20%7D%5Cmathbb%7BR%7D%5E2%5Csetminus%5CGamma%2C%20%5Cquad%20u%3D0%5Cquad%5Ctext%7Bon%20%7D%5CGamma)
+-->
 
 which we can reformulate for <img src="http://latex.codecogs.com/svg.latex?[\partial_nu]:=\partial_n^+u - \partial_n^-u" border="0"/> as
 
- <img src="http://latex.codecogs.com/svg.latex?\int_\Gamma H_0^{(1)}(k|\mathbf{x}-\mathbf{y}|)\partial_nu(\mathbf{y})\mathrm{d}s(\mathbf{y})" border="0"/>
+ <img src="http://latex.codecogs.com/svg.latex?\int_\Gamma^{~} H_0^{(1)}(k|\mathbf{x}-\mathbf{y}|)[\partial_nu](\mathbf{y})\mathrm{d}s(\mathbf{y}) = u^i(\mathbf{x}),\quad\text{on}\quad\Gamma" border="0"/>
  
  <!---
 ![equation](https://latex.codecogs.com/gif.latex?%5Cint_%5CGamma%5Cfrac%7B%5Cmathrm%7Bi%7D%7D%7B4%7DH_0%5E%7B%281%29%7D%28k%7C%5Cmathbf%7Bx%7D-%5Cmathbf%7By%7D%7C%29%5B%5Cpartial_nu%5D%28%5Cmathbf%7By%7D%29%5Cmathrm%7Bd%7Ds%28%5Cmathbf%7By%7D%29%3Du%5Ei%28%5Cmathbf%7Bx%7D%29%2C%5Cquad%5Ctext%7Bon%20%7D%5CGamma.)
@@ -26,7 +31,7 @@ which we can reformulate for <img src="http://latex.codecogs.com/svg.latex?[\par
 
 The HNA Ansatz for the screen is
 
- <img src="http://latex.codecogs.com/svg.latex?[\partial_nu](\mathbf{x})(s):=v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}+\Psi(\mathbf{x}),\quad\text{on}\quad\Gamma" border="0"/>
+ <img src="http://latex.codecogs.com/svg.latex?[\partial_nu](\mathbf{x})(s):=v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}+\Psi(\mathbf{x}),\quad\text{on }\quad\Gamma" border="0"/>
 
 where  <img src="http://latex.codecogs.com/svg.latex?\Psi:=2\partial_n^+u^i" border="0"/>, and <img src="http://latex.codecogs.com/svg.latex?v_\pm" border="0"/> are non-oscillatory [1].
 
