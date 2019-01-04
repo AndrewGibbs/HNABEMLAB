@@ -4,9 +4,9 @@ Fast solver for high frequency scattering problems in 2-dimensions. Uses colloca
 
 Requires PathFinder (available from https://github.com/AndrewGibbs/NSDpackage) to be on Matlab search path.
 
-For polygons, requires Chebfun (https://github.com/chebfun/chebfun) to be on Matlab search path.
+For polygons (not yet thoroughly tested), requires Chebfun (https://github.com/chebfun/chebfun) to be on Matlab search path.
 
-Currently stable for screens with plane wave incidence. Can (in principle) also hand polygons, and point source incidence. Computes all of these in frequency independent time, using an HNA basis and oscillatory quadrature routines, with oversampled collocation.
+Currently seems stable for screens with plane wave incidence. Can (in principle) also hand polygons, and point source incidence. Computes all of these in frequency independent time, using an HNA basis [1] and oscillatory quadrature routines [3], with oversampled collocation [2].
 
 # Problem statement & formulation
 
@@ -16,9 +16,23 @@ Solution satisfies the Helmholtz equation:
 
 ![equation](https://latex.codecogs.com/gif.latex?%28%5CDelta&plus;k%5E2%29u%3D0%5Cquad%5Ctext%7Bin%20%7D%5Cmathbb%7BR%7D%5E2%5Csetminus%5CGamma%2C%20%5Cquad%20u%3D0%5Cquad%5Ctext%7Bon%20%7D%5CGamma)
 
-which we can reformulate as
+which we can reformulate for <img src="http://latex.codecogs.com/svg.latex?[\partial_nu]:=\partial_n^+u + \partial_n^-u" border="0"/> as
 
-![equation](https://latex.codecogs.com/gif.latex?%5Cint_%5CGamma%5CPhi%28x%2Cy%29%5Cfrac%7B%5Cpartial%20u%7D%7B%5Cpartial%20n%7D%28y%29dy%3Du%5Ei%28x%29%2C%5Cquad%5Ctext%7Bon%20%7D%5CGamma.)
+![equation](https://latex.codecogs.com/gif.latex?%5Cint_%5CGamma%5Cfrac%7B%5Cmathrm%7Bi%7D%7D%7B4%7DH_0%5E%7B%281%29%7D%28k%7C%5Cmathbf%7Bx%7D-%5Cmathbf%7By%7D%7C%29%5B%5Cpartial_nu%5D%28%5Cmathbf%7By%7D%29%5Cmathrm%7Bd%7Ds%28%5Cmathbf%7By%7D%29%3Du%5Ei%28%5Cmathbf%7Bx%7D%29%2C%5Cquad%5Ctext%7Bon%20%7D%5CGamma.)
+
+The HNA Ansatz for the screen is
+
+ <img src="http://latex.codecogs.com/svg.latex?[\partial_nu](\mathbf{x})(s):=v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}+\Psi(\mathbf{x}),\quad\text{on }\Gamma" border="0"/>
+
+where ![equation](https://latex.codecogs.com/gif.latex?%5CPsi%3D%5Cfrac%7B%5Cpartial%20u%5Ei%7D%7B%5Cpartial%20n%7D), and <img src="http://latex.codecogs.com/svg.latex?v_\pm" border="0"/> are non-oscillatory [1].
+
+# Approxixmation
+
+We approximate <img src="http://latex.codecogs.com/svg.latex?=v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}" border="0"/> using an HNA basis on a single mesh on <img src="http://latex.codecogs.com/svg.latex?\Gamma" border="0"/>, graded towards the endpoints to capture the singularities.
+
+We solve our discrete system using an oversampled collocation method, as outlined in [2], taking around 40% more collocation points than basis elements. This leads to a rectangular system, which can be solved in a least-squares sense, via a truncated SVD.
+
+# Example code
 ```matlab
     % run addPathsHNA() to add necessary search paths
     %wavenumber
@@ -84,3 +98,11 @@ And plot the solution in the domain:
     Gamma.draw;
 ```
 ![HNABEMLAB](https://raw.github.com/AndrewGibbs/HNABEMLAB/master/domainPlot_k60.png)
+
+# References:
+
+[1] D Hewett, S. Langdon & S.N. Chandler-Wilde, <a href="https://arxiv.org/pdf/1401.2786.pdf">A frequency-independent boundary element method for scattering by two-dimensional screens and apertures</a>
+
+[2] B. Adcock & D. Huybrechs, <a href="https://arxiv.org/pdf/1802.01950.pdf">Frames and numerical approximation II: generalized sampling</a>
+
+[3] A. Gibbs & D. Huybrechs, <a href="https://people.cs.kuleuven.be/~andrew.gibbs/AGibbs5.pdf">Frames and numerical approximation II: generalized sampling</a>
