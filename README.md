@@ -28,7 +28,7 @@ where ![equation](https://latex.codecogs.com/gif.latex?%5CPsi%3D%5Cfrac%7B%5Cpar
 
 # Approxixmation
 
-We approximate <img src="http://latex.codecogs.com/svg.latex?=v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}" border="0"/> using an HNA basis on a single mesh on <img src="http://latex.codecogs.com/svg.latex?\Gamma" border="0"/>, graded towards the endpoints to capture the singularities.
+We approximate <img src="http://latex.codecogs.com/svg.latex?v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}" border="0"/> using an HNA basis on a single mesh on <img src="http://latex.codecogs.com/svg.latex?\Gamma" border="0"/>, graded towards the endpoints to capture the singularities.
 
 We solve our discrete system using an oversampled collocation method, as outlined in [2], taking around 40% more collocation points than basis elements. This leads to a rectangular system, which can be solved in a least-squares sense, via a truncated SVD.
 
@@ -105,4 +105,4 @@ And plot the solution in the domain (this bit isn't frequency independent):
 
 [2] B. Adcock & D. Huybrechs, <a href="https://arxiv.org/pdf/1802.01950.pdf">Frames and numerical approximation II: generalized sampling</a>
 
-[3] A. Gibbs & D. Huybrechs, <a href="https://people.cs.kuleuven.be/~andrew.gibbs/AGibbs5.pdf">Frames and numerical approximation II: generalized sampling</a>
+[3] A. Gibbs & D. Huybrechs, <a href="https://people.cs.kuleuven.be/~andrew.gibbs/AGibbs5.pdf">A new toolbox for highly oscillatory and singular integrals</a>
