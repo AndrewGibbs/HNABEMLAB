@@ -36,16 +36,10 @@ The HNA Ansatz for the screen is
 
 where  <img src="http://latex.codecogs.com/svg.latex?\Psi:=2\partial_n^+u^i" border="0"/>, and <img src="http://latex.codecogs.com/svg.latex?v_\pm" border="0"/> are non-oscillatory [1].
 
-# Approxixmation
+# Numerical Approxixmation
 
-We approximate <img src="http://latex.codecogs.com/svg.latex?\nu_N\approx~v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}" border="0"/> using an HNA basis on a single mesh on <img src="http://latex.codecogs.com/svg.latex?\Gamma" border="0"/>, graded towards the endpoints to capture the singularities.
+First create instances of the fundamental objects which define our problem.
 
-We solve our discrete system using an oversampled collocation method, as outlined in [2], taking around 40% more collocation points <img src="http://latex.codecogs.com/svg.latex?\{s_m\}_{m=1}^M" border="0"/> than basis elements. This leads to a rectangular system, which can be solved in a least-squares sense, via a truncated SVD, minimising
-
-<img src="http://latex.codecogs.com/svg.latex?\sum_{m=1}^M|\mathcal{S}_k(\nu_N(s_m)+\Psi(\mathbf{x}(s_m)))-u^i(\mathbf{x}(s_m))|," border="0"/>,
-for <img src="http://latex.codecogs.com/svg.latex?M\geq1.4N" border="0"/>
-
-# Example code
 ```matlab
     % run addPathsHNA() to add necessary search paths
     %wavenumber
@@ -59,6 +53,18 @@ for <img src="http://latex.codecogs.com/svg.latex?M\geq1.4N" border="0"/>
     %inident plane wave -------------------------------------------------------
     d = [1 1]./sqrt(2); %direction as a vector
     uinc=planeWave(kwave,d);
+```
+As is standard for HNA methods, we approximate 
+
+<img src="http://latex.codecogs.com/svg.latex?\nu_N\approx~[\partial_nu](\mathbf{x}(s))-\Psi(\mathbf{x}(s))=v_+(s)\mathrm{e}^{\mathrm{i}ks}+v_-(s)\mathrm{e}^{-\mathrm{i}ks}" border="0"/>
+
+using an HNA basis on a single mesh on <img src="http://latex.codecogs.com/svg.latex?\Gamma" border="0"/>, graded towards the endpoints to capture the singularities.  Hence our solution
+
+<img src="http://latex.codecogs.com/svg.latex?\nu_N\in\{\rho_+(s)\mathrm{e}^{\mathrm{i}ks}+\rho_-(1-s)\mathrm{e}^{-\mathrm{i}ks}:\rho_\pm\in\mathbb{P}_{p,n}(0,1)\}" border="0"/>
+
+where <img src="http://latex.codecogs.com/svg.latex?\mathbb{P}_{p,n}(0,1)" border="0"/> is the space of piecewise polynomials on the unit interval of order <img src="http://latex.codecogs.com/svg.latex?p" border="0"/> with <img src="http://latex.codecogs.com/svg.latex?n" border="0"/> layers of grading towards zero.
+
+```matlab
 
     %make an HNA basis on Gamma -----------------------------------------------
     pMax = 8; %polynomial degree
@@ -73,7 +79,13 @@ for <img src="http://latex.codecogs.com/svg.latex?M\geq1.4N" border="0"/>
 
     % construct the single layer potential 'operator' ---------------------------
     S=singleLayer(kwave,Gamma);
+```
 
+We solve our discrete system using an oversampled collocation method, as outlined in [2], taking around 40% more collocation points <img src="http://latex.codecogs.com/svg.latex?\{s_m\}_{m=1}^M" border="0"/> than basis elements. This leads to a rectangular system, which can be solved in a least-squares sense, via a truncated SVD, minimising
+
+<img src="http://latex.codecogs.com/svg.latex?\sum_{m=1}^M|\mathcal{S}_k(\nu_N(s_m)+\Psi(\mathbf{x}(s_m)))-u^i(\mathbf{x}(s_m))|\quad\text{for}\quad~M\geq1.4N" border="0"/>
+
+```matlab
     %solve (and time)
     tic;
     [v_N, GOA, colMatrix, colRHS] = ColHNA(S, VHNA, uinc, Gamma,'oversample', OverSample, 'progress');
