@@ -69,7 +69,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     colMatrix=zeros(length(Xstruct),length(Vbasis.el));
     numColPts = length(Xstruct);
     numBasEls = length(Vbasis.el);
-    parfor m=1:numColPts
+    for m=1:numColPts
         VbasisCopy = Vbasis;
         fCopy = f;
         colMatrixCol = zeros(1,numBasEls);
@@ -101,11 +101,11 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
         end
     end
     
-%     for m=1:numColPts
-%         for n=1:numBasEls
-%             colMatrixBF(m,n) = integral(@(t) Operator.kernel(abs(t-Xstruct(m).x)).*Vbasis.el(n).eval(t), Vbasis.el(n).a, Vbasis.el(n).b);
-%         end
-%     end
+    for m=1:numColPts
+        for n=1:numBasEls
+            colMatrixBF(m,n) = integral(@(t) Operator.kernel(abs(t-Xstruct(m).x)).*Vbasis.el(n).eval(t), Vbasis.el(n).a, Vbasis.el(n).b);
+        end
+    end
     
     if weighting
         for j=1:length(Xstruct)

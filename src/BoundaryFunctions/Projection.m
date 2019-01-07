@@ -36,7 +36,7 @@ classdef Projection < BoundaryFunction
            end
            
            k = basis.el(1).kwave;
-           [self.nodes, self.weights] = basis.mesh.getPoints(self.nodesPerWavelength,k,'G');
+           [self.nodes, self.weights] = basis.getPoints(self.nodesPerWavelength,k,'G');
         end  
         
         F = FarField( self, theta );

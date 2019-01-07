@@ -9,6 +9,11 @@ classdef (Abstract) basis <handle
         nLayers
         sigmaGrad
         meshDOFs
+        edgeBasis
+        elSide
+        plusCoefs = []
+        minusCoefs = []
+        nonOscCoeffs = []
     end
     
     methods

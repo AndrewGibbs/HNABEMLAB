@@ -25,7 +25,7 @@ classdef singleLayer
             g = self.domain.distAnalCorner( sDist, t, t2corner, deriv, sSide, tSide);
         end
         
-        function K = kernel(self,s,t, sSide, tSide)
+        function K = kernel(self, s, t, sSide, tSide)
             %single layer kernel
             if nargin == 2
                 %radial kernel, where s = |x-y|

@@ -5,5 +5,6 @@ function meshEl = wholeMeshSide(L)
     meshEl.distSideL = 0;
     meshEl.distSideR = 0;
     meshEl.width = L;
+    meshEl.interval = [0 L];
 end
 

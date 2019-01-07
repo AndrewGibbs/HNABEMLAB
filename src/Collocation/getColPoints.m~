@@ -50,12 +50,11 @@ function [ X, t, onSide, W] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler
 %         M=[Vbasis.meshDOFs{1} Vbasis.meshDOFs{2}];
           [E_, M] = Vbasis.mimicSingleMesh;
           E = E_.el;
-          overlapElFlag = true;
+          midEl = ceil(length(E));
     else
         E=Vbasis.mesh.el;
         M=Vbasis.meshDOFs;
         midEl = [];
-        overlapElFlag = false;
     end
     sCount = 0;
     for m=1:length(M)
@@ -82,12 +81,12 @@ function [ X, t, onSide, W] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler
         for s_=s.'
             sCount = sCount + 1;
             sSubCount = sSubCount+1;
-%             if m == midEl
-%                 overlapElFlag = true;
-%             else
-%                 overlapElFlag = false;
-%             end
-            X(sCount) = collocationPoint( E(m), .5*(s_+1), side, m, E(m).width*w(sSubCount)*.5, overlapElFlag);
+            if m == midEl
+                midElFlag = true;
+            else
+                midElFlag = false;
+            end
+            X(sCount) = collocationPoint(E(m), .5*(s_+1), side, m, E(m).width*w(sSubCount)*.5, midElFlag);
         end
     end
     onSide = ones(length(t),1);

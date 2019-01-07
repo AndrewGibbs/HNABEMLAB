@@ -79,6 +79,11 @@ function [I, quadDataOut] = colEvalV3(Op,fun, funSide, colPt, Nquad, quadDataIn,
         end
             
     if funSide == colPt.side
+        if colPt.midEl == true %need to bodge this, for the overlapping case only
+            if fun.meshEl.inverval(1)<colPt.x
+            colPt.distMeshL = colPt.x-fun.meshEl.inverval(1);
+            colPt.distMeshR;
+        end
         %same side singularity:
         distFun = @(t) abs(colPt.x - t);
         logSingInfo=singularity(colPt.x, Op.singularity, distFun);
@@ -95,15 +100,6 @@ function [I, quadDataOut] = colEvalV3(Op,fun, funSide, colPt, Nquad, quadDataIn,
         
         if  a < colPt.x && colPt.x < b
             %need to split the integral, as integrand not analytic at z=x
-            
-            if isempty(colPt.distMeshL) || isempty(colPt.distMeshR)  %need to bodge this, for the overlapping case only
-                %cannot determine which mesh element we're on, given
-                %collocation point
-                %if fun.meshEl.interval(1)<colPt.x
-                    colPt.distMeshL = colPt.x - fun.meshEl.interval(1);
-                    colPt.distMeshR = colPt.distSideR - fun.meshEl.distR;
-                %end
-            end
 
            if ~isempty(quadDataIn)
                 w1a = quadDataIn.w1a;

@@ -56,39 +56,63 @@ classdef HNAoverlappingMesh <basis
                 error('Need smaller value of sigmaGrad to obtain mesh info');
             end
             %returns points with fixed number of nodes per mesh element,
-           fakeSingleMesh = self.mimicSingleMesh;
-           [s,w] = getQuadPointsFromMesh(fakeSingleMesh,pointsPerWavelength,k,distType);
+            % distributed by distType = 'U' for uniform, 'G' for Gauss
+            s = []; w=[];
+            %numMeshEls = length(mesh{1}.el) + length(mesh{2}.el) ;
             
-        end
-        
-        function [fakeMesh, DOFs] = mimicSingleMesh(self)
-            %merge the two overlapping meshes to make a single mesh, which
-            %is useful sometimes, for allocating collocation & quadrature
-            fakeMesh.points = unique(sort([self.mesh{1}.points self.mesh{2}.points]));
-            fakeMesh.side = self.mesh{1}.side;
-            %numMeshEls = length(meshPoints)-1;
+            meshPoints = unique(sort([self.mesh{1}.points self.mesh{2}.points]));
+            numMeshEls = length(meshPoints)-1;
             %get widths
             for n = 1:(length(self.mesh{1}.el)-1)
-                  fakeMesh.el(n) = self.mesh{1}.el(n);
-                  DOFs(n) = self.meshDOFs{1}(n);
+                meshWidths(n) = self.mesh{1}.el(n).width;
+            end
+            meshWidths(n+1) = abs(self.mesh{2}.el(1).interval(2) - self.mesh{1}.el(end).interval(1));
+            halfMeshWidthsLength = length(meshWidths);
+            for n = 2:(length(self.mesh{2}.el))
+                meshWidths(n+halfMeshWidthsLength-1) = self.mesh{2}.el(n).width;
             end
             
-            %now merge the two middle mesh elements:
-            halfMeshWidthsLength = length(fakeMesh.el);
+            for n = 1:numMeshEls
+                
+                if strcmp(distType,'U')
+                    s_ = linspace(meshPoints(n), meshPoints(n+1), N).';
+                    if n<numMeshEls
+                        s_ = s_(1:(end-1));
+                    end
+                elseif strcmp(distType,'G')
+                     [s_,w_] = gauss_quad_wave_split2(meshPoints(n), meshPoints(n+1),...
+                                pointsPerWavelength, k,  meshWidths(n) );
+                end
+                s = [s; s_];
+                w = [w; w_];
+                clear s_ w_;
+            end
+        end
+        
+        function [fakeMesh DOFs] = mimicSingleMesh()
+            fakeMesh.points = unique(sort([self.mesh{1}.points self.mesh{2}.points]));
+            numMeshEls = length(meshPoints)-1;
+            %get widths
+            for n = 1:(length(self.mesh{1}.el)-1)
+                fakeMesh.el(n).width = self.mesh{1}.el(n).width;
+                fakeMesh.el(n).interval = self.mesh{1}.el(n).interval;
+                fakeMesh.el(n).distL = self.mesh{1}.el(n).distL;
+                fakeMesh.el(n).distR = self.mesh{1}.el(n).distR;
+                DOFs(n) = self.meshDOFs{1}(n);
+            end
             
-            fakeMesh.el(halfMeshWidthsLength+1).width = abs(self.mesh{2}.el(1).interval(2) - self.mesh{1}.el(end).interval(1));
-            fakeMesh.el(halfMeshWidthsLength+1).interval = [self.mesh{1}.el(end).interval(1) self.mesh{2}.el(1).interval(2)];
-            fakeMesh.el(halfMeshWidthsLength+1).distL = self.mesh{1}.el(halfMeshWidthsLength+1).distL;
-            fakeMesh.el(halfMeshWidthsLength+1).distR = fakeMesh.el(halfMeshWidthsLength+1).distL;
-            %self.mesh{1}.el(n).distR;
+            halfMeshWidthsLength = length(meshWidths);
             
-            fakeMesh.el(halfMeshWidthsLength+1).gradIndex = self.mesh{1}.el(n).gradIndex;
-            fakeMesh.el(halfMeshWidthsLength+1).pMax = self.mesh{1}.el(n).pMax;
-            DOFs(halfMeshWidthsLength+1) = self.meshDOFs{1}(end) + self.meshDOFs{2}(1);
+            fakeMesh.el(n+1).width = abs(self.mesh{2}.el(1).interval(2) - self.mesh{1}.el(end).interval(1));
+            fakeMesh.el(n+halfMeshWidthsLength-1).interval(self.mesh{1}.el(end).interval(1))
+            DOFs(n+1) = self.meshDOFs{1}(end) + self.meshDOFs{2}(1);
             
             for n = 2:(length(self.mesh{2}.el))
-                fakeMesh.el(halfMeshWidthsLength+n) = self.mesh{2}.el(n);
-                DOFs(halfMeshWidthsLength+n) = self.meshDOFs{2}(n);
+                fakeMesh.el(n+halfMeshWidthsLength-1).width = self.mesh{2}.el(n).width;
+                fakeMesh.el(n+halfMeshWidthsLength-1).interval = self.mesh{2}.el(n).interval;
+                fakeMesh.el(n+halfMeshWidthsLength-1).distL = self.mesh{2}.el(n).distL;
+                fakeMesh.el(n+halfMeshWidthsLength-1).distR = self.mesh{2}.el(n).distR;
+                DOFs(n+halfMeshWidthsLength-1) = self.meshDOFs{2}(n);
             end
         end
     end

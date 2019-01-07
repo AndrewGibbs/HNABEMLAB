@@ -56,7 +56,8 @@ classdef meshSide < mesh
                  for m_=1:(m-1) %have to manually sum
                     self.el(m).distL=self.el(m).distL+sum(self.el(m_).width);
                  end
-                self.el(length(self.el)-m+1).distR=sum(self.el(m).distL);
+                %self.el(length(self.el)-m+1).distR=sum(self.el(m).distL);
+                self.el(m).distR=side.L-self.el(m).distL-self.el(m).width;
              end
              
              %now define the 'minDex' variable for graded polynomial degree

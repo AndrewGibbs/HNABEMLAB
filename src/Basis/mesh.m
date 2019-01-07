@@ -20,13 +20,18 @@ classdef (Abstract) mesh
             end
             
              %now construct corner distances
-             for m=1:length(self.el)
-                 self.el(m).distL=0;
-                 for m_=1:(m-1) %have to manually sum
-                    self.el(m).distL=self.el(m).distL+sum(self.el(m_).width);
-                 end
-                self.el(length(self.el)-m+1).distR=sum(self.el(m).distL);
-             end
+%              for m=1:length(self.el)
+%                  self.el(m).distL=0;
+%                  for m_=1:(m-1) %have to manually sum
+%                     self.el(m).distL=self.el(m).distL+sum(self.el(m_).width);
+%                  end
+%                 self.el(length(self.el)-m+1).distR=sum(self.el(m).distL);
+%              end
+            numEls = length(self.el);
+            for m=1:length(self.el)
+                flipMesh.el(m).distL=self.el(numEls+1-m).distR;
+                flipMesh.el(m).distR=self.el(numEls+1-m).distL;
+            end
         end
         
         function hMax=maxWidth(self)

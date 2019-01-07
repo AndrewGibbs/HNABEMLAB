@@ -3,11 +3,6 @@ classdef HNAsingleMesh <basis
     properties
         %in parent basis
         alphaDist
-        plusCoefs = []
-        minusCoefs = []
-        nonOscCoeffs = []
-        edgeBasis
-        elSide
     end
     
     methods
@@ -114,6 +109,13 @@ classdef HNAsingleMesh <basis
             self.elSide = ones(size(self.el));
             
         end
+        
+        function [s, w] = getPoints(self,pointsPerWavelength,k,distType)
+            %returns points with fixed number of nodes per mesh element,
+            % distributed by distType = 'U' for uniform, 'G' for Gauss
+            [s, w] = getQuadPointsFromMesh(self.mesh,pointsPerWavelength,k,distType);
+        end
+        
     end
    
     
