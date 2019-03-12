@@ -64,7 +64,7 @@ classdef HNAoverlappingMesh <basis
         function [fakeMesh, DOFs] = mimicSingleMesh(self)
             %merge the two overlapping meshes to make a single mesh, which
             %is useful sometimes, for allocating collocation & quadrature
-            fakeMesh.points = unique(sort([self.mesh{1}.points self.mesh{2}.points]));
+            fakeMesh.points = [self.mesh{1}.points(1:(end-1)) self.mesh{2}.points(2:end)]%unique(sort([self.mesh{1}.points self.mesh{2}.points]));
             fakeMesh.side = self.mesh{1}.side;
             %numMeshEls = length(meshPoints)-1;
             %get widths

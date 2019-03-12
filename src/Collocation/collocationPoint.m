@@ -31,9 +31,9 @@ classdef collocationPoint
             end
             self.side = side;
             self.meshIndex = meshIndex;
-            if nargin == 5
+            %if nargin == 5
                 self.weight = weight;
-            end
+            %end
            
         end
     end

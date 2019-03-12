@@ -19,6 +19,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     messageFlag=false;
     standardBEMflag = false;
     standardQuadFlag = false;
+    truncParam = 1e-8;
     % -----------------------
     
     for j=1:length(varargin)
@@ -39,6 +40,8 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
                    standardQuadFlag = true;
                case 'weight'
                    weighting = true;
+               case 'trunc'
+                   truncParam = varargin{j+1};
            end
         end
     end
@@ -69,7 +72,8 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     colMatrix=zeros(length(Xstruct),length(Vbasis.el));
     numColPts = length(Xstruct);
     numBasEls = length(Vbasis.el);
-    parfor m=1:numColPts
+    parfor m=1:numColPts %can be parfor
+        %fprintf('\nm');
         VbasisCopy = Vbasis;
         fCopy = f;
         colMatrixCol = zeros(1,numBasEls);
@@ -111,16 +115,21 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
         for j=1:length(Xstruct)
             w(j) = Xstruct(j).weight;
         end
-        weightrix = diag(w);
+        weightrix = (diag(sqrt(w)));
         %now weight LS system by weighted matrix
         colRHS = weightrix * colRHS;
         colMatrix = weightrix * colMatrix;
     end
     
     %use least squares with Matlab's built in SVD to get coefficients
-    %coeffs=colMatrix\colRHS;
-    %or, use Daan's homemade SVD:
-    coeffs = pseudo_backslash(colMatrix, colRHS, 1E-8);
+    if isnan(truncParam)
+        coeffs = colMatrix\colRHS;
+    elseif strcmp(truncParam,'inv')
+        coeffs = inv(colMatrix)*colRHS;
+    else
+        %or, use Daan's homemade SVD:
+        coeffs = pseudo_backslash(colMatrix, colRHS, truncParam);
+    end
     v_N=Projection(coeffs,Vbasis);
     
     if messageFlag

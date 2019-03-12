@@ -63,7 +63,8 @@ function [ X, t, onSide, W] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler
         pts=ceil(M(m)*overSamplesPerMeshEl);
         if strcmp(type,'C')%Chebyshev
             s=sort(cos(pi*(2*(1:pts)-1)/(2*pts))).';
-            w =ones(pts,1)*pi./pts;
+            %w =ones(pts,1)*pi./pts;
+            w = RiemannWeights(s,-1,1);
         elseif strcmp(type,'U')%uniform
             s=linspace(-1,1,pts+2).'; %add two extra points (endpoints)
             s=s(2:(end-1)); %delete the extra two points
