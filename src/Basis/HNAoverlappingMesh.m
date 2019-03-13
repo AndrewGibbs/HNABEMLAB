@@ -10,6 +10,12 @@ classdef HNAoverlappingMesh <basis
             self.pMax=pMax;
             self.nLayers=nLayers;
             self.sigmaGrad=sigmaGrad;
+            self.obstacle=obstacle;
+            
+            if ~isa(obstacle,'edge')
+                MultiBasis(@(x) HNAoverlappingMesh(x, pMax, kwave, nLayers, sigmaGrad), obstacle, self);
+                return;
+            end
             
             %first construct the mesh
             mesh1=meshSide(obstacle, nLayers, sigmaGrad);
@@ -38,8 +44,6 @@ classdef HNAoverlappingMesh <basis
                 end
             end
             
-%            self.numEls=elCount;
-            self.obstacle=obstacle;
             self.mesh{1}=mesh1;
             self.mesh{2}=mesh2;
             

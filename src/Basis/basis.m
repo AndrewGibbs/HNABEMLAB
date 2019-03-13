@@ -32,9 +32,6 @@ classdef (Abstract) basis <handle
         end
         
         %can't overload indexing function, as this already has a meaning
-%         function out=subsindex(self,n)
-%             out=self.el(n);
-%         end
         function n=numEls(self)
             n=length(self.el);
         end

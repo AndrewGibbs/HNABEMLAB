@@ -1,4 +1,4 @@
-classdef  baseFnHNA < BoundaryFunction
+classdef  baseFnHNA < EdgeFunction
     properties
         p
         kwave
