@@ -12,7 +12,9 @@ classdef edge < scatteringObject
         
         %constructor
         function self = edge(vertices)
-            if ~isequal(size(vertices),[2,2])
+            if nargin == 0
+                vertices = [0 0; 1 0];
+            elseif  ~isequal(size(vertices),[2,2])
                 error('Input for screen must be two by two sets of vertices');
             end
             %store endpoints
@@ -23,6 +25,7 @@ classdef edge < scatteringObject
             self.nv=[self.dSv(2) -self.dSv(1)];
             self.supp=[0 self.L];
             self.numSides = 1; % screen has one side by default
+            self.vertices = vertices;
         end
         
         function y=trace(self,s,~)

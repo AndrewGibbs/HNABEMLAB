@@ -10,6 +10,10 @@ function self=MultiCollocation(copyCol, Vbasis, self)
          self.edgeCol{n} = copyCol(Vbasis.edgeBasis{n});
          cumNumPtsNext = length(self.edgeCol{n}.pt)+cumNumPtsPrev-1;
          self.pt(cumNumPtsPrev:cumNumPtsNext) = self.edgeCol{n}.pt;
+         self.onEdge(cumNumPtsPrev:cumNumPtsNext) = n;
          cumNumPtsPrev = cumNumPtsNext + 1;
-     end
+    end
+     
+    self.numPoints = cumNumPtsNext;
+    self.ruleType = self.edgeCol{1}.ruleType;
 end

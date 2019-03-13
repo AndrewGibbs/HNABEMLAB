@@ -1,3 +1,4 @@
+clc;
 clear classes;
 
 %have just tried to simplify & generalise code, so that polygons, screens
@@ -34,5 +35,7 @@ for n=1:3
     GOA{n} = GeometricalOpticsFunction(ui,scats{n});
 end
 
-V = tensorBasis{2,2};
-C = Collocate(V, 1, 'C');
+V = tensorBasis{2,3};
+
+Sk=singleLayer(kwave,V.obstacle);
+ColHNAv2(Sk, V, ui, V.obstacle);

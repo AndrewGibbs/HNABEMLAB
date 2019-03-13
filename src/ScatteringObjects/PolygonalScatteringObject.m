@@ -3,7 +3,7 @@ classdef (Abstract) PolygonalScatteringObject < handle
     %polygons, etc
     
     properties
-        component
+        component = edge();%just to initialise it...
         numComponents
         vertices
         internalAngle
@@ -25,16 +25,33 @@ classdef (Abstract) PolygonalScatteringObject < handle
             val = abs(self.trace(s,sIndex)-self.trace(t,tIndex));
         end
          
-        function R = distAnal(self,s,t,deriv,sIndex,tIndex)
-            if length(s)>1
-                error('first input must be a single param value');
-            end
+        function R = distAnal(self,s,t,deriv,sGEt,sIndex,tIndex)
+%             if length(s)>1
+%                 error('first input must be a single param value');
+%             end
+            
             s=s(:); t=t(:);
+            
+%             if sIndex == tIndex
+%                 if sGEt
+%                     pm = 1;
+%                 else
+%                     pm = -1;
+%                 end
+%                 switch deriv
+%                     case 0
+%                         R = pm*(s-t);
+%                     case 1
+%                         R = pm;
+%                     otherwise
+%                         R = 0;
+%                 end
+%             end
             if sIndex == tIndex
-                x = self.side{sIndex}.trace(s);
-                y = self.side{tIndex}.trace(t);
+                x = self.component(sIndex).trace(s);
+                y = self.component(sIndex).trace(t);
                 yMx = -[ (x(1)-y(:,1))  (x(2)-y(:,2)) ];
-                dy = self.side{tIndex}.dSv;
+                dy = self.component(sIndex).dSv;
                 R0 = sqrt( (x(1) - y(:,1) ).^2 + (x(2) - y(:,2) ).^2);
                 switch deriv
                     case 0 

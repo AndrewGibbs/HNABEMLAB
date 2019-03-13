@@ -7,6 +7,7 @@ classdef ConvexPolygon < PolygonalScatteringObject
     
     methods
         function self = ConvexPolygon(vertices)
+            
             [sizeY, sizeX]= size(vertices);
             if sizeX ~= 2
                 error('Input must be Nx2 vector');
@@ -18,12 +19,11 @@ classdef ConvexPolygon < PolygonalScatteringObject
             self.L=zeros(self.numComponents,1);
             
             %create each side of the polygon as an 'edge'
-            
             self.L = 0;
             for j = 1:sizeY
-                self.component{j} = edge(self.vertices(j:(j+1),:));
-                self.L = self.L + self.component{j}.L;
-                self.component{j}.nv = - self.component{j}.nv;
+                self.component(j) = edge(self.vertices(j:(j+1),:));
+                self.L = self.L + self.component(j).L;
+                self.component(j).nv = - self.component(j).nv;
             end
             
             %now make matrix of internal angles,
@@ -33,11 +33,11 @@ classdef ConvexPolygon < PolygonalScatteringObject
                 for m= 1: self.numComponents
                     if n == m
                         self.internalAngle(m,n) = pi;
-                    elseif norm(self.component{m}.dSv - self.component{n}.dSv )<10^-12
+                    elseif norm(self.component(m).dSv - self.component(n).dSv )<10^-12
                         %sides are parallel
                         self.internalAngle(m,n) = NaN;
                     else
-                        self.internalAngle(m,n) = acos(- self.component{m}.dSv * (self.component{n}.dSv.'));
+                        self.internalAngle(m,n) = acos(- self.component(m).dSv * (self.component(n).dSv.'));
                     end
                     self.internalAngle(n,m) = self.internalAngle(m,n);
                 end
@@ -48,7 +48,7 @@ classdef ConvexPolygon < PolygonalScatteringObject
         end
         
         function val = trace(self,s,ofSide)
-            val = self.component{ofSide}.trace(s);
+            val = self.component(ofSide).trace(s);
         end
         
         function R = distAnal(self,s,t,deriv,sGEt,sSide,tSide)

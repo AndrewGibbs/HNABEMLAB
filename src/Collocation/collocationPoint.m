@@ -9,7 +9,7 @@ classdef collocationPoint
         distSideR
         distMeshL = []
         distMeshR = []
-        side
+        side %should be mostly redudanct now...
         weight=1 % in (0,infty) option to include a weight for colloction point
         %overlapFlag
     end

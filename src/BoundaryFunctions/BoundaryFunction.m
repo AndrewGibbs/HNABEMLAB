@@ -9,6 +9,11 @@ classdef (Abstract) BoundaryFunction < handle
     methods 
         
         function self = BoundaryFunction(domain, edgeComponents, suppEdges)
+            %necessary init stage so that edgeComponent doesn't get
+            %auto-defined as a vector - Matlab will complain if we try to
+            %overwrite this
+           self.edgeComponent = edgeComponents(domain.component(1));
+           
            if nargin == 2 
                self.suppEdges = true( domain.numComponents,1);
            else
@@ -17,7 +22,7 @@ classdef (Abstract) BoundaryFunction < handle
            self.numEdgeComponents = domain.numComponents;
            self.domain = domain;
            for n=1:self.numEdgeComponents
-               self.edgeComponent{n} = edgeComponents(self.domain.component{n});
+               self.edgeComponent(n) = edgeComponents(self.domain.component(n));
            end
         end
         

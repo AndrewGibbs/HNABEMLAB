@@ -62,9 +62,9 @@ classdef singleLayer
         function m = phaseMaxStationaryPointOrder(self,sameSide)
             % ** need to add some extra conditions in here when I do
             % polygons
-            if isa(self.domain,'edge')
+            if isa(self.domain,'Screen') || isa(self.domain,'MultiScreen')
                m=0; 
-            elseif isa(self.domain,'polygon')
+            elseif isa(self.domain,'ConvexPolygon')
                 if ~sameSide
                     m=1;
                 else

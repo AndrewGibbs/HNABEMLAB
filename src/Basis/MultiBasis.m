@@ -9,7 +9,7 @@ function self=MultiBasis(copyBasis, obstacle, self)
     self.meshDOFs = [];
     for n=1:obstacle.numComponents
         indexStart = indexEnd + 1;
-        self.edgeBasis{n} = copyBasis(obstacle.component{n});
+        self.edgeBasis{n} = copyBasis(obstacle.component(n));
         indexEnd = indexStart -1 + length(self.edgeBasis{n}.el);
         self.mesh{n} = self.edgeBasis{n}.mesh;
 

@@ -6,16 +6,20 @@ classdef Collocate < handle
         ruleType
         pt
         edgeCol
+        onEdge
+        numPoints
     end
     
     methods
         function self = Collocate(Vbasis, sampleRatio, rule)
-    
+%             %initialise here:
+%             self.edgeCol = Collocate(Vbasis.edgeBasis{1}, sampleRatio, rule);
     
             self.pt = collocationPoint(blankMesh(),0,[],1,1,false);
 
              if ~isa(Vbasis.obstacle,'edge')
                  MultiCollocation(@(x) Collocate(x, sampleRatio, rule), Vbasis, self);
+                 self.sampleRatio = sampleRatio;
                  return;
              end
              
@@ -32,7 +36,7 @@ classdef Collocate < handle
                  rule = @(pts) self.ChebRule(pts);
              elseif iseequal(rule,'U')
                  self.ruleType = 'Uniform';
-                 rule = @(pts) self.UniformRule(pts)
+                 rule = @(pts) self.UniformRule(pts);
              else
                  self.ruleType = 'User defined';
              end
