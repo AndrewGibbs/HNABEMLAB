@@ -52,7 +52,7 @@ function [ X, t, onSide, W] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler
           E = E_.el;
           overlapElFlag = true;
     else
-        E=Vbasis.mesh.el;
+        E=Vbasis.mesh{side}.el;
         M=Vbasis.meshDOFs;
         midEl = [];
         overlapElFlag = false;

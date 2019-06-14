@@ -32,22 +32,22 @@ classdef (Abstract) PolygonalScatteringObject < handle
             
             s=s(:); t=t(:);
             
-%             if sIndex == tIndex
-%                 if sGEt
-%                     pm = 1;
-%                 else
-%                     pm = -1;
-%                 end
-%                 switch deriv
-%                     case 0
-%                         R = pm*(s-t);
-%                     case 1
-%                         R = pm;
-%                     otherwise
-%                         R = 0;
-%                 end
-%             end
             if sIndex == tIndex
+                %sGEt = min(s)>=max(t);
+                if sGEt
+                    pm = 1;
+                else
+                    pm = -1;
+                end
+                switch deriv
+                    case 0
+                        R = pm*(s-t);
+                    case 1
+                        R = -pm;
+                    otherwise
+                        R = 0;
+                end
+            else
                 x = self.component(sIndex).trace(s);
                 y = self.component(sIndex).trace(t);
                 yMx = -[ (x(1)-y(:,1))  (x(2)-y(:,2)) ];

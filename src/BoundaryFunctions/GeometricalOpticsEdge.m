@@ -34,7 +34,7 @@ classdef GeometricalOpticsEdge < EdgeFunction
             val = 2*self.dirConst*self.uinc.NeuTrace(s,Edge);
         end
             
-        function valNonOsc = evalNonOscAnal(self, s)
+        function valNonOsc = evalNonOscAnal(self, s, ~)
             
             Edge = self.domain;
             

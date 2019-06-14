@@ -27,15 +27,15 @@ classdef (Abstract) BoundaryFunction < handle
         end
         
         function val = eval(self, x, nEdge)
-            val = self.edgeComponent{nEdge}.eval(x);
+            val = self.edgeComponent(nEdge).eval(x);
         end
         
         function val = nonOscAnal(self, x, nEdge)
-            val = self.edgeComponent{nEdge}.nonOscAnal(x);
+            val = self.edgeComponent(nEdge).nonOscAnal(x);
         end
         
         function val = phaseAnal(self, x, deriv, nEdge)
-            val = self.edgeComponent{nEdge}.phaseAnal(x,deriv);
+            val = self.edgeComponent(nEdge).phaseAnal(x,deriv);
         end
     end
     

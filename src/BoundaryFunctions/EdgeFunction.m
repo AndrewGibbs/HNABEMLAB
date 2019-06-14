@@ -20,6 +20,12 @@ classdef (Abstract) EdgeFunction
         eval(obj)
         nonOscAnal(obj)
         phaseAnal(obj)
+        
+        function S = getSupp(self,side)
+            if isa(self.domain,'edge')
+               S = self.supp; 
+            end
+        end
     end
     
 end

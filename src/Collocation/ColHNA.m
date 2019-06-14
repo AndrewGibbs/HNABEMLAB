@@ -69,7 +69,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     colMatrix=zeros(length(Xstruct),length(Vbasis.el));
     numColPts = length(Xstruct);
     numBasEls = length(Vbasis.el);
-    parfor m=1:numColPts %can be parfor
+    for m=1:numColPts %can be parfor
         %fprintf('\nm');
         VbasisCopy = Vbasis;
         fCopy = f;
@@ -92,7 +92,10 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
         colMatrix(m,:) = colMatrixCol;
         fX = fCopy.eval(Xstruct(m).x,Xstruct(m).side);
         if ~standardBEMflag
-           SPsiX = colEvalV3(Operator, GOA, GOA.illumSides, Ystruct(m), Nquad,[], standardQuadFlag);
+           SPsiX = 0;
+           for GOAedge = GOA.suppEdges
+               SPsiX = SPsiX + colEvalV3(Operator, GOA.edgeComponent(GOAedge), GOAedge, Ystruct(m), Nquad,[], standardQuadFlag);
+           end
            colRHS(m)  = fX - SPsiX;
         else
            colRHS(m)  = fX;
@@ -127,7 +130,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
         %or, use Daan's homemade SVD:
         coeffs = pseudo_backslash(colMatrix, colRHS, truncParam);
     end
-    v_N=Projection(coeffs,Vbasis);
+    v_N=ProjectionFunction(coeffs,Vbasis);
     
     if messageFlag
         toc
