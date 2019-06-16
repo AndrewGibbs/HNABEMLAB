@@ -6,7 +6,7 @@ Requires PathFinder (available from https://github.com/AndrewGibbs/NSDpackage) t
 
 For polygons (not yet thoroughly tested), requires Chebfun (https://github.com/chebfun/chebfun) to be on Matlab search path.
 
-Currently seems stable for screens with plane wave incidence. Can (in principle) also handle polygons, and point source incidence. Computes all of these in frequency independent time, using an HNA basis [1] and oscillatory quadrature routines [3], with oversampled collocation [2].
+Currently stable for screens with plane wave incidence, and multiple alligned screens, which are not too close together. Can (in principle) also handle polygons, and point source incidence. Computes all of these in frequency independent time, using an HNA basis [1] and oscillatory quadrature routines [3], with oversampled collocation [2].
 
 # Problem statement & formulation
 
