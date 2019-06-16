@@ -18,22 +18,8 @@ classdef HNAsingleMesh <basis
             self.alphaDist=alphaDist;
             self.obstacle=obstacle;
             
-            if isa(obstacle,'polygon')
-                indexEnd = 0;
-                self.meshDOFs = [];
-                for n=1:obstacle.numSides
-                    indexStart = indexEnd + 1;
-                    self.edgeBasis{n} = HNAsingleMesh(obstacle.side{n}, pMax, kwave, alphaDist, nLayers, sigmaGrad, oscNearEndPoints);
-                    indexEnd = indexStart -1 + length(self.edgeBasis{n}.el);
-                    self.mesh{n} = self.edgeBasis{n}.mesh;
-                    
-                    self.plusCoefs    = [self.plusCoefs    indexStart+self.edgeBasis{n}.plusCoefs];
-                    self.minusCoefs   = [self.minusCoefs   indexStart+self.edgeBasis{n}.minusCoefs];
-                    self.nonOscCoeffs = [self.nonOscCoeffs indexStart+self.edgeBasis{n}.nonOscCoeffs];
-                    self.el           = [self.el           self.edgeBasis{n}.el];
-                    self.meshDOFs     = [self.meshDOFs     self.edgeBasis{n}.meshDOFs];
-                    self.elSide(indexStart:indexEnd) = n;
-                end
+            if ~isa(obstacle,'edge')
+                MultiBasis(@(x) HNAsingleMesh(x, pMax, kwave, alphaDist, nLayers, sigmaGrad, oscNearEndPoints), obstacle, self);
                 return;
             end
             
@@ -106,7 +92,7 @@ classdef HNAsingleMesh <basis
 %            self.numEls=elCount;
             self.mesh=mesh;
             
-            self.elSide = ones(size(self.el));
+            self.elEdge = ones(size(self.el));
             
         end
         

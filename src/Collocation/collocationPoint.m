@@ -1,6 +1,5 @@
 classdef collocationPoint
-    %UNTITLED Summary of this class goes here
-    %   Detailed explanation goes here
+    % all the info you could ever want about a single point
     
     properties
         x    % in [0,L]
@@ -9,7 +8,7 @@ classdef collocationPoint
         distSideR
         distMeshL = []
         distMeshR = []
-        side
+        side %should be mostly redudanct now...
         weight=1 % in (0,infty) option to include a weight for colloction point
         %overlapFlag
     end

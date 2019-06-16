@@ -1,7 +1,7 @@
 function [stationaryPoints,orders,badPoints] = symbolicStationaryPoints(x, fun, funSide, phase)
 %looks at types of phase and determines if stationary points can be
 %determined symbolically
-
+    badPoints = [];
     if nargin == 3
         tweaking = false;
     else
@@ -15,10 +15,12 @@ function [stationaryPoints,orders,badPoints] = symbolicStationaryPoints(x, fun, 
     stationaryPoints = NaN;
     orders = NaN;
 
-    if isa(fun,'GeometricalOpticsFunction')
+    if isa(fun,'GeometricalOpticsEdge')
         if isa(fun.uinc,'planeWave')
             [stationaryPoints,orders] = HNApolygonSpecialCasePWGOA(x,fun.domain.side{funSide},fun.uinc.d);
-            badPoints = nonAnalPoint(x,fun.domain.side{funSide});
+            if isa(Op.domain,'Polygon')
+                badPoints = nonAnalPoint(x,fun.domain.side{funSide});
+            end
         end
     elseif isa(fun,'baseFnHNA')
         [stationaryPoints,orders] = HNApolygonSpecialCase(x,Edge,fun.pm);

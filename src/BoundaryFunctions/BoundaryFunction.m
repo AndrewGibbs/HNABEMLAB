@@ -1,54 +1,71 @@
-classdef (Abstract) BoundaryFunction 
-    %IF THIS EVER BECOMES A HANDLE CLASS, NEED TO CHANGE RESTRICTION BELOW
-    %have children HNA and hp
-    
-    % ** should ultimately include a nonOscAnal bit in here, to force all
-    % subclasses to share this method.
+classdef (Abstract) BoundaryFunction < handle
     properties
-        supp %mesh interval over which fn is supported
-        suppWidth %measure of support
-        domain %side on which the support lives, when parametrised, supp is a subset
-        oscillator %required for any oscillatory integration
-        %phase
-        a
-        b
-        phaseMaxStationaryPointOrder
-        meshEl
-        nodesPerWavelength = 10
+       domain
+       edgeComponent
+       numEdgeComponents
+       suppEdges
     end
     
     methods 
-        eval(obj)
-        nonOscAnal(obj)
-        phaseAnal(obj)
         
-        function ResBasFn=restrictTo(self,ResDomain,ResWidth)
-%             ResBasFn=copy(self);
-%             ResBasFn.supp=ResDomain;
-          ResBasFn=self;
-            if nargin==2
-                ResBasFn.suppWidth=ResDomain(2)-ResDomain(1);
-            else
-                ResBasFn.suppWidth=ResWidth;
-            end
-          ResBasFn.supp=ResDomain;
+        function self = BoundaryFunction(domain, edgeComponents, suppEdges)
+            %necessary init stage so that edgeComponent doesn't get
+            %auto-defined as a vector - Matlab will complain if we try to
+            %overwrite this
+           self.edgeComponent = edgeComponents(domain.component(1));
+           
+           if nargin == 2 
+               self.suppEdges = true( domain.numComponents,1);
+           else
+               self.suppEdges = suppEdges;
+           end
+           self.numEdgeComponents = domain.numComponents;
+           self.domain = domain;
+           for n=1:self.numEdgeComponents
+               self.edgeComponent(n) = edgeComponents(self.domain.component(n));
+           end
         end
         
-        function I=L2(f,g)
-            if isa(f,'BoundaryIntegral') && length(f.domain)==2 && isa(g,'BoundaryFunction')
-                I=BEMintegral2D(f.domain, f.kernel, g, f.boundaryFn);
-            elseif isa(f,'BoundaryFunction')
-                I=InnerProduct1D( f, g);
-            end
+        function val = eval(self, x, nEdge)
+            val = self.edgeComponent(nEdge).eval(x);
         end
         
-        function supp = getSupp(self,side)
-            if isa(self.domain,'edge')
-                supp = self.supp;
-            elseif isa(self.domain,'polygon')
-                supp = self.supp(side,:);
-            end
+        function val = nonOscAnal(self, x, nEdge)
+            val = self.edgeComponent(nEdge).nonOscAnal(x);
+        end
+        
+        function val = phaseAnal(self, x, deriv, nEdge)
+            val = self.edgeComponent(nEdge).phaseAnal(x,deriv);
         end
     end
     
 end
+
+
+%         function ResBasFn=restrictTo(self,ResDomain,ResWidth)
+% %             ResBasFn=copy(self);
+% %             ResBasFn.supp=ResDomain;
+%           ResBasFn=self;
+%             if nargin==2
+%                 ResBasFn.suppWidth=ResDomain(2)-ResDomain(1);
+%             else
+%                 ResBasFn.suppWidth=ResWidth;
+%             end
+%           ResBasFn.supp=ResDomain;
+%         end
+%         
+%         function I=L2(f,g)
+%             if isa(f,'BoundaryIntegral') && length(f.domain)==2 && isa(g,'BoundaryFunction')
+%                 I=BEMintegral2D(f.domain, f.kernel, g, f.boundaryFn);
+%             elseif isa(f,'BoundaryFunction')
+%                 I=InnerProduct1D( f, g);
+%             end
+%         end
+%         
+%         function supp = getSupp(self,side)
+%             if isa(self.domain,'edge')
+%                 supp = self.supp;
+%             elseif isa(self.domain,'polygon')
+%                 supp = self.supp(side,:);
+%             end
+%         end

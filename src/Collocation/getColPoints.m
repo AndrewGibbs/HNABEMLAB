@@ -1,33 +1,33 @@
-function [ X, t, onSide, W] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type, side )
+function [ X, t, onSide, W] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, type, component )
 %returns collocation points that have been evenly spread across basis
 %elements
  %ChebyshevRoots( 3, 'Tn', [1 2] )
  
  if nargin == 4
-     side = 1;
+     component = 1;
  end
  
- if isa(Vbasis.obstacle,'polygon')
-%      %call self recursively
-%      t = [];
-%      tR = []; %new variable, distance to far corner of edge, to avoid rounding errors
+%  if isa(Vbasis.obstacle,'polygon')
+% %      %call self recursively
+% %      t = [];
+% %      tR = []; %new variable, distance to far corner of edge, to avoid rounding errors
+% %      onSide = [];
+% %      side = [];
+%      X = [];
 %      onSide = [];
-%      side = [];
-     X = [];
-     onSide = [];
-     t =[];
-     for n = 1:Vbasis.obstacle.numSides
-         [X_,t_,~] = getColPoints( Vbasis.edgeBasis{n}, overSamplesPerMeshEl, scaler, type, n );
+%      t =[];
+%      for n = 1:Vbasis.obstacle.numSides
+%          [X_,t_,~] = getColPoints( Vbasis.edgeBasis{n}, overSamplesPerMeshEl, scaler, type, n );
+% %          t = [t; t_];
+% %          tma = [tma; tma_];
+% %          bmt = [bmt; bmt_];
+%          onSide((length(onSide)+1):(length(onSide)+length(t_))) = n;
+%          X = [X X_];
+%          %onSide = [onSide; onSide_];
 %          t = [t; t_];
-%          tma = [tma; tma_];
-%          bmt = [bmt; bmt_];
-         onSide((length(onSide)+1):(length(onSide)+length(t_))) = n;
-         X = [X X_];
-         %onSide = [onSide; onSide_];
-         t = [t; t_];
-     end
-     return;
- end
+%      end
+%      return;
+%  end
  
  
  if nargin <=1
@@ -52,8 +52,8 @@ function [ X, t, onSide, W] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler
           E = E_.el;
           overlapElFlag = true;
     else
-        E=Vbasis.mesh.el;
-        M=Vbasis.meshDOFs;
+        E=Vbasis.mesh{component}.el;
+        M=Vbasis.edgeBasis{component}.meshDOFs;
         midEl = [];
         overlapElFlag = false;
     end
@@ -88,7 +88,7 @@ function [ X, t, onSide, W] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler
 %             else
 %                 overlapElFlag = false;
 %             end
-            X(sCount) = collocationPoint( E(m), .5*(s_+1), side, m, E(m).width*w(sSubCount)*.5, overlapElFlag);
+            X(sCount) = collocationPoint( E(m), .5*(s_+1), component, m, E(m).width*w(sSubCount)*.5, overlapElFlag);
         end
     end
     onSide = ones(length(t),1);

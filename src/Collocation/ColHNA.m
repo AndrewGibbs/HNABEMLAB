@@ -56,16 +56,13 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     end
     
     %get collocation points.
-    [ Xstruct] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, colType);
+    Xstruct = getColPointsV2( Vbasis, overSamplesPerMeshEl, colType);
     %make a copy for RHSs, with wider domains
     Ystruct = Xstruct;
     for m = 1:length(Xstruct)
        Ystruct(m).distMeshL = Ystruct(m).distSideL;
        Ystruct(m).distMeshR = Ystruct(m).distSideR; 
     end
-    
-    %** should eventually find a way to partition the basis into mesh
-    %elements with + or - phase, so that quadrature points can be reused.
     
     %initialise main bits:
     colRHS=zeros(length(Xstruct),1);
@@ -80,22 +77,25 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
         for n=1:numBasEls
         %manually do first entry of row
            if n==1
-               [colMatrixCol(n), quadData] = colEvalV3(Operator, VbasisCopy.el(1), VbasisCopy.elSide(1), Xstruct(m), Nquad,[], standardQuadFlag);
-           elseif VbasisCopy.el(n).pm == VbasisCopy.el(n-1).pm && isequal(VbasisCopy.el(n).supp,VbasisCopy.el(n-1).supp)
+               [colMatrixCol(n), quadData] = colEvalV3(Operator, VbasisCopy.el(1), VbasisCopy.elEdge(1), Xstruct(m), Nquad,[], standardQuadFlag);
+           elseif VbasisCopy.el(n).pm == VbasisCopy.el(n-1).pm && isequal(VbasisCopy.el(n).supp,VbasisCopy.el(n-1).supp) && false
                %reuse quadrature from previous iteration of this loop,
                %(phase and domain are the same)
-               colMatrixCol(n) = colEvalV3(Operator, VbasisCopy.el(n), VbasisCopy.elSide(n), Xstruct(m), Nquad, quadData, standardQuadFlag);
+               colMatrixCol(n) = colEvalV3(Operator, VbasisCopy.el(n), VbasisCopy.elEdge(n), Xstruct(m), Nquad, quadData, standardQuadFlag);
            else
                %get fresh quadrature data
-               [colMatrixCol(n), quadData] = colEvalV3(Operator, VbasisCopy.el(n), VbasisCopy.elSide(n), Xstruct(m), Nquad,[], standardQuadFlag);
+               [colMatrixCol(n), quadData] = colEvalV3(Operator, VbasisCopy.el(n), VbasisCopy.elEdge(n), Xstruct(m), Nquad,[], standardQuadFlag);
            end
         end
         %integral(@(t) Operator.kernel(abs(t-Xstruct(m).x)).*VbasisCopy.el(n).eval(t), VbasisCopy.el(n).a, VbasisCopy.el(n).b);
-        %abs(colMatrixCol(n)-colEvalV2(Operator, VbasisCopy.el(n),VbasisCopy.elSide(n), Xstruct(m), Nquad,[],standardQuadFlag))>1e-8
+        %abs(colMatrixCol(n)-colEvalV2(Operator, VbasisCopy.el(n),VbasisCopy.elEdge(n), Xstruct(m), Nquad,[],standardQuadFlag))>1e-8
         colMatrix(m,:) = colMatrixCol;
         fX = fCopy.eval(Xstruct(m).x,Xstruct(m).side);
         if ~standardBEMflag
-           SPsiX = colEvalV3(Operator, GOA, GOA.illumSides, Ystruct(m), Nquad,[], standardQuadFlag);
+           SPsiX = 0;
+           for GOAedge = GOA.suppEdges
+               SPsiX = SPsiX + colEvalV3(Operator, GOA.edgeComponent(GOAedge), GOAedge, Ystruct(m), Nquad,[], standardQuadFlag);
+           end
            colRHS(m)  = fX - SPsiX;
         else
            colRHS(m)  = fX;
@@ -130,7 +130,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
         %or, use Daan's homemade SVD:
         coeffs = pseudo_backslash(colMatrix, colRHS, truncParam);
     end
-    v_N=Projection(coeffs,Vbasis);
+    v_N=ProjectionFunction(coeffs,Vbasis);
     
     if messageFlag
         toc

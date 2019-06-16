@@ -1,4 +1,4 @@
-function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, varargin)
+function [v_N, GOA, colMatrix, colRHS] = ColHNAv2(Operator, Vbasis, uinc, Gamma, varargin)
 %computes oversampled collocation projection using HNA basis/frame
 
     %with RHS data
@@ -19,6 +19,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     messageFlag=false;
     standardBEMflag = false;
     standardQuadFlag = false;
+    truncParam = 1e-8;
     % -----------------------
     
     for j=1:length(varargin)
@@ -39,6 +40,8 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
                    standardQuadFlag = true;
                case 'weight'
                    weighting = true;
+               case 'trunc'
+                   truncParam = varargin{j+1};
            end
         end
     end
@@ -53,56 +56,82 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     end
     
     %get collocation points.
-    [ Xstruct] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, colType);
+    C = Collocate(Vbasis, 1.5, 'C');
+    for n = 1:C.numPoints
+        Xstruct(n) = C.pt(n);
+        Xstruct(n).side = C.onEdge(n);
+    end
     
-    %** should eventually find a way to partition the basis into mesh
-    %elements with + or - phase, so that quadrature points can be reused.
+    %make a copy for RHSs, with wider domains
+    Ystruct = Xstruct;
+    for m = 1:length(Xstruct)
+       Ystruct(m).distMeshL = Ystruct(m).distSideL;
+       Ystruct(m).distMeshR = Ystruct(m).distSideR; 
+    end
     
     %initialise main bits:
     colRHS=zeros(length(Xstruct),1);
     colMatrix=zeros(length(Xstruct),length(Vbasis.el));
-    parfor m=1:length(Xstruct)
-        for n=1:length(Vbasis.el)
+    numColPts = length(Xstruct);
+    numBasEls = length(Vbasis.el);
+    for m=1:numColPts %can be parfor
+        %fprintf('\nm');
+        VbasisCopy = Vbasis;
+        fCopy = f;
+        colMatrixCol = zeros(1,numBasEls);
+        for n=1:numBasEls
         %manually do first entry of row
            if n==1
-               [colMatrix(m,n), quadData] = colEvalV2(Operator, Vbasis.el(1), Vbasis.elSide(1), Xstruct(m), Nquad,[], standardQuadFlag);
-           elseif Vbasis.el(n).pm == Vbasis.el(n-1).pm && isequal(Vbasis.el(n).supp,Vbasis.el(n-1).supp)
+               [colMatrixCol(n), quadData] = colEvalV4(Operator, VbasisCopy.el(1), VbasisCopy.elSide(1), Xstruct(m), Nquad,[], standardQuadFlag);
+           elseif VbasisCopy.el(n).pm == VbasisCopy.el(n-1).pm && isequal(VbasisCopy.el(n).supp,VbasisCopy.el(n-1).supp)
                %reuse quadrature from previous iteration of this loop,
                %(phase and domain are the same)
-               colMatrix(m,n) = colEvalV2(Operator, Vbasis.el(n), Vbasis.elSide(n), Xstruct(m), Nquad, quadData, standardQuadFlag);
+               colMatrixCol(n) = colEvalV4(Operator, VbasisCopy.el(n), VbasisCopy.elSide(n), Xstruct(m), Nquad, quadData, standardQuadFlag);
            else
                %get fresh quadrature data
-               [colMatrix(m,n), quadData] = colEvalV2(Operator, Vbasis.el(n), Vbasis.elSide(n), Xstruct(m), Nquad,[], standardQuadFlag);
+               [colMatrixCol(n), quadData] = colEvalV4(Operator, VbasisCopy.el(n), VbasisCopy.elSide(n), Xstruct(m), Nquad,[], standardQuadFlag);
            end
-        end 
-        fX = f.eval(Xstruct(m).x,Xstruct(m).side);
+        end
+        %integral(@(t) Operator.kernel(abs(t-Xstruct(m).x)).*VbasisCopy.el(n).eval(t), VbasisCopy.el(n).a, VbasisCopy.el(n).b);
+        %abs(colMatrixCol(n)-colEvalV2(Operator, VbasisCopy.el(n),VbasisCopy.elSide(n), Xstruct(m), Nquad,[],standardQuadFlag))>1e-8
+        colMatrix(m,:) = colMatrixCol;
+        fX = fCopy.eval(Xstruct(m).x,Xstruct(m).side);
         if ~standardBEMflag
-           Ystruct = Xstruct;
-           Ystruct(m).distMeshL = Ystruct(m).distSideL;
-           Ystruct(m).distMeshR = Ystruct(m).distSideR;
-           SPsiX = colEvalV2(Operator, GOA, GOA.illumSides, Ystruct(m), Nquad,[], standardQuadFlag);
+           SPsiX = colEvalV3(Operator, GOA, GOA.illumSides, Ystruct(m), Nquad,[], standardQuadFlag);
            colRHS(m)  = fX - SPsiX;
         else
            colRHS(m)  = fX;
         end
         if messageFlag
-            fprintf('\n%.1f%%',100*m/length(Xstruct));
+            fprintf('\n%d/%d%',m,numColPts);
         end
     end
+    
+%     for m=1:numColPts
+%         for n=1:numBasEls
+%             colMatrixBF(m,n) = integral(@(t) Operator.kernel(abs(t-Xstruct(m).x)).*Vbasis.el(n).eval(t), Vbasis.el(n).a, Vbasis.el(n).b);
+%         end
+%     end
     
     if weighting
         for j=1:length(Xstruct)
             w(j) = Xstruct(j).weight;
         end
-        weightrix = diag(w);
+        weightrix = (diag(sqrt(w)));
         %now weight LS system by weighted matrix
         colRHS = weightrix * colRHS;
         colMatrix = weightrix * colMatrix;
     end
     
     %use least squares with Matlab's built in SVD to get coefficients
-    %coeffs=colMatrix\colRHS;
-    coeffs = pseudo_backslash(colMatrix, colRHS, 1E-8);
+    if isnan(truncParam)
+        coeffs = colMatrix\colRHS;
+    elseif strcmp(truncParam,'inv')
+        coeffs = inv(colMatrix)*colRHS;
+    else
+        %or, use Daan's homemade SVD:
+        coeffs = pseudo_backslash(colMatrix, colRHS, truncParam);
+    end
     v_N=Projection(coeffs,Vbasis);
     
     if messageFlag

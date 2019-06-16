@@ -1,4 +1,4 @@
-function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn, CGflag)
+function [I, quadDataOut] = colEvalV3(Op,fun, funSide, colPt, Nquad, quadDataIn, CGflag)
 
 %function which evalutes integral Sf(x), essentially just a wrapper for
 %NSD45 which ensures that the phase is always the analytic continuation of
@@ -79,7 +79,6 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         end
             
     if funSide == colPt.side
-        
         %same side singularity:
         distFun = @(t) abs(colPt.x - t);
         logSingInfo=singularity(colPt.x, Op.singularity, distFun);
@@ -96,6 +95,15 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
         
         if  a < colPt.x && colPt.x < b
             %need to split the integral, as integrand not analytic at z=x
+            
+            if isempty(colPt.distMeshL) || isempty(colPt.distMeshR)  %need to bodge this, for the overlapping case only
+                %cannot determine which mesh element we're on, given
+                %collocation point
+                %if fun.meshEl.interval(1)<colPt.x
+                    colPt.distMeshL = colPt.x - fun.meshEl.interval(1);
+                    colPt.distMeshR = colPt.distSideR - fun.meshEl.distR;
+                %end
+            end
 
            if ~isempty(quadDataIn)
                 w1a = quadDataIn.w1a;
@@ -123,37 +131,49 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 I1 = (w1a.'*amp_a_flip(z1a));
                 I2 = (w1b.'*amp_b_flip(z1b));
                 I = I1 + I2;
-        else
-            
-            if colPt.distSideL < colPt.distSideR
-                a_minus_col = fun.meshEl.distL - colPt.distSideL;
-                b_minus_col = a_minus_col + fun.suppWidth;
-            else
-                
-                b_minus_col = colPt.distSideR - fun.meshEl.distR;
-                a_minus_col = b_minus_col - fun.suppWidth;
-            end
+        else %same side, no singularity in (a,b)
             
             if colPt.x <= a
-                amp = amp_b;
-                amp_flip = amp_b_flip;
+                type_ab = 'a';
                 phase = phase_b;
-                phase_flip = phase_b_flip;
-                split = [0 1];
-                a_shift = a_minus_col;
-                b_shift = b_minus_col;
             elseif b <= colPt.x
-                %analytic extension of non-osc component of kernel:
-                amp = amp_a;
-                amp_flip = amp_a_flip;
+                type_ab = 'b';
                 phase = phase_a;
-                phase_flip = phase_a_flip;
-                split = [1 0];
-                a_shift = -b_minus_col;
-                b_shift = -a_minus_col;
             else
                 %this error will probably never ever happen:
                 error('cant decide which is bigger of s and t');
+            end
+            
+            if fun.meshEl.distL <= fun.meshEl.distR
+                type_LR = 'L';
+                a_star = a;
+                b_star = b;
+                sing_star_point = colPt.x;
+                phase_star = phase;
+            else
+                type_LR = 'R';
+                a_star = fun.meshEl.distR; %= L-b;
+                b_star = fun.meshEl.distR + fun.meshEl.width;  %= L-a;
+                L_minus_a = b_star;
+                sing_star_point = colPt.distSideR;
+                for n = 1:length(phase_b)
+                    phase_star{n} = @(z) (-1)^(n+1)*phase{n}(L-z);
+                end
+            end
+            
+            %create singularity info:
+            logSingInfo_star = singularity(sing_star_point, Op.singularity);
+            
+            %there are four cases for the amp
+            switch strcat(type_LR,type_ab)
+                case 'La'
+                    amp_star = amp_b;
+                case 'Lb'
+                    amp_star = amp_a;
+                case 'Ra'
+                    amp_star =  @(z) Op.kernelNonOscAnal(colPt.distSideR, z, true, colPt.side, funSide) .* fun.evalNonOscAnalPivot(z, funSide, L_minus_a);
+                case 'Rb'
+                    amp_star =  @(z) Op.kernelNonOscAnal(colPt.distSideR, z, false, colPt.side, funSide) .* fun.evalNonOscAnalPivot(z, funSide, L_minus_a);
             end
             
             if ~isempty(quadDataIn)
@@ -161,18 +181,15 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 z_ = quadDataIn.z_;
             else
                 %now get weights and nodes:
-                logSingInfo_flip = logSingInfo;
-                logSingInfo_flip.position = 0;
-                logSingInfo_flip.distFun = @(r) abs(r);
-                [ z_, w_ ] = PathFinder( a_shift, b_shift, kwave, Nquad, phase_flip,'settlerad',rectrad,...
-                        'fSingularities', logSingInfo_flip, 'stationary points', SPin, 'order', SPOin, 'minOscs', minOscs, 'width', fun.suppWidth);
+                [ z_, w_ ] = PathFinder( a_star, b_star, kwave, Nquad, phase_star,'settlerad',rectrad,...
+                        'fSingularities', logSingInfo_star, 'stationary points', SPin, 'order', SPOin, 'minOscs', minOscs, 'width', fun.suppWidth);
                     
                 quadDataOut.w_ = w_;
                 quadDataOut.z_ = z_;
             end
                 
             %and evaluate integral:
-            I = w_.'*amp_flip(z_);
+            I = w_.'*amp_star(z_);
             %now store in correct form:
             if colPt.x <= a
                 w1b = w_;
@@ -182,6 +199,35 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 z1a = z_;
             end
         end
+    elseif isa(Op.domain,'MultiScreen')
+        
+        if colPt.side > funSide % x_1(s) > Y_1(t)
+            shiftedCol = Op.domain.segSplits(2*colPt.side-1) - Op.domain.segSplits(2*funSide)  +  colPt.x;
+            amp_shift = @(y) Op.kernelNonOscAnal(shiftedCol, y, true, colPt.side, funSide) .* fun.evalNonOscAnal(y, funSide); 
+            phase_shift = OpFunAddPhase(Op, fun, funSide, shiftedCol, colPt.side, true, maxSPorder+1);
+        else                    % x_1(s) < Y_1(t)
+            shiftedCol = -(Op.domain.segSplits(2*funSide-1) - Op.domain.segSplits(2*colPt.side-1))  +  colPt.x;
+            amp_shift = @(y) Op.kernelNonOscAnal(shiftedCol, y, false, colPt.side, funSide) .* fun.evalNonOscAnal(y, funSide); 
+            phase_shift = OpFunAddPhase(Op, fun, funSide, shiftedCol, colPt.side, false, maxSPorder+1);
+        end
+        
+       if ~isempty(quadDataIn)
+            w_ = quadDataIn.w_;
+            z_ = quadDataIn.z_;
+        else
+            %now get weights and nodes:
+            [ z_, w_ ] = PathFinder( a, b, kwave, Nquad, phase_shift,'settlerad', 'stationary points', [], 'order', [], 'minOscs', minOscs, 'width', fun.suppWidth);
+
+            quadDataOut.w_ = w_;
+            quadDataOut.z_ = z_;
+        end
+
+        %and evaluate integral:
+        I = w_.'*amp_shift(z_);
+            
+        I = integral(@(t) amp_shift(t).*exp(1i*kwave.*phase_shift{1}(t)),a,b,'ArrayValued',true);
+        quadDataOut = [];
+        
     else %no branch in phase
         
 %         I = integral(@(z) amp(z).*exp(1i*kwave*phase{1}(z)), a, b, 'arrayValued', true,'RelTol',1e-13);
@@ -189,39 +235,46 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
 %         return;
 
         quadDataOut = [];
-        [stationaryPoints, orders, branchPoints] = symbolicStationaryPoints(Op.domain.side{colPt.side}.trace(colPt.x), fun, funSide, phase);
+        %[stationaryPoints, orders, branchPoints] = symbolicStationaryPoints(Op.domain.component(colPt.side).trace(colPt.x), fun, funSide, phase);
+        stationaryPoints = [];
+        orders = [];
+        branchPoints = [];
         
         SPin = stationaryPoints;
         SPOin = orders;
         
         %determine if endpoint is close to singularity on neighbouring
         %side:
-        
-        if min(abs(a-branchPoints(1)),abs(a-branchPoints(2))) < dangerZoneRad
-            singClose2a = true;
-        else
-            singClose2a = false;
-        end
-        
-        if min(abs(b-branchPoints(1)),abs(b-branchPoints(2))) < dangerZoneRad
-            singClose2b = true;
-        else
-            singClose2b = false;
-        end
-        
-        grad2a = false; grad2b = false;
-        if singClose2a
-            if a>L/2
-                grad2b = true;
+        if ~isempty(SPin)
+            if min(abs(a-branchPoints(1)),abs(a-branchPoints(2))) < dangerZoneRad
+                singClose2a = true;
             else
-                grad2a = true;
+                singClose2a = false;
             end
-        elseif singClose2b
-            if b<L/2
-                grad2a = true;
+
+            if min(abs(b-branchPoints(1)),abs(b-branchPoints(2))) < dangerZoneRad
+                singClose2b = true;
             else
-                grad2b = true;
+                singClose2b = false;
             end
+
+            grad2a = false; grad2b = false;
+            if singClose2a
+                if a>L/2
+                    grad2b = true;
+                else
+                    grad2a = true;
+                end
+            elseif singClose2b
+                if b<L/2
+                    grad2a = true;
+                else
+                    grad2b = true;
+                end
+            end
+        else
+            grad2a = false;
+            grad2b = false;
         end
         
         if ~grad2a && ~ grad2b %no singularity issues
@@ -231,8 +284,8 @@ function [I, quadDataOut] = colEvalV2(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 z = quadDataIn.z;
                 w = quadDataIn.w;
             else
-                if isa(fun,'GeometricalOpticsFunction')
-                    width = fun.suppWidth(funSide);
+                if isa(fun,'GeometricalOpticsEdge')
+                    width = fun.suppWidth;
                 else
                     width = fun.suppWidth;
                 end

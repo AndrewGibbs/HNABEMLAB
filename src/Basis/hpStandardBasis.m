@@ -3,8 +3,6 @@ classdef hpStandardBasis <basis
     properties
         %in parent basis
         hMax
-        edgeBasis
-        elSide
     end
     
     methods
@@ -16,23 +14,8 @@ classdef hpStandardBasis <basis
             self.sigmaGrad=sigmaGrad;
             self.obstacle=obstacle;
             
-            
-            if isa(obstacle,'polygon')
-                indexEnd = 0;
-                self.meshDOFs = [];
-                for n=1:obstacle.numSides
-                    indexStart = indexEnd + 1;
-                    self.edgeBasis{n} = hpStandardBasis(obstacle.side{n}, pMax, hMax, nLayers, sigmaGrad);
-                    indexEnd = indexStart -1 + length(self.edgeBasis{n}.el);
-                    self.mesh{n} = self.edgeBasis{n}.mesh;
-                    
-%                     self.plusCoefs    = [self.plusCoefs    indexStart+self.edgeBasis{n}.plusCoefs];
-%                     self.minusCoefs   = [self.minusCoefs   indexStart+self.edgeBasis{n}.minusCoefs];
-%                     self.nonOscCoeffs = [self.nonOscCoeffs indexStart+self.edgeBasis{n}.nonOscCoeffs];
-                    self.el           = [self.el           self.edgeBasis{n}.el];
-                    self.meshDOFs     = [self.meshDOFs     self.edgeBasis{n}.meshDOFs];
-                    self.elSide(indexStart:indexEnd) = n;
-                end
+            if ~isa(obstacle,'edge')
+                MultiBasis(@(x) hpStandardBasis(x, pMax, hMax, nLayers, sigmaGrad), obstacle, self);
                 return;
             end
             
