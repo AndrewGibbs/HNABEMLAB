@@ -14,7 +14,11 @@ classdef (Abstract) PolygonalScatteringObject < handle
         val = normal(self,s);
         
         function draw(self)
-           plot(self.vertices(:,1),self.vertices(:,2)) ;
+           for n=1:self.numComponents
+               self.component(n).draw();
+               hold on;
+           end
+           hold off;
         end
     
         function val = trace(self,s,index)

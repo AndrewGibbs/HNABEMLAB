@@ -5,6 +5,8 @@ classdef GeometricalOpticsEdge < EdgeFunction
         uinc
         sourceVsnormal
         dirConst = []
+        nodes
+        weights
     end
     
     methods
@@ -21,6 +23,8 @@ classdef GeometricalOpticsEdge < EdgeFunction
             
             self.phaseMaxStationaryPointOrder = uinc.phaseMaxStationaryPointOrder;
             self.meshEl = wholeMeshSide(edge.L);
+            
+            [self.nodes, self.weights] = gauss_quad_wave_split2(self.a, self.b, self.nodesPerWavelength,  uinc.kwave, edge.L );
         end
         
         function val = eval(self, s)

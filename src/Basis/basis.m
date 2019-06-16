@@ -10,7 +10,7 @@ classdef (Abstract) basis <handle
         sigmaGrad
         meshDOFs
         edgeBasis
-        elSide
+        elEdge
         plusCoefs = []
         minusCoefs = []
         nonOscCoeffs = []

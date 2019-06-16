@@ -109,10 +109,10 @@ classdef edge < scatteringObject
         end
           
         function draw(self)
-           s = linspace(0,self.L);
+           s = linspace(0,self.L).';
            Y = self.trace(s);
-           Y1 = Y(1,:);
-           Y2 = Y(2,:);
+           Y1 = Y(:,1);
+           Y2 = Y(:,2);
            plot(Y1,Y2,'k','LineWidth',3);
         end
         

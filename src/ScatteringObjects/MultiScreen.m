@@ -4,6 +4,7 @@ classdef MultiScreen < PolygonalScatteringObject
     properties
         L %some measure of total length of boundary
         nv
+        segSplits
     end
     
     methods
@@ -27,6 +28,8 @@ classdef MultiScreen < PolygonalScatteringObject
             d = (v2-v1);
             segSplitsSorted = sort(segSplits-min(segSplits))/max(segSplits);
             
+            self.segSplits = segSplitsSorted;
+            
             self.L = 0;
             for j = 1:self.numComponents
                 v1j = v1 + d*segSplitsSorted(2*j-1);
@@ -47,6 +50,13 @@ classdef MultiScreen < PolygonalScatteringObject
         function val = trace(self,s,ofSide)
             val = self.component(ofSide).trace(s);
         end
+        
+%         function draw(self)
+%             for s = segSplits
+%                 self.vertices(:,1)
+%                 hold on;
+%             end
+%         end
         
 %         function R = distAnal(self,s,t,deriv,sGEt,sSide,tSide)
 %             s=s(:); t=t(:);

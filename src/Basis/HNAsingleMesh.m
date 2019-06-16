@@ -92,7 +92,7 @@ classdef HNAsingleMesh <basis
 %            self.numEls=elCount;
             self.mesh=mesh;
             
-            self.elSide = ones(size(self.el));
+            self.elEdge = ones(size(self.el));
             
         end
         

@@ -1,6 +1,5 @@
 classdef collocationPoint
-    %UNTITLED Summary of this class goes here
-    %   Detailed explanation goes here
+    % all the info you could ever want about a single point
     
     properties
         x    % in [0,L]

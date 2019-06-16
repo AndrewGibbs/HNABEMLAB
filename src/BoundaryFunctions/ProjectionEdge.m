@@ -3,7 +3,7 @@ classdef ProjectionEdge < EdgeFunction
     properties
         coeffs
         edgeBasis
-        DOFs
+        sideDOFs
         nodes
         weights
     end
@@ -18,8 +18,8 @@ classdef ProjectionEdge < EdgeFunction
                end
             end
             self.edgeBasis = basis.edgeBasis{n};
-            self.coeffs = coeffs(basis.elSide==compIndex);
-            self.DOFs = length(self.coeffs);
+            self.coeffs = coeffs(basis.elEdge==compIndex);
+            self.sideDOFs = length(self.coeffs);
             self.domain = component;
             
            k = self.edgeBasis.el(1).kwave;
@@ -30,8 +30,8 @@ classdef ProjectionEdge < EdgeFunction
             
            s=s(:);
            val=zeros(length(s),1);
-           for j=sideDofs
-               val=val+self.el(j).eval(s)*self.coeffs(j);
+           for j=1:self.sideDOFs
+               val=val+self.edgeBasis.el(j).eval(s)*self.coeffs(j);
            end
         end
         

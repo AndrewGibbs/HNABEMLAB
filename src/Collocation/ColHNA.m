@@ -56,7 +56,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     end
     
     %get collocation points.
-    [ Xstruct] = getColPoints( Vbasis, overSamplesPerMeshEl, scaler, colType);
+    Xstruct = getColPointsV2( Vbasis, overSamplesPerMeshEl, colType);
     %make a copy for RHSs, with wider domains
     Ystruct = Xstruct;
     for m = 1:length(Xstruct)
@@ -69,7 +69,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     colMatrix=zeros(length(Xstruct),length(Vbasis.el));
     numColPts = length(Xstruct);
     numBasEls = length(Vbasis.el);
-    for m=1:numColPts %can be parfor
+    parfor m=1:numColPts %can be parfor
         %fprintf('\nm');
         VbasisCopy = Vbasis;
         fCopy = f;
@@ -77,18 +77,18 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
         for n=1:numBasEls
         %manually do first entry of row
            if n==1
-               [colMatrixCol(n), quadData] = colEvalV3(Operator, VbasisCopy.el(1), VbasisCopy.elSide(1), Xstruct(m), Nquad,[], standardQuadFlag);
-           elseif VbasisCopy.el(n).pm == VbasisCopy.el(n-1).pm && isequal(VbasisCopy.el(n).supp,VbasisCopy.el(n-1).supp)
+               [colMatrixCol(n), quadData] = colEvalV3(Operator, VbasisCopy.el(1), VbasisCopy.elEdge(1), Xstruct(m), Nquad,[], standardQuadFlag);
+           elseif VbasisCopy.el(n).pm == VbasisCopy.el(n-1).pm && isequal(VbasisCopy.el(n).supp,VbasisCopy.el(n-1).supp) && false
                %reuse quadrature from previous iteration of this loop,
                %(phase and domain are the same)
-               colMatrixCol(n) = colEvalV3(Operator, VbasisCopy.el(n), VbasisCopy.elSide(n), Xstruct(m), Nquad, quadData, standardQuadFlag);
+               colMatrixCol(n) = colEvalV3(Operator, VbasisCopy.el(n), VbasisCopy.elEdge(n), Xstruct(m), Nquad, quadData, standardQuadFlag);
            else
                %get fresh quadrature data
-               [colMatrixCol(n), quadData] = colEvalV3(Operator, VbasisCopy.el(n), VbasisCopy.elSide(n), Xstruct(m), Nquad,[], standardQuadFlag);
+               [colMatrixCol(n), quadData] = colEvalV3(Operator, VbasisCopy.el(n), VbasisCopy.elEdge(n), Xstruct(m), Nquad,[], standardQuadFlag);
            end
         end
         %integral(@(t) Operator.kernel(abs(t-Xstruct(m).x)).*VbasisCopy.el(n).eval(t), VbasisCopy.el(n).a, VbasisCopy.el(n).b);
-        %abs(colMatrixCol(n)-colEvalV2(Operator, VbasisCopy.el(n),VbasisCopy.elSide(n), Xstruct(m), Nquad,[],standardQuadFlag))>1e-8
+        %abs(colMatrixCol(n)-colEvalV2(Operator, VbasisCopy.el(n),VbasisCopy.elEdge(n), Xstruct(m), Nquad,[],standardQuadFlag))>1e-8
         colMatrix(m,:) = colMatrixCol;
         fX = fCopy.eval(Xstruct(m).x,Xstruct(m).side);
         if ~standardBEMflag

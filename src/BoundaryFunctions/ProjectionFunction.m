@@ -6,7 +6,7 @@ classdef ProjectionFunction < BoundaryFunction
         plusCoefs
         minusCoefs
         el
-        elSide
+        elEdge
         Ndim
         GOA
         onScreen
@@ -28,7 +28,7 @@ classdef ProjectionFunction < BoundaryFunction
             end
             self.coeffs=coeffs;
            self.el=basis.el; 
-           self.elSide=basis.elSide; 
+           self.elEdge=basis.elEdge; 
            self.domain=basis.obstacle;
 %            self.supp=basis.obstacle.supp;
 %            self.suppWidth=basis.obstacle.L;
@@ -45,10 +45,10 @@ classdef ProjectionFunction < BoundaryFunction
         
         F = FarField( self, theta );
         
-        function val=eval(self,s, side)
+        function val=eval(self,s, component)
             if nargin==2
                 if self.onScreen
-                    side=1;
+                    component=1;
                 else
                     error('Need to specify which side please.');
                 end
@@ -56,7 +56,7 @@ classdef ProjectionFunction < BoundaryFunction
             s=s(:);
             val=zeros(length(s),1);
             allDofs = 1:self.Ndim;
-            sideDofs = allDofs(self.elSide == side);
+            sideDofs = allDofs(self.elEdge == component);
            for j=sideDofs
                val=val+self.el(j).eval(s)*self.coeffs(j);
            end
