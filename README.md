@@ -129,10 +129,10 @@ And plot the solution in the domain (this bit isn't frequency independent):
 The code is also frequency independent for multiple screens, by instantiating the object
 
 ```matlab
-  Gamma=Screen(vertices,[.0 .2 .4 .6 .8 1]);
+  Gamma=MultiScreen(vertices,[.0 .2 .4 .6 .8 1]);
 ```
 
-where the vector in the second argument corresponds to points at which the two vertices are split.
+where the vector in the second argument corresponds to points at which the two vertices are split. Below is the same example for multiple alligned screens, with <img src="http://latex.codecogs.com/svg.latex?k=100" border="0"/>
 
 ![HNABEMLAB](https://raw.github.com/AndrewGibbs/HNABEMLAB/master/mutliScreenPlot.png)
 
