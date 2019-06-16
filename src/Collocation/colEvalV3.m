@@ -225,8 +225,8 @@ function [I, quadDataOut] = colEvalV3(Op,fun, funSide, colPt, Nquad, quadDataIn,
         %and evaluate integral:
         I = w_.'*amp_shift(z_);
             
-        I_check = integral(@(t) amp_shift(t).*exp(1i*kwave.*phase_shift{1}(t)),a,b,'ArrayValued',true);
-        quadDataOut = [];
+%        I_check = integral(@(t) amp_shift(t).*exp(1i*kwave.*phase_shift{1}(t)),a,b,'ArrayValued',true);
+%         quadDataOut = [];
         
     else %no branch in phase
         
