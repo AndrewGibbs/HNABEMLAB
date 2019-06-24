@@ -74,5 +74,8 @@ classdef singleLayer
                error('Domain type not recognised');
             end
         end
+        function X = getSymmetries(self)
+            X = abs(self.domain.getSymmetries());
+        end
     end
 end

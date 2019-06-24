@@ -13,6 +13,44 @@ classdef (Abstract) PolygonalScatteringObject < handle
     methods
         val = normal(self,s);
         
+        function equivs = getSymmetries(self)
+            %determine maps between edges
+            for n = 1:self.numComponents
+                mid_n = (self.component(n).P2 + self.component(n).P1)/2;
+                for m = 1:self.numComponents
+                    mid_m = (self.component(m).P2 + self.component(m).P1)/2;
+                    Y{n,m}.midTranslate = mid_m - mid_n;
+                    Y{n,m}.rotate = self.internalAngle(m,n);
+                    Y{n,m}.oldLength = self.component(n).L;
+                    Y{n,m}.newLength = self.component(n).L;
+                end
+            end
+            
+            %now look to see if maps are the same
+            equivs_init = reshape(1:self.numComponents^2,[self.numComponents self.numComponents]);
+            equivs = equivs_init;
+            errTol = 1e-12;
+            %do this lots of times to account for every possible equivalence as many times
+            %as is needed
+            for pointlessCounter = 1: (self.numComponents^2)
+                for n = 1:self.numComponents
+                    for m = 1:self.numComponents
+                        for n_ = 1:self.numComponents
+                            for m_ = 1:self.numComponents
+                                if norm(Y{n,m}.midTranslate - Y{n_,m_}.midTranslate)<errTol && abs(Y{n,m}.rotate - Y{n_,m_}.rotate)<errTol...
+                                   && abs(Y{n,m}.oldLength - Y{n_,m_}.oldLength)<errTol && abs(Y{n,m}.newLength - Y{n_,m_}.newLength)<errTol
+                                    equivs(n_,m_) = equivs(n,m);
+                                elseif norm(Y{n,m}.midTranslate + Y{n_,m_}.midTranslate)<errTol && abs(Y{n,m}.rotate - Y{n_,m_}.rotate)<errTol...
+                                       && abs(Y{n,m}.oldLength - Y{n_,m_}.newLength)<errTol && abs(Y{n,m}.newLength - Y{n_,m_}.oldLength)<errTol
+                                    equivs(n_,m_) = -equivs(n,m);
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        
         function draw(self)
            for n=1:self.numComponents
                self.component(n).draw();
