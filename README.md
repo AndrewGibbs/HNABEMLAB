@@ -6,7 +6,7 @@ Requires PathFinder (available from https://github.com/AndrewGibbs/NSDpackage) t
 
 For polygons (not yet thoroughly tested), requires Chebfun (https://github.com/chebfun/chebfun) to be on Matlab search path.
 
-Currently seems stable for screens with plane wave incidence. Can (in principle) also handle polygons, and point source incidence. Computes all of these in frequency independent time, using an HNA basis [1] and oscillatory quadrature routines [3], with oversampled collocation [2].
+Currently stable for screens with plane wave incidence, and multiple alligned screens, which are not too close together. Can (in principle) also handle polygons, and point source incidence. Computes all of these in frequency independent time, using an HNA basis [1] and oscillatory quadrature routines [3], with oversampled collocation [2].
 
 # Problem statement & formulation
 
@@ -50,7 +50,7 @@ First create instances of the fundamental objects which define our problem.
     %create 'screen' object ---------------------------------------------------
     vertices =   [0    0;
                   1    0];
-    Gamma=edge(vertices);
+    Gamma=Screen(vertices);
 
     %inident plane wave -------------------------------------------------------
     d = [1 1]./sqrt(2); %direction as a vector
@@ -125,6 +125,16 @@ And plot the solution in the domain (this bit isn't frequency independent):
     Gamma.draw;
 ```
 ![HNABEMLAB](https://raw.github.com/AndrewGibbs/HNABEMLAB/master/domainPlot_k60.png)
+
+The code is also frequency independent for multiple screens, by instantiating the object
+
+```matlab
+  Gamma=MultiScreen(vertices,[.0 .2 .4 .6 .8 1]);
+```
+
+where the vector in the second argument corresponds to points at which the two vertices are split. Below is the same example for multiple alligned screens, with <img src="http://latex.codecogs.com/svg.latex?k=100" border="0"/>
+
+![HNABEMLAB](https://raw.github.com/AndrewGibbs/HNABEMLAB/master/mutliScreenPlot.png)
 
 # References:
 
