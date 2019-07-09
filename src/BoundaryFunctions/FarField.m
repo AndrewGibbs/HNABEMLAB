@@ -1,7 +1,7 @@
 function vals = FarField(boundary, density, k, theta)
 %produces matrix of domain values for density function
 
-    vals = zeros(size(theta));
+    vals = zeros(length(theta),1);
     for n = 1:boundary.numComponents
         ffKernel = @(y1,y2,theta) exp(-1i*k*(cos(theta).*y1 + sin(theta).*y2));
         %first get values of density all around boundary

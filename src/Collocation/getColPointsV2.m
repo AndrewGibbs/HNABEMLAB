@@ -17,7 +17,7 @@ function X = getColPointsV2( Vbasis, overSamplesPerMeshEl, type )
 
         t = []; tma = []; bmt = [];
         if isa(Vbasis,'HNAoverlappingMesh')
-              [E_, M] = Vbasis.mimicSingleMesh;
+              [E_, M] = Vbasis.edgeBasis{component}.mimicSingleMesh;%Vbasis.mimicSingleMesh(component);
               E = E_.el;
               overlapElFlag = true;
         else

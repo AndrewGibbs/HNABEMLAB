@@ -47,12 +47,12 @@ classdef HNAoverlappingMesh <basis
             self.mesh{1}=mesh1;
             self.mesh{2}=mesh2;
             
-            if isa(obstacle,'polygon')
-                error('Overlapping mesh not yet compatible with polygons, use single mesh');
-            else
-                self.edgeBasis = []; %not sure what this does yet...
-                self.elSide(1:length(self.el))=1;
-            end
+%             if isa(obstacle,'polygon')
+%                 error('Overlapping mesh not yet compatible with polygons, use single mesh');
+%             else
+%                 self.edgeBasis = []; %not sure what this does yet...
+%                 self.elSide(1:length(self.el))=1;
+%             end
         end
         
         function [s, w] = getPoints(self,pointsPerWavelength,k,distType)
@@ -68,8 +68,8 @@ classdef HNAoverlappingMesh <basis
         function [fakeMesh, DOFs] = mimicSingleMesh(self)
             %merge the two overlapping meshes to make a single mesh, which
             %is useful sometimes, for allocating collocation & quadrature
-            fakeMesh.points = [self.mesh{1}.points(1:(end-1)) self.mesh{2}.points(2:end)]%unique(sort([self.mesh{1}.points self.mesh{2}.points]));
-            fakeMesh.side = self.mesh{1}.side;
+            fakeMesh.points = [self.mesh{1}.points(1:(end-1)) self.mesh{2}.points(2:end)];%unique(sort([self.mesh{1}.points self.mesh{2}.points]));
+            %fakeMesh.side = component;
             %numMeshEls = length(meshPoints)-1;
             %get widths
             for n = 1:(length(self.mesh{1}.el)-1)

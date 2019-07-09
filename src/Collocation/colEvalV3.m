@@ -99,9 +99,14 @@ function [I, quadDataOut] = colEvalV3(Op,fun, funSide, colPt, Nquad, quadDataIn,
             if isempty(colPt.distMeshL) || isempty(colPt.distMeshR)  %need to bodge this, for the overlapping case only
                 %cannot determine which mesh element we're on, given
                 %collocation point
-                %if fun.meshEl.interval(1)<colPt.x
+                if colPt.distSideL < colPt.distSideR
                     colPt.distMeshL = colPt.x - fun.meshEl.interval(1);
+                    colPt.distMeshR = fun.meshEl.interval(2) - colPt.x;
+                else
+                    colPt.distMeshL = colPt.distSideL - fun.meshEl.distL;
                     colPt.distMeshR = colPt.distSideR - fun.meshEl.distR;
+                end
+                    %colPt.distMeshR = colPt.distSideR - fun.meshEl.distR;
                 %end
             end
 
@@ -202,7 +207,7 @@ function [I, quadDataOut] = colEvalV3(Op,fun, funSide, colPt, Nquad, quadDataIn,
     elseif isa(Op.domain,'MultiScreen')
         
         if colPt.side > funSide % x_1(s) > Y_1(t)
-            shiftedCol = Op.domain.segSplits(2*colPt.side-1) - Op.domain.segSplits(2*funSide)  +  colPt.x;
+            shiftedCol = Op.domain.segSplits(2*colPt.side-1) - Op.domain.segSplits(2*funSide-1)  +  colPt.x;
             amp_shift = @(y) Op.kernelNonOscAnal(shiftedCol, y, true, colPt.side, funSide) .* fun.evalNonOscAnal(y, funSide); 
             phase_shift = OpFunAddPhase(Op, fun, funSide, shiftedCol, colPt.side, true, maxSPorder+1);
         else                    % x_1(s) < Y_1(t)
@@ -210,14 +215,22 @@ function [I, quadDataOut] = colEvalV3(Op,fun, funSide, colPt, Nquad, quadDataIn,
             amp_shift = @(y) Op.kernelNonOscAnal(shiftedCol, y, false, colPt.side, funSide) .* fun.evalNonOscAnal(y, funSide); 
             phase_shift = OpFunAddPhase(Op, fun, funSide, shiftedCol, colPt.side, false, maxSPorder+1);
         end
+        distFun = @(t) abs(shiftedCol - t);
+        logSingInfo = singularity(shiftedCol, Op.singularity, distFun);
+        rectRad = .5*min(logSingInfo.distFun(a),logSingInfo.distFun(b));
         
        if ~isempty(quadDataIn)
             w_ = quadDataIn.w_;
             z_ = quadDataIn.z_;
         else
             %now get weights and nodes:
-            [ z_, w_ ] = PathFinder( a, b, kwave, Nquad, phase_shift,'settlerad', 'stationary points', [], 'order', [], 'minOscs', minOscs, 'width', fun.suppWidth);
-
+            if a==b %no singularity & zero width, contribution will be negligable
+                z_ = a;
+                w_ = 0;
+            else
+                [ z_, w_ ] = PathFinder( a, b, kwave, Nquad, phase_shift,'settlerad', rectRad, 'fSingularities', logSingInfo,...
+                                        'stationary points', [], 'order', [], 'minOscs', minOscs, 'width', fun.suppWidth);
+            end
             quadDataOut.w_ = w_;
             quadDataOut.z_ = z_;
         end

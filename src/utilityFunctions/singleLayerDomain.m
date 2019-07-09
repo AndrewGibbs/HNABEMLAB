@@ -21,6 +21,6 @@ function vals = singleLayerDomain(boundary, density, k, x1, x2)
         X2_ = reshape(X2,[m*n 1]);
         Phi_R = Phi(X1_,X2_,Y1.',Y2.');
         vals_ = Phi_R*(vt.*w);
-        vals = vals + reshape(vals_,[m n]);
+        vals = vals + reshape(vals_,[m n]).';
     end
 end

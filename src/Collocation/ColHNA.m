@@ -80,7 +80,8 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
             %manually do first entry of row
                if n==1
                    [colMatrixCol(n), quadData] = colEvalV3(Operator, VbasisCopy.el(1), VbasisCopy.elEdge(1), Xstruct(m), Nquad,[], standardQuadFlag);
-               elseif VbasisCopy.el(n).pm == VbasisCopy.el(n-1).pm && isequal(VbasisCopy.el(n).supp,VbasisCopy.el(n-1).supp)
+               elseif VbasisCopy.el(n).pm == VbasisCopy.el(n-1).pm && isequal(VbasisCopy.el(n).meshEl,VbasisCopy.el(n-1).meshEl)
+                       % && VbasisCopy.el(n).gradIndex==VbasisCopy.el(n-1).gradIndex%added this line as supports can seem equal when they're not
                    %reuse quadrature from previous iteration of this loop,
                    %(phase and domain are the same)
                    colMatrixCol(n) = colEvalV3(Operator, VbasisCopy.el(n), VbasisCopy.elEdge(n), Xstruct(m), Nquad, quadData, standardQuadFlag);

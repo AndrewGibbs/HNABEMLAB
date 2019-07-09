@@ -13,10 +13,23 @@ classdef planeWave < waveR2
            self.d=direction(:).';
            self.phaseMaxStationaryPointOrder=0;
         end
-
-%         function g=phase(self,X)
-%            g=X*self.d;
-%         end
+        
+        function uincR = getReflection(self,mirror)
+            %get reflection of plane wave, as planeWave object
+            errMess = '2nd input must be a PolygonalScatteringObject with 2 vertices';
+            if ~isa(mirror,'Screen') && ~isa(mirror,'Edge') && ~isa(mirror,'MultiScreen')
+                error(errMess);
+            elseif ~isequal(size(mirror.vertices),[2 2])
+                error(errMess);                
+            end
+            if mirror.nv*self.d.'<0
+                n = mirror.nv;
+            else
+                n = -mirror.nv;
+            end
+            dR = self.d - 2*mirror.nv*(self.d*n.');
+            uincR = planeWave(self.kwave,dR);
+        end
         
         function [valOsc, val]=DirTrace(self,s,boundary)
             %standard def of plane wave
@@ -29,11 +42,7 @@ classdef planeWave < waveR2
             valNonOsc=1i*self.kwave*boundary.normal(s)*self.d.';
             val=valNonOsc.*self.DirTrace(s,boundary);
         end
-%         
-%         function [valOsc, val]=POA(self,s,boundary)
-%             %actually, just need to be consistent with normal direction
-%             val=2*self.NeuTrace(self,s,boundary);
-%         end
+        
         function g = phasePD(self,X,xDers,yDers)
             zeroOption = repmat(0,[size(X,1) 1]);
             switch xDers
