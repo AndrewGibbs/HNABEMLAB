@@ -52,7 +52,12 @@ classdef pointSource < waveR2
         end
         
         function x = sourceVsnormal(self,side)
-            x = sign((side.P1-self.source)*(side.nv.'));
+            x = sign((side.component.P1-self.source)*(side.component.nv.'));
+        end
+        
+        function val = eval(self,X1,X2)
+            R = sqrt((self.source(1)-X1).^2+(self.source(2)-X2).^2);
+            val = (1i/4)*besselh(0,1,self.kwave*R);
         end
     end
     

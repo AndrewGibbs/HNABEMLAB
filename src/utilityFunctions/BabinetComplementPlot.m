@@ -2,15 +2,17 @@ function BabinetComplementPlot(Gamma,uinc,GOA,v_N,kwave,totalPixels)
     if nargin == 5
         totalPixels = 1000000;
     end
-    V = Gamma.vertices;
+     V = Gamma.vertices;
     xmin = min(V(1,:))-.3; xmax = max(V(1,:)) + .3;
     ymin = min(V(1,:)) -.2; ymax = max(V(2,:)) +.2;
     imageArea = (xmax-xmin)*(ymax-ymin);
+    pixelRate = ceil(sqrt(totalPixels/imageArea));
     pixelRate = ceil(sqrt(totalPixels/imageArea));
     
     yU = linspace(0,ymax,pixelRate*(ymax));
     yL = linspace(ymin,0,pixelRate*(-ymin));
     yL = yL(1:(end-1));
+    x = linspace(xmin,xmax,pixelRate*(xmax-xmin));
     SvU = singleLayerDomain(Gamma, v_N, kwave, x, yU);
     SPsiU = singleLayerDomain(Gamma, GOA, kwave, x, yU);
     SvL = singleLayerDomain(Gamma, v_N, kwave, x, yL);

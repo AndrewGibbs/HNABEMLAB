@@ -26,6 +26,28 @@ classdef Screen < PolygonalScatteringObject
             
         end
         
+        function drawCompliment(self,sMin,sMax)
+            seg = [0 self.L];
+            S = sort([sMin seg(1 == ((seg<sMax) .* (seg>sMin))) sMax]);
+            
+            v1 = self.vertices(1,:);
+            v2 = self.vertices(2,:);
+            d = (v2-v1);
+            
+            nodes = v1 + S.'*d;
+            
+            hold on;
+            for n = 1:(length(S)/2)
+                %L = norm(nodes(2*n,:)-nodes(2*n+1,:));
+                s = linspace(0,self.L).';
+                X = linspace(nodes(2*n-1,1),nodes(2*n,1));
+                Y = linspace(nodes(2*n-1,2),nodes(2*n,2));
+                plot(X,Y,'k','LineWidth',3);
+                clear s X Y;
+            end
+            hold off;
+            
+        end
     end
 end
 

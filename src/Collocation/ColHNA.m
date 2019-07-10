@@ -70,7 +70,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     numColPts = length(Xstruct);
     numBasEls = length(Vbasis.el);
     [colSymIndices,basisSymIndices] = getSymmetryIndices(Operator,numBasEls,numColPts);
-    parfor m=1:numColPts %can be parfor
+    for m=1:numColPts %can be parfor
         %fprintf('\nm');
         VbasisCopy = Vbasis;
         fCopy = f;

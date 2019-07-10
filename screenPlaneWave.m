@@ -14,7 +14,7 @@ d = [1 -1]./sqrt(2); %direction as a vector
 uinc=planeWave(kwave,d);
     
 %make an HNA basis on Gamma -----------------------------------------------
-pMax = 14; %polynomial degree
+pMax = 6; %polynomial degree
 cL = 2; %layers of grading per polynomial degree
 sigmaGrad=0.15; %grading ratio
 nLayers = cL*(pMax+1)-1; %number of layers of grading
@@ -48,22 +48,5 @@ plot(theta,FPsi+Fv_N);
 
 %now plot the solution in the domain:
 figure(3);
-totalPixels = 1000000;
-xmin = -.3; xmax = 1.3;
-ymin = -.2; ymax = .2;
-imageArea = (xmax-xmin)*(ymax-ymin);
-pixelRate = ceil(sqrt(totalPixels/imageArea));
-figure(2);
-
-y = linspace(ymin,ymax,pixelRate*(ymax-ymin));
-x = linspace(xmin,xmax,pixelRate*(xmax-xmin));
-Sv = singleLayerDomain(Gamma, v_N, kwave, x, y);
-SPsi = singleLayerDomain(Gamma, GOA, kwave, x, y);
-[X1, X2] = meshgrid(x,y);
-u_N = uinc.eval(X1,X2) - Sv.' - SPsi.';
-imagesc(x,fliplr(y),flipud(real(u_N)));
-shading interp;
-set(gca,'YDir','normal');
-hold on;
-Gamma.draw;
+domainPlot(Gamma,uinc,GOA,v_N,kwave);
 

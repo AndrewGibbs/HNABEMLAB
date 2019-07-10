@@ -20,4 +20,3 @@ function domainPlot(Gamma,uinc,GOA,v_N,kwave,totalPixels)
     hold on;
     Gamma.draw;
 end
-
