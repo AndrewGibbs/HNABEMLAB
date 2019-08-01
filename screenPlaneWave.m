@@ -2,7 +2,7 @@ clc;
 clear classes;
 % run addPathsHNA() to add necessary search paths
 %wavenumber
-kwave=50;
+kwave=100;
 
 %create 'screen' object ---------------------------------------------------
 vertices =   [1    0;
@@ -14,7 +14,7 @@ d = [1 -1]./sqrt(2); %direction as a vector
 uinc=planeWave(kwave,d);
     
 %make an HNA basis on Gamma -----------------------------------------------
-pMax = 6; %polynomial degree
+pMax = 8; %polynomial degree
 cL = 2; %layers of grading per polynomial degree
 sigmaGrad=0.15; %grading ratio
 nLayers = cL*(pMax+1)-1; %number of layers of grading
@@ -32,7 +32,7 @@ S=singleLayer(kwave,Gamma);
 tic;
 [v_N, GOA, colMatrix, colRHS] = ColHNA(S, VHNA, uinc, Gamma,'oversample', OverSample, 'progress');
 T = toc;
-
+return;
 %plot the output
 s=linspace(0,Gamma.L,min(1000,10000*kwave));
 figure(1);

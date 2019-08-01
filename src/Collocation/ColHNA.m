@@ -19,7 +19,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     messageFlag=false;
     standardBEMflag = false;
     standardQuadFlag = false;
-    truncParam = 1e-8;
+    truncParam = 1e-12;
     % -----------------------
     
     for j=1:length(varargin)
@@ -70,7 +70,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     numColPts = length(Xstruct);
     numBasEls = length(Vbasis.el);
     [colSymIndices,basisSymIndices] = getSymmetryIndices(Operator,numBasEls,numColPts);
-    for m=1:numColPts %can be parfor
+    parfor m=1:numColPts %can be parfor
         %fprintf('\nm');
         VbasisCopy = Vbasis;
         fCopy = f;
