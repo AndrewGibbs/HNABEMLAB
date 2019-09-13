@@ -73,7 +73,7 @@ classdef ProjectionFunction < BoundaryFunction
             s=s(:);
             val=zeros(length(s),1);
             allDofs = 1:self.Ndim;
-            sideDofs = allDofs(self.elSide == side);
+            sideDofs = allDofs(self.elEdge == side);
             if pm=='+'
                 subCoeffs = self.plusCoefs;
             elseif pm=='-'

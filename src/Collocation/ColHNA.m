@@ -1,6 +1,9 @@
-function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, varargin)
+function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uinc, Gamma, varargin)
 %computes oversampled collocation projection using HNA basis/frame
 
+    %surpress warnings about cleared data in parfor loop:
+    warning('off','MATLAB:mir_warning_maybe_uninitialized_temporary');
+    
     %with RHS data
     f=DirichletData(uinc,Gamma);
     %construct Geometrical optics approximation on Gamma
@@ -9,6 +12,10 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
     DOFs=length(Vbasis.el);
     
     weighting = false;
+    
+    if isa(uinc,'planeWave')
+        linearRHSphase = true;
+    end
     
     % -----------------------
     %defaults:
@@ -50,10 +57,8 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
        standardBEMflag = true;
     end
     
-    %start timer, if user is interested
-    if messageFlag
-        tic;
-    end
+    %start timer
+    tic;
     
     %get collocation points.
     Xstruct = getColPointsV2( Vbasis, overSamplesPerMeshEl, colType);
@@ -79,15 +84,15 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
             if isnan(colSymIndices(m,n))
             %manually do first entry of row
                if n==1
-                   [colMatrixCol(n), quadData] = colEvalV3(Operator, VbasisCopy.el(1), VbasisCopy.elEdge(1), Xstruct(m), Nquad,[], standardQuadFlag);
+                   [colMatrixCol(n), quadData] = colEvalV4(Operator, VbasisCopy.el(1), VbasisCopy.elEdge(1), Xstruct(m), Nquad,[], standardQuadFlag, true);
                elseif VbasisCopy.el(n).pm == VbasisCopy.el(n-1).pm && isequal(VbasisCopy.el(n).meshEl,VbasisCopy.el(n-1).meshEl)
                        % && VbasisCopy.el(n).gradIndex==VbasisCopy.el(n-1).gradIndex%added this line as supports can seem equal when they're not
                    %reuse quadrature from previous iteration of this loop,
                    %(phase and domain are the same)
-                   colMatrixCol(n) = colEvalV3(Operator, VbasisCopy.el(n), VbasisCopy.elEdge(n), Xstruct(m), Nquad, quadData, standardQuadFlag);
+                   colMatrixCol(n) = colEvalV4(Operator, VbasisCopy.el(n), VbasisCopy.elEdge(n), Xstruct(m), Nquad, quadData, standardQuadFlag, true);
                else
                    %get fresh quadrature data
-                   [colMatrixCol(n), quadData] = colEvalV3(Operator, VbasisCopy.el(n), VbasisCopy.elEdge(n), Xstruct(m), Nquad,[], standardQuadFlag);
+                   [colMatrixCol(n), quadData] = colEvalV4(Operator, VbasisCopy.el(n), VbasisCopy.elEdge(n), Xstruct(m), Nquad,[], standardQuadFlag, true);
                end
             end
         end
@@ -98,7 +103,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
         if ~standardBEMflag
            SPsiX = 0;
            for GOAedge = GOA.suppEdges
-               SPsiX = SPsiX + colEvalV3(Operator, GOA.edgeComponent(GOAedge), GOAedge, Ystruct(m), Nquad,[], standardQuadFlag);
+               SPsiX = SPsiX + colEvalV4(Operator, GOA.edgeComponent(GOAedge), GOAedge, Ystruct(m), Nquad,[], standardQuadFlag, linearRHSphase);
            end
            colRHS(m)  = fX - SPsiX;
         else
@@ -119,12 +124,6 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
        end
     end
     
-%     for m=1:numColPts
-%         for n=1:numBasEls
-%             colMatrixBF(m,n) = integral(@(t) Operator.kernel(abs(t-Xstruct(m).x)).*Vbasis.el(n).eval(t), Vbasis.el(n).a, Vbasis.el(n).b);
-%         end
-%     end
-    
     if weighting
         for j=1:length(Xstruct)
             w(j) = Xstruct(j).weight;
@@ -144,6 +143,7 @@ function [v_N, GOA, colMatrix, colRHS] = ColHNA(Operator, Vbasis, uinc, Gamma, v
         %or, use Daan's homemade SVD:
         coeffs = pseudo_backslash(colMatrix, colRHS, truncParam);
     end
+    solveTime = toc;
     v_N=ProjectionFunction(coeffs,Vbasis);
     
     if messageFlag

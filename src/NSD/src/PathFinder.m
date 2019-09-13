@@ -44,6 +44,7 @@ function [ X, W, pathData ] = PathFinder( a,b,freq,N,G,varargin)
         tweakThresh = eps*10;
         tweakableJacobianThresh = 2;
         %tweakPaths = false;
+        linearPhase = false;
         
     %number of quadrature points used for the integrals inside of this code
         RectQuadPts = 50;
@@ -172,6 +173,8 @@ function [ X, W, pathData ] = PathFinder( a,b,freq,N,G,varargin)
                    RectTol = varargin{j+1};
                case 'nearSingThresh'
                    RectTol = varargin{j+1};
+               case 'linear'
+                   linearPhase = true;
            end
        end
     end
@@ -307,12 +310,15 @@ function [ X, W, pathData ] = PathFinder( a,b,freq,N,G,varargin)
                     %**** in above case, weights and nodes are independent of
                     %branchIndex
                 
-                %make Taylor series approximation close to stationary
-                %point:
-                hTaylor{critPointIndex,branchIndex} = TaylorPath(pathPowers(critPointIndex), G, criticalPoints(critPointIndex), branchIndex, false);
-                %now solve IVP:
-                [~,H] = ode45(@(t,y) NSDpathODE(t,y,pathPowers(critPointIndex)-1,G, ICs{branchIndex}, false, TaylorRad, hTaylor{critPointIndex,branchIndex}), P0, ICs{branchIndex}, odeset('RelTol', RelTol) );
-                
+                if linearPhase %no need to compute ODE, it's all very simple in this special case
+                    H = NSDpathLinear(P0,G,ICs{branchIndex});
+                else
+                    %make Taylor series approximation close to stationary
+                    %point:
+                    hTaylor{critPointIndex,branchIndex} = TaylorPath(pathPowers(critPointIndex), G, criticalPoints(critPointIndex), branchIndex, false);
+                    %now solve IVP:
+                    [~,H] = ode45(@(t,y) NSDpathODE(t,y,pathPowers(critPointIndex)-1,G, ICs{branchIndex}, false, TaylorRad, hTaylor{critPointIndex,branchIndex}), P0, ICs{branchIndex}, odeset('RelTol', RelTol) );
+                end
                 
                 %NEED TO INPUT HIGHER ORDER DE's INTO NSDpathODE.m
                 %H(:,1) contains h'(p), H(:,2) contains h(p), will throw away initial

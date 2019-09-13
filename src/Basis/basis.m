@@ -11,8 +11,6 @@ classdef (Abstract) basis <handle
         meshDOFs
         edgeBasis
         elEdge
-        plusCoefs = []
-        minusCoefs = []
         nonOscCoeffs = []
     end
     

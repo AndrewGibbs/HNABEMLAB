@@ -16,8 +16,9 @@ if nargin == 1
 end
 
 % Use OPQ routine from Gautschi
-ab = r_jacobi(N, 0, 0);
-[x,w] = compute_gauss(N, ab(:,1), ab(:,2));
+% ab = r_jacobi(N, 0, 0);
+% [x,w] = compute_gauss(N, ab(:,1), ab(:,2));
+[x,w] = gausLegHC(N); %use hardcoded values for speed
 
 % scale [-1,1] to [a,b]
 x = (b-a)*(x+1)/2 + a;

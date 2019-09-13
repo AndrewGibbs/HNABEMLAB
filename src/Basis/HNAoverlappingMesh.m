@@ -2,6 +2,8 @@ classdef HNAoverlappingMesh <basis
     
     properties
         %in parent basis
+        plusCoefs =[]
+        minusCoefs =[]
     end
     
     methods
@@ -33,6 +35,7 @@ classdef HNAoverlappingMesh <basis
                     elCount=elCount+1;
                     self.el(elCount)=baseFnHNA(kwave,p,mesh1.el(m),1,mesh1.side);
                     self.meshDOFs{1}(m)=mesh1.el(m).pMax+1;
+                    self.plusCoefs = [self.plusCoefs elCount];
                 end
             end
             for m=1:length(mesh2.el)
@@ -41,6 +44,7 @@ classdef HNAoverlappingMesh <basis
                     elCount=elCount+1;
                     self.el(elCount)=baseFnHNA(kwave,p,mesh2.el(m),-1,mesh2.side);
                     self.meshDOFs{2}(m)=mesh2.el(m).pMax+1;
+                    self.minusCoefs = [self.minusCoefs elCount];
                 end
             end
             

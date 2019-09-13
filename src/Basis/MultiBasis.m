@@ -13,8 +13,8 @@ function self=MultiBasis(copyBasis, obstacle, self)
         indexEnd = indexStart -1 + length(self.edgeBasis{n}.el);
         self.mesh{n} = self.edgeBasis{n}.mesh;
 
-        self.plusCoefs    = [self.plusCoefs    indexStart+self.edgeBasis{n}.plusCoefs];
-        self.minusCoefs   = [self.minusCoefs   indexStart+self.edgeBasis{n}.minusCoefs];
+        self.plusCoefs    = [self.plusCoefs    indexStart+self.edgeBasis{n}.plusCoefs-1];
+        self.minusCoefs   = [self.minusCoefs   indexStart+self.edgeBasis{n}.minusCoefs-1];
         self.nonOscCoeffs = [self.nonOscCoeffs indexStart+self.edgeBasis{n}.nonOscCoeffs];
         self.el           = [self.el           self.edgeBasis{n}.el];
         self.meshDOFs     = [self.meshDOFs     self.edgeBasis{n}.meshDOFs];

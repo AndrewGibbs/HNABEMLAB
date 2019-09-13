@@ -120,13 +120,13 @@ function [I, quadDataOut] = colEvalV3(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 logSingInfo_flip_a.position = 0;
                 logSingInfo_flip_a.distFun = @(r) abs(r);
                 [ z1a, w1a ] = PathFinder( 0, colPt.distMeshL, kwave, Nquad, phase_a_flip,'settlerad',rectrad,...
-                            'fSingularities', logSingInfo_flip_a, 'stationary points', SPin, 'order', SPOin,'minOscs',minOscs);
+                            'fSingularities', logSingInfo_flip_a, 'stationary points', SPin, 'order', SPOin,'minOscs',minOscs,'linear');
 
                 logSingInfo_flip_b = logSingInfo;
                 logSingInfo_flip_b.position = 0;
                 logSingInfo_flip_b.distFun = @(r) abs(r);
                 [ z1b, w1b ] = PathFinder(0, colPt.distMeshR, kwave, Nquad, phase_b_flip,'settlerad',rectrad,...
-                            'fSingularities', logSingInfo_flip_b, 'stationary points', SPin, 'order', SPOin,'minOscs',minOscs);
+                            'fSingularities', logSingInfo_flip_b, 'stationary points', SPin, 'order', SPOin,'minOscs',minOscs,'linear');
                     
                 quadDataOut.w1a = w1a;
                 quadDataOut.w1b = w1b;
@@ -187,7 +187,7 @@ function [I, quadDataOut] = colEvalV3(Op,fun, funSide, colPt, Nquad, quadDataIn,
             else
                 %now get weights and nodes:
                 [ z_, w_ ] = PathFinder( a_star, b_star, kwave, Nquad, phase_star,'settlerad',rectrad,...
-                        'fSingularities', logSingInfo_star, 'stationary points', SPin, 'order', SPOin, 'minOscs', minOscs, 'width', fun.suppWidth);
+                        'fSingularities', logSingInfo_star, 'stationary points', SPin, 'order', SPOin, 'minOscs', minOscs, 'width', fun.suppWidth,'linear');
                     
                 quadDataOut.w_ = w_;
                 quadDataOut.z_ = z_;
@@ -229,7 +229,7 @@ function [I, quadDataOut] = colEvalV3(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 w_ = 0;
             else
                 [ z_, w_ ] = PathFinder( a, b, kwave, Nquad, phase_shift,'settlerad', rectRad, 'fSingularities', logSingInfo,...
-                                        'stationary points', [], 'order', [], 'minOscs', minOscs, 'width', fun.suppWidth);
+                                        'stationary points', [], 'order', [], 'minOscs', minOscs, 'width', fun.suppWidth,'linear');
             end
             quadDataOut.w_ = w_;
             quadDataOut.z_ = z_;

@@ -2,13 +2,15 @@ clc;
 clear classes;
 % run addPathsHNA() to add necessary search paths
 %wavenumber
-kwave=250;
+kwave=120;
+%scatter by Cantor set of order
+CantOrder = 4;
 
 %create 'screen' object ---------------------------------------------------
 vertices =   [1    0;
               0    0];
           
-segs = [0 .45 .5 1];
+segs = Cantor(CantOrder,1);
 
 Gamma=MultiScreen(vertices,segs);
 
@@ -17,7 +19,7 @@ d = [1 -1]./sqrt(2); %direction as a vector
 uinc=planeWave(kwave,d);
     
 %make an HNA basis on Gamma -----------------------------------------------
-pMax = 16 ; %polynomial degree
+pMax = 6 ; %polynomial degree
 cL = 2; %layers of grading per polynomial degree
 sigmaGrad=0.15; %grading ratio
 nLayers = cL*(pMax+1)-1; %number of layers of grading
@@ -50,8 +52,10 @@ xlabel('\theta');
 %now plot the solution in the domain:
 figure(2);
 domainPlot(Gamma,uinc,GOA,v_N,kwave);
+axis equal;
 
 %now compute the complimentary sound-hard aperature problem, by Babinet's
 %principle:
 figure(3);
 BabinetComplementPlot(Gamma,uinc,GOA,v_N,kwave);
+axis equal;
