@@ -2,9 +2,9 @@ clc;
 clear classes;
 % run addPathsHNA() to add necessary search paths
 %wavenumber
-kwave = 5000;
+kwave = 120;
 %scatter by Cantor set of order
-CantOrder = 5;
+CantOrder = 2;
 
 %create 'screen' object ---------------------------------------------------
 vertices =   [1    0;
@@ -19,7 +19,7 @@ d = [1 -1]./sqrt(2); %direction as a vector
 uinc=planeWave(kwave,d);
     
 %make an HNA basis on Gamma -----------------------------------------------
-pMax = 8 ; %polynomial degree
+pMax = 6 ; %polynomial degree
 cL = 2; %layers of grading per polynomial degree
 sigmaGrad=0.15; %grading ratio
 nLayers = cL*(pMax+1)-1; %number of layers of grading
@@ -42,27 +42,14 @@ disp('Plotting output');
 
 %plot the far-field pattern:
 figure(1);
-
-theta = linspace(0,2*pi,20000);
-if kwave<4000
-    Fv_N = FarField(Gamma, v_N, kwave, theta);
-    FPsi = FarField(Gamma, GOA, kwave, theta);
-else
-    Fv_N = FarField_slowNsteady(Gamma, v_N, kwave, theta);
-    FPsi = FarField_slowNsteady(Gamma, GOA, kwave, theta);
-end
+theta = linspace(0,2*pi,5000);
+Fv_N = FarField(Gamma, v_N, kwave, theta);
+FPsi = FarField(Gamma, GOA, kwave, theta);
+FF = Fv_N + FPsi;
 FF = Fv_N + FPsi;
 polarplot(theta,log10(abs(flipud(FF))));
-radMin = -1.5;
-hold on;
-rlim([radMin,max(log10(abs(FF)))]);
-segsShitft = abs(radMin)*(segs-.5)+radMin;
-for n = 1:length(segs)/2
-    polarplot([0; 0],[segsShitft(2*n-1); segsShitft(2*n)],'k','LineWidth',2);
-end
-hold on;
+rlim([-20,l(max(abs(FF)))]);
 
-return;
 %now plot the solution in the domain:
 figure(2);
 domainPlot(Gamma,uinc,GOA,v_N,kwave);

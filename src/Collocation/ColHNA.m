@@ -27,6 +27,7 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
     standardBEMflag = false;
     standardQuadFlag = false;
     truncParam = 1e-12;
+    symmetrySearch = false;
     % -----------------------
     
     for j=1:length(varargin)
@@ -74,7 +75,10 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
     colMatrix=zeros(length(Xstruct),length(Vbasis.el));
     numColPts = length(Xstruct);
     numBasEls = length(Vbasis.el);
+    
+    %symmetrySearch %not recommended for fractals with complex symmetry structure
     [colSymIndices,basisSymIndices] = getSymmetryIndices(Operator,numBasEls,numColPts);
+    
     parfor m=1:numColPts %can be parfor
         %fprintf('\nm');
         VbasisCopy = Vbasis;
