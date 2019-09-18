@@ -78,7 +78,9 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
     
     %symmetrySearch %not recommended for fractals with complex symmetry structure
     [colSymIndices,basisSymIndices] = getSymmetryIndices(Operator,numBasEls,numColPts);
-    
+    if messageFlag
+       fprintf('\nConstructing BEM matrix:');
+    end
     parfor m=1:numColPts %can be parfor
         %fprintf('\nm');
         VbasisCopy = Vbasis;
@@ -114,7 +116,7 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
            colRHS(m)  = fX;
         end
         if messageFlag
-            fprintf('\n%d/%d%',m,numColPts);
+            fprintf('\n\t%d/%d%',m,numColPts);
         end
     end
     

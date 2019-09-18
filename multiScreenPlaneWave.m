@@ -2,9 +2,14 @@ clc;
 clear classes;
 % run addPathsHNA() to add necessary search paths
 %wavenumber
-kwave = 5000;
+wavelengthsPerComponent = 100;
 %scatter by Cantor set of order
 CantOrder = 5;
+
+% now choose the wavenumber based on above info --------------------------
+
+kwave = ceil(2*pi*wavelengthsPerComponent*3^CantOrder);
+fprintf('wavenumber chosen to be k=%d',kwave);
 
 %create 'screen' object ---------------------------------------------------
 vertices =   [1    0;
@@ -43,7 +48,7 @@ disp('Plotting output');
 %plot the far-field pattern:
 figure(1);
 
-theta = linspace(0,2*pi,20000);
+theta = linspace(0,2*pi,20*kwave);
 if kwave<4000
     Fv_N = FarField(Gamma, v_N, kwave, theta);
     FPsi = FarField(Gamma, GOA, kwave, theta);

@@ -34,9 +34,11 @@ classdef (Abstract) PolygonalScatteringObject < handle
             %do this lots of times to account for every possible equivalence as many times
             %as is needed
             
+            fprintf('\nLooking for structural symmetries:');
             numComponentClasses = 1;
-            componentClasses(1) = struct("midTranslate",0,"rotate",pi,"oldLength",Y{1,1}.oldLength,"newLength",Y{1,1}.newLength);
+            componentClasses(1) = struct('midTranslate',0,'rotate',pi,'oldLength',Y{1,1}.oldLength,'newLength',Y{1,1}.newLength);
             for n = 1:self.numComponents
+                fprintf('\n\t%d/%d',n,self.numComponents);
                 for m = 1:self.numComponents
                     inDefinedClass = false;
                     for ell = 1:numComponentClasses
@@ -52,8 +54,8 @@ classdef (Abstract) PolygonalScatteringObject < handle
                     end
                     if ~inDefinedClass
                         numComponentClasses = numComponentClasses + 1;
-                        componentClasses(numComponentClasses) = struct("midTranslate",Y{n,m}.midTranslate,"rotate",Y{n,m}.rotate,...
-                                                                "oldLength",Y{n,m}.oldLength,"newLength",Y{n,m}.newLength);
+                        componentClasses(numComponentClasses) = struct('midTranslate',Y{n,m}.midTranslate,'rotate',Y{n,m}.rotate,...
+                                                                'oldLength',Y{n,m}.oldLength,'newLength',Y{n,m}.newLength);
                         equivs(n,m) = numComponentClasses;
                     end
                 end

@@ -2,7 +2,7 @@ clc;
 clear classes;
 % run addPathsHNA() to add necessary search paths
 %wavenumber
-kwave=128;
+kwave=256*4;
 
 %create 'screen' object ---------------------------------------------------
 vertices =   [1    0;
@@ -32,15 +32,16 @@ S=singleLayer(kwave,Gamma);
 [v_N, GOA, colMatrix, colRHS, T] = ColHNA(S, VHNA, uinc, Gamma,'oversample', OverSample, 'progress');
 
 %plot the output
-s=linspace(0,Gamma.L,min(10000,1000*kwave));
+s=linspace(0,Gamma.L,min(10000,20*kwave));
 figure(1);
 semilogy(s,fliplr(abs(v_N.eval(s,1))),s,fliplr(abs(v_N.evalComp(s,'+',1))),':',s,fliplr(abs(v_N.evalComp(s,'-',1))),'--','LineWidth',2);
-legend('|v_N(s)|','|v_+(s)|','|v_-(s)|');
+legend('|v_N(s)|','|v^+_{1,N}(s)|','|v^-_{1,N}(s)|');
 xlim([Gamma.component.supp(1)-.1 Gamma.component.supp(2)+.1] );
 set(gca,'FontSize',16);
 xlabel('s');
 leg.FontSize = 16;
 title(sprintf('k=%d',kwave),'FontSize',16);
+ylim([10^-3 10^2]);
 return;%'fontsize',
 
 %plot the far-field pattern:

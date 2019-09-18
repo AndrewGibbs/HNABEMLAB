@@ -7,6 +7,7 @@ function vals = FarField_slowNsteady(boundary, density, k, theta)
     ffKernel = @(y1,y2,theta) exp(-1i*k*(cos(theta).*y1 + sin(theta).*y2));
     parfor obsCount = 1:length(theta)
         for n = 1:boundary.numComponents
+            %fprintf('\n%d/%d',n/boundary.numComponents);
             %first get values of density all around boundary
             t = density.edgeComponent(n).nodes;
             w = density.edgeComponent(n).weights;
