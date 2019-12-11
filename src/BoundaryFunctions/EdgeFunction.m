@@ -13,7 +13,7 @@ classdef (Abstract) EdgeFunction
         b
         phaseMaxStationaryPointOrder
         meshEl
-        nodesPerWavelength = 10
+        nodesPerWavelength = 20 %was ten
     end
     
     methods 

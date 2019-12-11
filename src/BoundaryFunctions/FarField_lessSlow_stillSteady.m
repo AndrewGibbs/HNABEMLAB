@@ -1,6 +1,6 @@
 function vals = FarField_lessSlow_stillSteady(boundary, density, k, theta)
 %produces matrix of domain values for density function
-    memConst = 15000^2; %based on experiments elsewhere
+    memConst = 10000^2; %based on experiments elsewhere
     
     %get width of matrix:
     N = 1;
@@ -10,7 +10,7 @@ function vals = FarField_lessSlow_stillSteady(boundary, density, k, theta)
     
     %get length of each one, given width and memory restrictions
     theta = theta(:).';
-    thetaSegSize = ceil(memConst/(kwave*N));
+    thetaSegSize = ceil(memConst/N);
     numThetaSegs = ceil(length(theta)/thetaSegSize);
     
     for m = 1:(numThetaSegs-1)
@@ -19,13 +19,12 @@ function vals = FarField_lessSlow_stillSteady(boundary, density, k, theta)
         thetaLength(m) = length(thetaIndices{m});
     end
     
-    % ADD THE FINAL BITs!
-    thetaIndices{numThetaSegs} = (numThetaSegs*thetaSegSize):(length(theta));
+    thetaIndices{numThetaSegs} = ((numThetaSegs-1)*thetaSegSize+1):(length(theta));
     thetaSeg{numThetaSegs} = theta(thetaIndices{numThetaSegs});
     thetaLength(numThetaSegs) = length(thetaIndices{numThetaSegs});
     
     parfor m = 1:numThetaSegs
-        valsSplit{m} = zeros(thetaLength,1);
+        valsSplit{m} = zeros(thetaLength(m),1);
         densityCpy = density;
         for n = 1:boundary.numComponents
             ffKernel = @(y1,y2,theta) exp(-1i*k*(cos(theta).*y1 + sin(theta).*y2));
@@ -43,6 +42,6 @@ function vals = FarField_lessSlow_stillSteady(boundary, density, k, theta)
     %now piece it back together
     vals = zeros(length(theta),1);
     for m = 1:numThetaSegs
-        vals(thetaSeg{m}) = valsSplit{m};
+        vals(thetaIndices{m}) = valsSplit{m};
     end
 end

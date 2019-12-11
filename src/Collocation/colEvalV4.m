@@ -92,8 +92,8 @@ function [I, quadDataOut] = colEvalV4(Op,fun, funSide, colPt, Nquad, quadDataIn,
             SPOin = NaN;
         end
         
-        if (fun.meshEl.distR < colPt.distSideR) && (fun.meshEl.distR + fun.meshEl.width > colPt.distSideR) ...
-             || (fun.meshEl.distL < colPt.distSideL) && (fun.meshEl.distL + fun.meshEl.width > colPt.distSideL)
+        if ((fun.meshEl.distR < colPt.distSideR) && (fun.meshEl.distR + fun.meshEl.width > colPt.distSideR) && (colPt.distSideR <= colPt.distSideL)) ...
+             || ((fun.meshEl.distL < colPt.distSideL) && (fun.meshEl.distL + fun.meshEl.width > colPt.distSideL) && (colPt.distSideL <= colPt.distSideR))
             %the above is a rounding-error-friendly version of:
             % a < colPt.x && colPt.x < b
            
@@ -164,16 +164,35 @@ function [I, quadDataOut] = colEvalV4(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 I = I1 + I2;
         else %same side, no singularity in (a,b)
             
-            if colPt.x <= a
-                type_ab = 'a';
-                phase = phase_b;
-            elseif b <= colPt.x
-                type_ab = 'b';
-                phase = phase_a;
-            else
-                %this error will probably never ever happen:
-                error('cant decide which is bigger of s and t');
+            if colPt.distSideL>colPt.distSideR %col pt is closer to right endpoint of mesh element than left
+                %so deal in terms of distance from right endpoint
+                if colPt.distSideR<=fun.meshEl.distR % a<b<x
+                    type_ab = 'b';
+                    phase = phase_a;
+                else % x<a<b
+                    type_ab = 'a';
+                    phase = phase_b;
+                end
+            else %otherwise deal in terms of distance from left endpoint
+                if colPt.distSideL<=fun.meshEl.distL % x<a<b
+                    type_ab = 'a';
+                    phase = phase_b;
+                else % a<b<x
+                    type_ab = 'b';
+                    phase = phase_a;
+                end
             end
+            
+%             if colPt.x <= a
+%                 type_ab = 'a';
+%                 phase = phase_b;
+%             elseif b <= colPt.x
+%                 type_ab = 'b';
+%                 phase = phase_a;
+%             else
+%                 %this error will probably never ever happen:
+%                 error('cant decide which is bigger of s and t');
+%             end
             
             if fun.meshEl.distL <= fun.meshEl.distR
                 type_LR = 'L';
@@ -310,25 +329,35 @@ function [I, quadDataOut] = colEvalV4(Op,fun, funSide, colPt, Nquad, quadDataIn,
                 z_ = a;
                 w_ = 0;
             else
-                if false
-                    % !!! UNFINISHED !!!
-                    alphaPhase = phase_shift{2}(1);
-                    missingPhaseShift = phase_shift{1}(1) - alphaPhase + a;
+                
                     
-                    if alphaPhase>0
-                        [ z_, w_ ] = LinearNSD(b-a, kwave, alphaPhase, suppWidth.position-a, Nquad);
-                    else
-                        [ z_, w_ ] = LinearNSD(b-a, kwave, -alphaPhase, -(suppWidth.position-a), Nquad);
-                        z_ = b-a-z_;
-                    end
-                    w_ = w_*exp(1i*kwave*missingPhaseShift);
+            if false %unfinished - need to fix rounding errors in (e.g.) "betaConst-alphaPhase*b",
+                    % when these are all large, get different values to
+                    % PathFinder and integral(.,.,.). However, the abs
+                    % value of the weights is the same, suggesting that
+                    % the error is only a rotation in the complex
+                    % plane.
+                alphaPhase = phase_shift{2}(0);
+                betaConst = phase_shift{1}(0);
+                missingPhaseShift = phase_shift{1}(1) - alphaPhase + a;
+
+                if alphaPhase>0
+                    [ z_, w_ ] = LinearNSD(fun.suppWidth, kwave, alphaPhase, shiftedCol, Nquad);
+                    %w_ = w_*exp(1i*kwave*(betaConst+a*alphaPhase));
+                    w_ = w_*exp(1i*kwave*betaConst)*exp(1i*kwave*a*alphaPhase);
                 else
-                    [ z_, w_ ] = PathFinder( a, b, kwave, Nquad, phase_shift,'settlerad', rectRad, 'fSingularities', logSingInfo,...
-                                            'stationary points', [], 'order', [], 'minOscs', minOscs, 'width', fun.suppWidth,'linear');
+                    [ z_, w_ ] = LinearNSD(fun.suppWidth, kwave, -alphaPhase, -shiftedCol, Nquad);
+                    w_ = w_*exp(1i*kwave*(betaConst-alphaPhase*b));
+                    %w_ = w_* exp(1i*kwave*betaConst)*exp(-1i*kwave*alphaPhase*b);
+                    z_ = b-z_;
                 end
+            else
+                [ z_, w_ ] = PathFinder( a, b, kwave, Nquad, phase_shift,'settlerad', rectRad, 'fSingularities', logSingInfo,...
+                                        'stationary points', [], 'order', [], 'minOscs', minOscs, 'width', fun.suppWidth,'linear');
             end
-            quadDataOut.w_ = w_;
-            quadDataOut.z_ = z_;
+        end
+        quadDataOut.w_ = w_;
+        quadDataOut.z_ = z_;
         end
 
         %and evaluate integral:

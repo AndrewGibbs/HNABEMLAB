@@ -4,26 +4,26 @@ clear classes;
 %wavenumber
 %wavelengthsPerComponent = 100;
 %scatter by Cantor set of order
-%CantOrder = 1;
-
+CantOrder = 2;
+L = 1;
 % now choose the wavenumber based on above info --------------------------
 
 %kwave = ceil(2*pi*wavelengthsPerComponent*3^CantOrder);
 
-kwave = 100;
+kwave = 128;
 
 fprintf('wavenumber chosen to be k=%d',kwave);
 
 %create 'screen' object ---------------------------------------------------
-vertices =   [10*pi    0;
+vertices =   [L    0;
               0    0];
           
-%segs = Cantor(CantOrder,1);
-segs = 10*pi-[0 2*pi 21*pi/10 5*pi/2 14*pi/5 7*pi/2 4*pi 6*pi 61*pi/10 10*pi];
+segs = Cantor(CantOrder,L);
 
 Gamma=MultiScreen(vertices,segs);
 
 %inident plane wave -------------------------------------------------------
+%d = [-1 0]; %direction as a vector
 d = [1 -1]./sqrt(2); %direction as a vector
 uinc=planeWave(kwave,d);
     
@@ -49,38 +49,9 @@ T = toc;
 
 disp('Plotting output');
 
-%plot the far-field pattern:
-figure(1);
-
-theta = linspace(0,2*pi,50*kwave);%5000 seems apt
-theta = theta(1:(end-1)); %delete final point here
-Fv_N = FarField_lessSlow_stillSteady(Gamma, v_N, kwave, theta);
-FPsi = FarField_lessSlow_stillSteady(Gamma, GOA, kwave, theta);
-FF = Fv_N + FPsi;
-radMin = -2;
-FFlogMin = -1;
-FFlog = log10(abs((FF)));
-logAbsFFhandle = @(theta_) log10(abs(FarField(Gamma, v_N, kwave, theta_) + FarField(Gamma, GOA, kwave, theta_)));
-%now adjust (theta,FF) to include trophs in log plot
-[theta, FFlog] = getFFtroughs(theta, FFlog, logAbsFFhandle);
-FFlog = flipud(FFlog);
-FFlog(FFlog<FFlogMin) = FFlogMin;
-polarplot(theta,FFlog);
-hold on;
-rlim([radMin,3.5]);
-segsShitft = abs(radMin)*(segs-.5)+radMin;
-for n = 1:length(segs)/2
-    polarplot([0; 0],[segsShitft(2*n-1); segsShitft(2*n)],'k','LineWidth',2);
-end
-
-return;
 %now plot the solution in the domain:
-figure(2);
+figure(1);
 domainPlot(Gamma,uinc,GOA,v_N,kwave);
 axis equal;
-
-%now compute the complimentary sound-hard aperature problem, by Babinet's
-%principle:
-figure(3);
-BabinetComplementPlot(Gamma,uinc,GOA,v_N,kwave);
-axis equal;
+ylim([-.2 .2]);
+title(sprintf('k = %d',kwave));

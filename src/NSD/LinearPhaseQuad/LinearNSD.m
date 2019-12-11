@@ -1,31 +1,28 @@
 function [x,w] = LinearNSD(Twidth, kwave, alphaPhase, xiSing, Npts)
     %parameters which determine cases, determined experimentally:
-    c1 = 2*pi;
-    c2 = .2;
-    
-    c3 = c1*c2; % local region (scaled by frequency) which contributes majority of oscillatory integral
-    
-    %now categorise integral:
-    if alphaPhase*kwave*Twidth<= c1 %(non-oscillatory)
+    c_osc = 2;
+    c_sing = .5;
+
+    if kwave*alphaPhase*Twidth/(2*pi)<=c_osc
         oscillatory = false;
-        if abs(xiSing)/Twidth >= c2 %(non-singular)
+        if abs(xiSing)/Twidth >= c_sing
             singular = false;
         else
-            singular = true; %(singular)
+            singular = true;
         end
-    else %(oscillatory)
+    else
         oscillatory = true;
-       if abs(xiSing)*(kwave*alphaPhase) >= c3 %(non-singular)
-           singular = false;
-       else
-           singular = true; %(singular)
-       end
+        if abs(xiSing)*kwave*alphaPhase/(2*pi*c_osc) >= c_sing
+            singular = false;
+        else
+            singular = true;
+        end
     end
     
     %now split into four cases:
     if oscillatory %oscillatory
         if singular %singular
-            [x0,w0] = LaplaceSD(xiSing, kwave*alphaPhase, 2*Npts, true);%GGLa
+            [x0,w0] = LaplaceSD(xiSing, kwave*alphaPhase, Npts, true);%GGLa
             [x2,w2] = LaplaceSD(Twidth, kwave*alphaPhase, Npts, false); %GLa
             if xiSing == 0
                 x = [x0; x2]; 

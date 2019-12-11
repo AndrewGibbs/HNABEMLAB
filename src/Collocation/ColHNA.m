@@ -26,7 +26,7 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
     messageFlag=false;
     standardBEMflag = false;
     standardQuadFlag = false;
-    truncParam = 1e-12;
+    truncParam = 1e-8;
     symmetrySearch = false;
     % -----------------------
     

@@ -7,7 +7,7 @@ function [x, w] = NonOsc45(a,b,freq,N,g,singularity, width,oscs)
         oscs = freq*abs(b-a);
     end
     maxSingDist=.2;
-    p_max=12;
+    p_max=16;
     delta=.15;
     subFlag = false;
     if ~isempty(singularity)

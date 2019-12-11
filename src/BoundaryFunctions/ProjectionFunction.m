@@ -85,7 +85,8 @@ classdef ProjectionFunction < BoundaryFunction
             val=zeros(length(s),1);
             
            for j=sideSubDofs
-               val=val+self.el(j).eval(s)*self.coeffs(j);
+               [~, NonOscBit] = self.el(j).eval(s);
+               val = val + NonOscBit*self.coeffs(j);
            end
         end
         

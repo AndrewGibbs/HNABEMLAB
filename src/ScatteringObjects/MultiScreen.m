@@ -26,9 +26,12 @@ classdef MultiScreen < PolygonalScatteringObject
             v1 = vertices(1,:);
             v2 = vertices(2,:);
             d = (v2-v1);
-            segSplitsSorted = sort(segSplits-min(segSplits))/max(segSplits);
             
-            self.segSplits = segSplitsSorted;
+            segSplits = sort(segSplits); %sort the splits
+            self.segSplits = segSplits; %store the splits
+            segSplitsSorted = (segSplits-min(segSplits))/max(segSplits);
+            
+            %self.segSplits = segSplitsSorted;
             
             self.L = 0;
             for j = 1:self.numComponents
