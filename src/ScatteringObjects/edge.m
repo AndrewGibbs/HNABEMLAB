@@ -1,4 +1,4 @@
-classdef edge < scatteringObject
+classdef edge% < scatteringObject
     %Screen object
     
     properties
@@ -6,6 +6,10 @@ classdef edge < scatteringObject
         P2 %endpoint
         dSv  %gradient of screen
         nv   %outward normal
+        L        
+        supp
+        numSides
+        vertices
     end
     
     methods

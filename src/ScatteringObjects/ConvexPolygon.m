@@ -51,39 +51,39 @@ classdef ConvexPolygon < PolygonalScatteringObject
             val = self.component(ofSide).trace(s);
         end
         
-        function R = distAnal(self,s,t,deriv,sGEt,sSide,tSide)
-            s=s(:); t=t(:);
-            if sSide == tSide
-                R = self.component{sSide}.distAnal(s,t,deriv,sGEt);
-            else  % some condition about the sides not being too close together...
-                x = self.component{sSide}.trace(s);
-                y = self.component{tSide}.trace(t);
-                yMx = -[ (x(1)-y(:,1))  (x(2)-y(:,2)) ];
-                dy = self.component{tSide}.dSv;
-                R0 = sqrt( (x(1) - y(:,1) ).^2 + (x(2) - y(:,2) ).^2);
-                switch deriv
-                    case 0 
-                        R = R0;
-                    case 1
-                        R = (dy*(yMx.')).'./R0;
-                    case 2
-                        %account for 2nd derivative bug:
-                        if length(t) == 1
-                            yMx1 = yMx(1);
-                            yMx2 = yMx(2);
-                        else
-                            yMx1 = yMx(1,:);
-                            yMx2 = yMx(2,:);
-                        end
-                        R = - dy(1)*((dy(1)*(2*x(1) - 2*y(:,1)).^2)./(4*R0.^3) - dy(1)./R0 + (dy(2)*(2*x(1) - 2*y(:,1)).*(2*x(2) - 2*y(:,2)))./(4*R0.^3)) - dy(2)*((dy(2)*(2*x(2) - 2*y(:,2)).^2)./(4*R0.^3) - dy(2)./R0 + (dy(1)*(2*x(1) - 2*y(:,1)).*(2*x(2) - 2*y(:,2)))./(4*R0.^3));
-                        
-                    case 3
-                        error('Havent coded derivtives this high yet')
-                end
-                %alternative option if the sides meet at a vertex, or are
-                %close together
-            end
-        end
+%         function R = distAnal(self,s,t,deriv,sGEt,sSide,tSide)
+%             s=s(:); t=t(:);
+%             if sSide == tSide
+%                 R = self.component{sSide}.distAnal(s,t,deriv,sGEt);
+%             else  % some condition about the sides not being too close together...
+%                 x = self.component{sSide}.trace(s);
+%                 y = self.component{tSide}.trace(t);
+%                 yMx = -[ (x(1)-y(:,1))  (x(2)-y(:,2)) ];
+%                 dy = self.component{tSide}.dSv;
+%                 R0 = sqrt( (x(1) - y(:,1) ).^2 + (x(2) - y(:,2) ).^2);
+%                 switch deriv
+%                     case 0 
+%                         R = R0;
+%                     case 1
+%                         R = (dy*(yMx.')).'./R0;
+%                     case 2
+%                         %account for 2nd derivative bug:
+%                         if length(t) == 1
+%                             yMx1 = yMx(1);
+%                             yMx2 = yMx(2);
+%                         else
+%                             yMx1 = yMx(1,:);
+%                             yMx2 = yMx(2,:);
+%                         end
+%                         R = - dy(1)*((dy(1)*(2*x(1) - 2*y(:,1)).^2)./(4*R0.^3) - dy(1)./R0 + (dy(2)*(2*x(1) - 2*y(:,1)).*(2*x(2) - 2*y(:,2)))./(4*R0.^3)) - dy(2)*((dy(2)*(2*x(2) - 2*y(:,2)).^2)./(4*R0.^3) - dy(2)./R0 + (dy(1)*(2*x(1) - 2*y(:,1)).*(2*x(2) - 2*y(:,2)))./(4*R0.^3));
+%                         
+%                     case 3
+%                         error('Havent coded derivtives this high yet')
+%                 end
+%                 %alternative option if the sides meet at a vertex, or are
+%                 %close together
+%             end
+%         end
         
         function R = distAnalCorner(self, sDist, t, t2corner, deriv, sSide, tSide)
             % s basically means collocation point here, and

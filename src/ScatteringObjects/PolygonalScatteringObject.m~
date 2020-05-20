@@ -75,11 +75,8 @@ classdef (Abstract) PolygonalScatteringObject < handle
             val = self.component{index}.trace(s);
         end
         
-        function val = dist(self,s,t,sIndex,tIndex)
-            t = t(:);
-            R = self.trace(s,sIndex)-self.trace(t,tIndex);
-            val = sqrt(R(:,1).^2 + R(:,2).^2);
-            %val = norm(self.trace(s,sIndex)-self.trace(t,tIndex));
+        function val = dist(self,s,sIndex,t,tIndex)
+            val = abs(self.trace(s,sIndex)-self.trace(t,tIndex));
         end
          
         function R = distAnal(self,s,t,deriv,sGEt,sIndex,tIndex)
@@ -108,7 +105,7 @@ classdef (Abstract) PolygonalScatteringObject < handle
                 x = self.component(sIndex).trace(s);
                 y = self.component(tIndex).trace(t);
                 yMx = -[ (x(1)-y(:,1))  (x(2)-y(:,2)) ];
-                dy = self.component(tIndex).dSv;
+                dy = self.component(Index).dSv;
                 R0 = sqrt( (x(1) - y(:,1) ).^2 + (x(2) - y(:,2) ).^2);
                 switch deriv
                     case 0 

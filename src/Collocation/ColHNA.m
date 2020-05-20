@@ -11,12 +11,6 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
     
     DOFs=length(Vbasis.el);
     
-    weighting = false;
-    
-    if isa(uinc,'planeWave')
-        linearRHSphase = true;
-    end
-    
     % -----------------------
     %defaults:
     Nquad = 15;
@@ -28,6 +22,8 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
     standardQuadFlag = false;
     truncParam = 1e-8;
     symmetrySearch = false;
+    weighting = false;
+    symmetry_trick = true;
     % -----------------------
     
     for j=1:length(varargin)
@@ -77,11 +73,16 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
     numBasEls = length(Vbasis.el);
     
     %symmetrySearch %not recommended for fractals with complex symmetry structure
-    [colSymIndices,basisSymIndices] = getSymmetryIndices(Operator,numBasEls,numColPts);
+    if symmetry_trick
+        [colSymIndices,basisSymIndices] = getSymmetryIndices(Operator,numBasEls,numColPts);
+    else
+        colSymIndices = nan(numColPts,numBasEls);
+    end
+    
     if messageFlag
        fprintf('\nConstructing BEM matrix:');
     end
-    parfor m=1:numColPts %can be parfor
+    for m=1:numColPts %can be parfor
         %fprintf('\nm');
         VbasisCopy = Vbasis;
         fCopy = f;
@@ -90,26 +91,24 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
             if isnan(colSymIndices(m,n))
             %manually do first entry of row
                if n==1
-                   [colMatrixCol(n), quadData] = colEvalV4(Operator, VbasisCopy.el(1), VbasisCopy.elEdge(1), Xstruct(m), Nquad,[], standardQuadFlag, true);
+                   [colMatrixCol(n), quadData] = LHSquad(Operator, VbasisCopy.el(1), VbasisCopy.elEdge(1), Xstruct(m), Nquad,[]);
                elseif VbasisCopy.el(n).pm == VbasisCopy.el(n-1).pm && isequal(VbasisCopy.el(n).meshEl,VbasisCopy.el(n-1).meshEl)
                        % && VbasisCopy.el(n).gradIndex==VbasisCopy.el(n-1).gradIndex%added this line as supports can seem equal when they're not
                    %reuse quadrature from previous iteration of this loop,
                    %(phase and domain are the same)
-                   colMatrixCol(n) = colEvalV4(Operator, VbasisCopy.el(n), VbasisCopy.elEdge(n), Xstruct(m), Nquad, quadData, standardQuadFlag, true);
+                   colMatrixCol(n) = LHSquad(Operator, VbasisCopy.el(n), VbasisCopy.elEdge(n), Xstruct(m), Nquad, quadData);
                else
                    %get fresh quadrature data
-                   [colMatrixCol(n), quadData] = colEvalV4(Operator, VbasisCopy.el(n), VbasisCopy.elEdge(n), Xstruct(m), Nquad,[], standardQuadFlag, true);
+                   [colMatrixCol(n), quadData] = LHSquad(Operator, VbasisCopy.el(n), VbasisCopy.elEdge(n), Xstruct(m), Nquad, []);
                end
             end
         end
-        %integral(@(t) Operator.kernel(abs(t-Xstruct(m).x)).*VbasisCopy.el(n).eval(t), VbasisCopy.el(n).a, VbasisCopy.el(n).b);
-        %abs(colMatrixCol(n)-colEvalV2(Operator, VbasisCopy.el(n),VbasisCopy.elEdge(n), Xstruct(m), Nquad,[],standardQuadFlag))>1e-8
         colMatrix(m,:) = colMatrixCol;
         fX = fCopy.eval(Xstruct(m).x,Xstruct(m).side);
         if ~standardBEMflag
            SPsiX = 0;
            for GOAedge = GOA.suppEdges
-               SPsiX = SPsiX + colEvalV4(Operator, GOA.edgeComponent(GOAedge), GOAedge, Ystruct(m), Nquad,[], standardQuadFlag, linearRHSphase);
+               SPsiX = SPsiX + RHSquad(Operator, GOA.edgeComponent(GOAedge), GOAedge, Ystruct(m), Nquad);
            end
            colRHS(m)  = fX - SPsiX;
         else

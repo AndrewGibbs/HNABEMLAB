@@ -23,7 +23,7 @@ function vals = FarField_lessSlow_stillSteady(boundary, density, k, theta)
     thetaSeg{numThetaSegs} = theta(thetaIndices{numThetaSegs});
     thetaLength(numThetaSegs) = length(thetaIndices{numThetaSegs});
     
-    parfor m = 1:numThetaSegs
+    for m = 1:numThetaSegs
         valsSplit{m} = zeros(thetaLength(m),1);
         densityCpy = density;
         for n = 1:boundary.numComponents

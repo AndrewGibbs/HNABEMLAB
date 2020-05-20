@@ -1,4 +1,3 @@
-clc;
 clear classes;
 % run addPathsHNA() to add necessary search paths
 %wavenumber
@@ -15,11 +14,12 @@ kwave = 100;
 fprintf('wavenumber chosen to be k=%d',kwave);
 
 %create 'screen' object ---------------------------------------------------
-vertices =   [10*pi    0;
+vertices =   [1    0;
               0    0];
           
 %segs = Cantor(CantOrder,1);
-segs = 10*pi-[0 2*pi 21*pi/10 5*pi/2 14*pi/5 7*pi/2 4*pi 6*pi 61*pi/10 10*pi];
+%segs = 10*pi-[0 2*pi 21*pi/10 5*pi/2 14*pi/5 7*pi/2 4*pi 6*pi 61*pi/10 10*pi];
+segs = [0 0.1 0.3 0.5 0.7 1];
 
 Gamma=MultiScreen(vertices,segs);
 
@@ -34,9 +34,8 @@ sigmaGrad=0.15; %grading ratio
 nLayers = cL*(pMax+1)-1; %number of layers of grading
 throwAwayParam = 0; %no need to remove any basis elements
 OverSample = 1.5; %choose amount to oversample by (50% here)
-% construct the HNA basis (single mesh):
+% construct the HNA basis (overlapping mesh):
 VHNA = HNAoverlappingMesh(Gamma, pMax, kwave, nLayers, sigmaGrad);
-%VHNA = HNAoverlappingMesh(Gamma, pMax, kwave, nLayers, sigmaGrad);
 DOFs = length(VHNA.el); %get total #DOFs
 
 % construct the single layer potential 'operator' ---------------------------

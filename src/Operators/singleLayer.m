@@ -21,9 +21,9 @@ classdef singleLayer
             g = self.domain.distAnal(s,t,deriv,sGEt,sSide,tSide);
         end
         
-        function g = phaseAnalDerivCorner( self, sDist, t, t2corner, deriv, sSide, tSide)
-            g = self.domain.distAnalCorner( sDist, t, t2corner, deriv, sSide, tSide);
-        end
+%         function g = phaseAnalDerivCorner( self, sDist, t, t2corner, deriv, sSide, tSide)
+%             g = self.domain.distAnalCorner( sDist, t, t2corner, deriv, sSide, tSide);
+%         end
         
         function K = kernel(self, s, t, sSide, tSide)
             %single layer kernel
@@ -35,7 +35,8 @@ classdef singleLayer
             if  sSide == tSide
                 K = 1i/4 * besselh(0,1,self.kwave*abs(s-t));
             else
-                K = 1i/4 * besselh(0,1,self.kwave*abs(self.domain.distAnal(s,t,0,[],sSide,tSide)));
+                %K = 1i/4 * besselh(0,1,self.kwave*abs(self.domain.distAnal(s,t,0,[],sSide,tSide)));
+                K = 1i/4 * besselh(0,1,self.kwave*abs(self.domain.dist(s,t,sSide,tSide)));
             end
         end
         
@@ -50,14 +51,14 @@ classdef singleLayer
             
         end
         
-        function K = kernelNonOscAnalCorner(self, sDist, t, t2corner, sSide, tSide)
-            %non-oscillatory part of single layer kernel, extended for
-            %corner cases
-%                 K = 1i/4 * besselh(0,1,self.kwave*self.domain.distAnalCorner( sDist, t, t2corner, 0, sSide, tSide))...
-%                     ./exp(1i*self.kwave*self.domain.distAnalCorner( sDist, t, t2corner, 0, sSide, tSide));       
-                [~,~,K_] = besselhDecomp(0,1,self.kwave*self.domain.distAnalCorner( sDist, t, t2corner, 0, sSide, tSide));
-                K = K_*1i/4;
-        end
+%         function K = kernelNonOscAnalCorner(self, sDist, t, t2corner, sSide, tSide)
+%             %non-oscillatory part of single layer kernel, extended for
+%             %corner cases
+% %                 K = 1i/4 * besselh(0,1,self.kwave*self.domain.distAnalCorner( sDist, t, t2corner, 0, sSide, tSide))...
+% %                     ./exp(1i*self.kwave*self.domain.distAnalCorner( sDist, t, t2corner, 0, sSide, tSide));       
+%                 [~,~,K_] = besselhDecomp(0,1,self.kwave*self.domain.distAnalCorner( sDist, t, t2corner, 0, sSide, tSide));
+%                 K = K_*1i/4;
+%         end
         
         function m = phaseMaxStationaryPointOrder(self,sameSide)
             % ** need to add some extra conditions in here when I do
