@@ -5,7 +5,7 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
     warning('off','MATLAB:mir_warning_maybe_uninitialized_temporary');
     
     %with RHS data
-    f=DirichletData(uinc,Gamma);
+    f = Operator.get_RHS_data(uinc);
     %construct Geometrical optics approximation on Gamma
     GOA=GeometricalOpticsApprox(uinc,Gamma);
     
@@ -23,7 +23,7 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
     truncParam = 1e-8;
     symmetrySearch = false;
     weighting = false;
-    symmetry_trick = true;
+    symmetry_trick = false;
     % -----------------------
     
     for j=1:length(varargin)
@@ -82,7 +82,7 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
     if messageFlag
        fprintf('\nConstructing BEM matrix:');
     end
-    for m=1:numColPts %can be parfor
+    parfor m=1:numColPts %can be parfor
         %fprintf('\nm');
         VbasisCopy = Vbasis;
         fCopy = f;
@@ -101,16 +101,20 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
                    %get fresh quadrature data
                    [colMatrixCol(n), quadData] = LHSquad(Operator, VbasisCopy.el(n), VbasisCopy.elEdge(n), Xstruct(m), Nquad, []);
                end
+               
+               if Xstruct(m).side == VbasisCopy.elEdge(n)
+                   colMatrixCol(n) = colMatrixCol(n) + Operator.Id(VbasisCopy.el(n), Xstruct(m).x);
+               end
             end
         end
         colMatrix(m,:) = colMatrixCol;
         fX = fCopy.eval(Xstruct(m).x,Xstruct(m).side);
         if ~standardBEMflag
-           SPsiX = 0;
+           OpPsiX = 0;
            for GOAedge = GOA.suppEdges
-               SPsiX = SPsiX + RHSquad(Operator, GOA.edgeComponent(GOAedge), GOAedge, Ystruct(m), Nquad);
+               OpPsiX = OpPsiX + RHSquad(Operator, GOA.edgeComponent(GOAedge), GOAedge, Ystruct(m), Nquad);
            end
-           colRHS(m)  = fX - SPsiX;
+           colRHS(m)  = fX - (OpPsiX + Operator.Id(GOA.edgeComponent(Xstruct(m).side),Xstruct(m).x));
         else
            colRHS(m)  = fX;
         end

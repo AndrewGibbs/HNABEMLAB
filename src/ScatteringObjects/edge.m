@@ -60,57 +60,57 @@ classdef edge% < scatteringObject
 %             end
         end
         
-        function R = dist(self,s,t)
-            %returns distance between two points
-            %** should eventually be moved into a superclass 'obstacle',
-%             s=s(:);
-%             t=t(:);
-            if ~isequal(size(s),size(t)) && max(size(t))>1 && max(size(t))>1
-                error('param vectors for distance function must be compatible');
-            end
-            R = abs(self.trace(s)-self.trace(t));
-        end
+%         function R = dist(self,s,t)
+%             %returns distance between two points
+%             %** should eventually be moved into a superclass 'obstacle',
+% %             s=s(:);
+% %             t=t(:);
+%             if ~isequal(size(s),size(t)) && max(size(t))>1 && max(size(t))>1
+%                 error('param vectors for distance function must be compatible');
+%             end
+%             R = abs(self.trace(s)-self.trace(t));
+%         end
         
-        function R = distAnal(self,s,t,deriv,sGEt,~,~)
-            if ~isequal(size(s),size(t)) && (max(size(t))>1 && max(size(s))>1 )
-                error('param vectors for distance function must be compatible');
-            end
-%             s=s(:);
-%             t=t(:);
-            % sGEt is true if s>=t
-            if nargin == 4
-%                 sgn_ = sign(real(s-t));
-%                 if min(sgn_) ~= max(sgn_) || ismember(0,sgn_)
-%                     error('cannot guess analytic extension of distance function at zero')
-%                 else
-%                     sgn = min(sgn_);
-%                 end
-                error('need to know if s><t, to choose correct analytic extension');
-%             elseif sGEt
-%                 sgn = - 1;
-%             else
-%                 sgn= 1;
-             end
-            
-%these are partial derivatives w.r.t. t
-            switch deriv
-                case 0
-                    if sGEt
-                        R=s-t;
-                    else
-                        R=t-s;
-                    end
-                case 1
-                    if sGEt
-                        R=-1;
-                    else
-                        R=1;
-                    end
-                otherwise
-                    R=0;
-            end
-            %R = {@(s,t) sgn*(s-t), @(s,t) sgn, @(s,t) 0};
-        end
+%         function R = distAnal(self,s,t,deriv,sGEt,~,~)
+%             if ~isequal(size(s),size(t)) && (max(size(t))>1 && max(size(s))>1 )
+%                 error('param vectors for distance function must be compatible');
+%             end
+% %             s=s(:);
+% %             t=t(:);
+%             % sGEt is true if s>=t
+%             if nargin == 4
+% %                 sgn_ = sign(real(s-t));
+% %                 if min(sgn_) ~= max(sgn_) || ismember(0,sgn_)
+% %                     error('cannot guess analytic extension of distance function at zero')
+% %                 else
+% %                     sgn = min(sgn_);
+% %                 end
+%                 error('need to know if s><t, to choose correct analytic extension');
+% %             elseif sGEt
+% %                 sgn = - 1;
+% %             else
+% %                 sgn= 1;
+%              end
+%             
+% %these are partial derivatives w.r.t. t
+%             switch deriv
+%                 case 0
+%                     if sGEt
+%                         R=s-t;
+%                     else
+%                         R=t-s;
+%                     end
+%                 case 1
+%                     if sGEt
+%                         R=-1;
+%                     else
+%                         R=1;
+%                     end
+%                 otherwise
+%                     R=0;
+%             end
+%             %R = {@(s,t) sgn*(s-t), @(s,t) sgn, @(s,t) 0};
+%         end
           
         function draw(self)
            s = linspace(0,self.L).';

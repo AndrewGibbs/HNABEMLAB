@@ -12,6 +12,8 @@ classdef (Abstract) basis <handle
         edgeBasis
         elEdge
         nonOscCoeffs = []
+        plusCoefs
+        minusCoefs
     end
     
     methods
@@ -49,6 +51,7 @@ classdef (Abstract) basis <handle
             coeffs=(X.'*X)\X.'*fs;
             proj=self.project(coeffs);
         end
+        
     end
     
 end

@@ -40,9 +40,23 @@ classdef hpStandardBasis <basis
                 end
             end
             
+            self.plusCoefs = [];
+            self.minusCoefs = [];
 %            self.numEls=elCount;
+            self.nonOscCoeffs=1:elCount;
             self.mesh=mesh;
-            self.elSide = ones(size(self.el));
+%            self.elEdge = ones(size(self.el));
+        end
+        
+        function [s, w] = getPoints(self,pointsPerWavelength,k,distType)
+            if self.sigmaGrad>=.5
+                error('Need smaller value of sigmaGrad to obtain mesh info');
+            end
+            %returns points with fixed number of nodes per mesh element,
+           fakeSingleMesh = self.mesh;
+           k = ceil(pi/self.hMax);
+           [s,w] = getQuadPointsFromMesh(fakeSingleMesh,pointsPerWavelength,k,distType);
+            
         end
     end
     

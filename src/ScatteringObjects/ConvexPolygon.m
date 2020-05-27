@@ -85,28 +85,28 @@ classdef ConvexPolygon < PolygonalScatteringObject
 %             end
 %         end
         
-        function R = distAnalCorner(self, sDist, t, t2corner, deriv, sSide, tSide)
-            % s basically means collocation point here, and
-            % t is the variable which moves through the support
-            theta = self.internalAngle(sSide,tSide);
-            Rdist = @(r) sqrt(sDist^2 + (t2corner + r).^2 - 2*cos(theta)*sDist*(t2corner + r));
-            
-            if sSide == tSide
-                error('This method is designed for neighbouring sides')
-            else  
-                R0 = Rdist(t);
-                switch deriv
-                    case 0 
-                        R = R0;
-                    case 1
-                        R = (-sDist*cos(theta) + t2corner + t)./R0;
-                    case 2
-                        R = 1./R0 - (-2*sDist*cos(theta) + 2*(t2corner + t)).^2./(4*R0.^3);
-                    case 3
-                        error('Havent coded derivtives this high yet')
-                end
-            end
-        end
+%         function R = distAnalCorner(self, sDist, t, t2corner, deriv, sSide, tSide)
+%             % s basically means collocation point here, and
+%             % t is the variable which moves through the support
+%             theta = self.internalAngle(sSide,tSide);
+%             Rdist = @(r) sqrt(sDist^2 + (t2corner + r).^2 - 2*cos(theta)*sDist*(t2corner + r));
+%             
+%             if sSide == tSide
+%                 error('This method is designed for neighbouring sides')
+%             else  
+%                 R0 = Rdist(t);
+%                 switch deriv
+%                     case 0 
+%                         R = R0;
+%                     case 1
+%                         R = (-sDist*cos(theta) + t2corner + t)./R0;
+%                     case 2
+%                         R = 1./R0 - (-2*sDist*cos(theta) + 2*(t2corner + t)).^2./(4*R0.^3);
+%                     case 3
+%                         error('Havent coded derivtives this high yet')
+%                 end
+%             end
+%         end
     end
 end
 

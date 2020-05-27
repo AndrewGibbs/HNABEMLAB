@@ -2,8 +2,8 @@ classdef HNAoverlappingMesh <basis
     
     properties
         %in parent basis
-        plusCoefs =[]
-        minusCoefs =[]
+%         plusCoefs =[]
+%         minusCoefs =[]
     end
     
     methods

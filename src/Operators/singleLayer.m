@@ -1,11 +1,9 @@
-classdef singleLayer
+classdef singleLayer < forumulation
     %single layer operator, contains everything you need to know about it
     
-    %** so far everything assumes that x(s) and y(t) are on the same side
-    
     properties
-        kwave
-        domain
+%         kwave
+%         domain
         singularity = 'log'
         %phase
 %         phaseAnalExtDerivs
@@ -51,6 +49,15 @@ classdef singleLayer
             
         end
         
+        %identity component of operator:
+        function Ig_x = Id(self,~,x)
+            Ig_x = 0;
+        end
+        
+        function f = get_RHS_data(self,uinc)
+            f = DirichletFunction(uinc,self.domain);
+        end
+        
 %         function K = kernelNonOscAnalCorner(self, sDist, t, t2corner, sSide, tSide)
 %             %non-oscillatory part of single layer kernel, extended for
 %             %corner cases
@@ -60,21 +67,21 @@ classdef singleLayer
 %                 K = K_*1i/4;
 %         end
         
-        function m = phaseMaxStationaryPointOrder(self,sameSide)
-            % ** need to add some extra conditions in here when I do
-            % polygons
-            if isa(self.domain,'Screen') || isa(self.domain,'MultiScreen')
-               m=0; 
-            elseif isa(self.domain,'ConvexPolygon')
-                if ~sameSide
-                    m=1;
-                else
-                    m=0;
-                end
-            else
-               error('Domain type not recognised');
-            end
-        end
+%         function m = phaseMaxStationaryPointOrder(self,sameSide)
+%             % ** need to add some extra conditions in here when I do
+%             % polygons
+%             if isa(self.domain,'Screen') || isa(self.domain,'MultiScreen')
+%                m=0; 
+%             elseif isa(self.domain,'ConvexPolygon')
+%                 if ~sameSide
+%                     m=1;
+%                 else
+%                     m=0;
+%                 end
+%             else
+%                error('Domain type not recognised');
+%             end
+%         end
         function X = getSymmetries(self)
             X = abs(self.domain.getSymmetries());
         end
