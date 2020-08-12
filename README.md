@@ -138,4 +138,4 @@ where the vector in the second argument corresponds to points at which the two v
 
 # References:
 
-[1] D Hewett, S. Langdon & S.N. Chandler-Wilde, <a href="https://link.springer.com/article/10.1007/s42985-020-00013-3?wt_mc=Internal.Event.1.SEM.ArticleAuthorIncrementalIssue&utm_source=ArticleAuthorIncrementalIssue&utm_medium=email&utm_content=AA_en_06082018&ArticleAuthorIncrementalIssue_20200807#citeas">Fast hybrid numerical-asymptotic boundary element methods for high frequency screen and aperture problems based on least-squares collocation, <a href="https://arxiv.org/abs/1912.09916"> click here arxiv copy.
+[1] D Hewett, S. Langdon & S.N. Chandler-Wilde, <a href="https://link.springer.com/article/10.1007/s42985-020-00013-3?wt_mc=Internal.Event.1.SEM.ArticleAuthorIncrementalIssue&utm_source=ArticleAuthorIncrementalIssue&utm_medium=email&utm_content=AA_en_06082018&ArticleAuthorIncrementalIssue_20200807#citeas">Fast hybrid numerical-asymptotic boundary element methods for high frequency screen and aperture problems based on least-squares collocation, <a href="https://arxiv.org/abs/1912.09916"> click here for arxiv copy.
