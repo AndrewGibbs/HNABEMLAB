@@ -7,7 +7,7 @@ kwave=10;%11*2*pi;
 
 %approximation params:
 OS = 1.2; %oversampling rate
-pMax=2; %polynomiail degree
+pMax=8; %polynomial degree
 cL = 2;
 nLayers=cL*(pMax+1)-1; %layers of mesh
 hMax = 2*pi/(2*kwave);
@@ -36,7 +36,7 @@ DOFs=length(Vstd.el);
 %A=singleLayer(kwave,Gamma);
 A = combinedLayer(kwave,Gamma);
 
-[v_h, GOA, colMatrix, colRHS, T] = ColHNA(A, Vstd, uinc, Gamma, 'oversample', OS, 'progress', 'SVDtrunc', 1E-8, 'weight','symmetry');
+[v_h, GOA, ~, ~, T] = ColHNA(A, Vstd, uinc, Gamma, 'oversample', OS, 'progress', 'SVDtrunc', 1E-8, 'weight','symmetry');
 
 figure(1);
 for n = 1:Gamma.numComponents
@@ -56,4 +56,4 @@ theta = linspace(0,2*pi,50*kwave);
 Fv_N = FarField_lessSlow_stillSteady(Gamma, v_h, kwave, theta);
 plot(theta,real(Fv_N),theta,imag(Fv_N));
 
-beep;
+%beep;
