@@ -69,6 +69,8 @@ classdef combinedLayer < forumulation
         
         function X = getSymmetries(self)
             X = self.domain.getSymmetries();
+            d = abs(min(min(X)))+max(max(X))+1;
+            X(X<0) = X(X<0)+d;
         end
     end
 end

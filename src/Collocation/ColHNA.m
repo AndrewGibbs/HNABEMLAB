@@ -4,24 +4,25 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
     %surpress warnings about cleared data in parfor loop:
     warning('off','MATLAB:mir_warning_maybe_uninitialized_temporary');
     
-    %with RHS data
-    f = Operator.get_RHS_data(uinc);
-    %construct Geometrical optics approximation on Gamma
-    GOA=GeometricalOpticsApprox(uinc,Gamma);
-    
-    DOFs=length(Vbasis.el);
+    if iscell(uinc)
+        squiggly = true;
+    else
+       squiggly = false;
+       uinc_ = uinc;
+       clear uinc;
+       uinc{1} = uinc_;
+    end
+    num_incs = length(uinc);
     
     % -----------------------
     %defaults:
     Nquad = 15;
-    scaler=1;
     colType='C';
     overSamplesPerMeshEl=1;
     messageFlag=false;
     standardBEMflag = false;
     standardQuadFlag = false;
     truncParam = 1e-8;
-    symmetrySearch = false;
     weighting = false;
     symmetry_trick = false;
     % -----------------------
@@ -46,6 +47,9 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
                    weighting = true;
                case 'trunc'
                    truncParam = varargin{j+1};
+               case 'symmetry'
+                   symmetry_trick = true;
+                   
            end
         end
     end
@@ -67,7 +71,6 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
     end
     
     %initialise main bits:
-    colRHS=zeros(length(Xstruct),1);
     colMatrix=zeros(length(Xstruct),length(Vbasis.el));
     numColPts = length(Xstruct);
     numBasEls = length(Vbasis.el);
@@ -85,7 +88,6 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
     parfor m=1:numColPts %can be parfor
         %fprintf('\nm');
         VbasisCopy = Vbasis;
-        fCopy = f;
         colMatrixCol = zeros(1,numBasEls);
         for n=1:numBasEls
             if isnan(colSymIndices(m,n))
@@ -107,20 +109,40 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
                end
             end
         end
-        colMatrix(m,:) = colMatrixCol;
-        fX = fCopy.eval(Xstruct(m).x,Xstruct(m).side);
-        if ~standardBEMflag
-           OpPsiX = 0;
-           for GOAedge = GOA.suppEdges
-               OpPsiX = OpPsiX + RHSquad(Operator, GOA.edgeComponent(GOAedge), GOAedge, Ystruct(m), Nquad);
-           end
-           colRHS(m)  = fX - (OpPsiX + Operator.Id(GOA.edgeComponent(Xstruct(m).side),Xstruct(m).x));
-        else
-           colRHS(m)  = fX;
-        end
+         colMatrix(m,:) = colMatrixCol;
         if messageFlag
             fprintf('\n\t%d/%d%',m,numColPts);
+        end 
+    end
+    if messageFlag
+       fprintf('\nConstructing RHS vector(s):');
+    end
+    %new seperate RHS bit, which allows multiple RHSs
+    colRHS=zeros(length(Xstruct),num_incs);
+    for ui_=1:num_incs
+        colRHS_=zeros(length(Xstruct),1);
+        f = Operator.get_RHS_data(uinc{ui_});
+        %construct Geometrical optics approximation on Gamma
+        GOA{ui_}=GeometricalOpticsApprox(uinc{ui_},Gamma);
+        parfor m=1:numColPts
+            fCopy = f;
+            %with RHS data
+            %colMatrix(m,:) = colMatrixCol;
+            fX = fCopy.eval(Xstruct(m).x,Xstruct(m).side);
+            if ~standardBEMflag
+               OpPsiX = 0;
+               for GOAedge = GOA{ui_}.suppEdges
+                   OpPsiX = OpPsiX + RHSquad(Operator, GOA{ui_}.edgeComponent(GOAedge), GOAedge, Ystruct(m), Nquad);
+               end
+               colRHS_(m)  = fX - (OpPsiX + Operator.Id(GOA{ui_}.edgeComponent(Xstruct(m).side),Xstruct(m).x));
+            else
+               colRHS_(m)  = fX;
+            end
+            if messageFlag
+                fprintf('\n\t%d/%d%',m,numColPts);
+            end 
         end
+        colRHS(:,ui_) = colRHS_;
     end
     
     %now fill in any gaps in matrix which can be done by exploiting
@@ -143,7 +165,7 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
         colMatrix = weightrix * colMatrix;
     end
     
-    %use least squares with Matlab's built in SVD to get coefficients
+    %use least squares with SVD to get coefficients
     if isnan(truncParam)
         coeffs = colMatrix\colRHS;
     elseif strcmp(truncParam,'inv')
@@ -153,7 +175,14 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
         coeffs = pseudo_backslash(colMatrix, colRHS, truncParam);
     end
     solveTime = toc;
-    v_N=ProjectionFunction(coeffs,Vbasis);
+    if squiggly
+        for m=1:num_incs
+            v_N{m} = ProjectionFunction(coeffs(:,m),Vbasis);
+        end
+    else
+        v_N=ProjectionFunction(coeffs,Vbasis);
+        GOA = GOA{1};
+    end
     
     if messageFlag
         toc

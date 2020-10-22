@@ -19,8 +19,12 @@ classdef (Abstract) PolygonalScatteringObject < handle
                 mid_n = (self.component(n).P2 + self.component(n).P1)/2;
                 for m = 1:self.numComponents
                     mid_m = (self.component(m).P2 + self.component(m).P1)/2;
-                    Y{n,m}.midTranslate = mid_m - mid_n;
-                    Y{n,m}.rotate = self.internalAngle(m,n);
+                    Y{n,m}.midTranslate = norm(mid_m - mid_n);
+                    %Y{n,m}.rotate = self.internalAngle(m,n);
+                    %internal angle is not the sufficient!
+                    v1 = self.component(n).dSv;
+                    v2 = self.component(m).dSv;
+                    Y{n,m}.rotate = mod(angle(v2(1) + 1i*v2(2)) - angle(v1(1) + 1i*v1(2)),2*pi);
                     Y{n,m}.oldLength = self.component(n).L;
                     Y{n,m}.newLength = self.component(m).L;
                 end

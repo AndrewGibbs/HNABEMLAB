@@ -1,6 +1,15 @@
 function [B,A] = getSymmetryIndices(Op,N,M)
 %predicts repitions in collocation matrix and exploits this
     X = Op.getSymmetries();
+    
+    %quick (and hopefully short-term) bodge to replace negative entries
+    % with positive entries:
+%     d = abs(min(min(X)))+max(max(X))+1;
+%     X(X<0) = X(X<0)+d;
+    % there is a relationship between, e.g. '2' and '-2', but this bodge
+    % ignores this, as exploiting this relationship would require splitting
+    % the combined layer operator into two components and re-arranging
+    
     numComps = Op.domain.numComponents;
     DOFsPerComp = N/numComps;
     COLsPerComp = M/numComps;
