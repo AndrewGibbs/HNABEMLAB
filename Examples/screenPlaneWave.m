@@ -2,11 +2,11 @@ clc;
 clear classes;
 % run addPathsHNA() to add necessary search paths
 %wavenumber
-kwave=120;
+kwave=20;
 
 %create 'screen' object ---------------------------------------------------
-vertices =   [1    0;
-              0    0];
+vertices =   [0    0;
+              1    0];
 Gamma=Screen(vertices);
 
 %inident plane wave -------------------------------------------------------

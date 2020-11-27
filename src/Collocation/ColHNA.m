@@ -23,7 +23,7 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
     standardBEMflag = false;
     standardQuadFlag = false;
     truncParam = 1e-8;
-    weighting = false;
+    weighting = true;
     symmetry_trick = false;
     % -----------------------
     

@@ -68,9 +68,9 @@ title(sprintf('k=%d',kwave),'FontSize',16);
 %plot the far-field pattern:
 figure(3);
 theta = linspace(0,2*pi,50*kwave);
-Fv_N = FarField_lessSlow_stillSteady(Gamma, v_N, kwave, theta);
-FPsi = FarField_lessSlow_stillSteady(Gamma, GOA, kwave, theta);
-semilogy(theta,abs(FPsi+Fv_N));
+Fv_h = FarField(Gamma, v_h, kwave, theta);
+FPsi = FarField(Gamma, GOA, kwave, theta);
+plot(theta,(Fv_h));
 return;%'fontsize',
 
 %now plot the solution in the domain:
