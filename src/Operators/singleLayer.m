@@ -42,7 +42,8 @@ classdef singleLayer < forumulation
             %non-oscillatory part of single layer kernel, extended
             %analytically (provided sgn is constant)
             if nargin == 6
-                K = 1i/4 * besselh(0,1,self.kwave*self.domain.distAnal(s,t,0,sGEt, sSide, tSide))./exp(1i*self.kwave*self.domain.distAnal(s,t,0,sGEt, sSide, tSide));
+                K = 1i/4 * besselh_0_1_nonosc_large_imag(self.kwave*self.domain.distAnal(s,t,0,sGEt, sSide, tSide));
+                %self.coupling_param/4 * besselh(0,1,self.kwave*self.domain.distAnal(s,t,0,sGEt, sSide, tSide))./exp(1i*self.kwave*self.domain.distAnal(s,t,0,sGEt, sSide, tSide));
             else
                 K = 1i/4 * besselh(0,1,self.kwave*self.domain.distAnal(s,t,0))./exp(1i*self.kwave*self.domain.distAnal(s,t,0));
             end

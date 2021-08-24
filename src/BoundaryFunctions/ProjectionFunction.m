@@ -12,7 +12,7 @@ classdef ProjectionFunction < BoundaryFunction
         onScreen
         nodes
         weights
-        nodesPerWavelength = 10;
+        %nodesPerWavelength = 10;
     end
     
     methods
@@ -43,7 +43,7 @@ classdef ProjectionFunction < BoundaryFunction
            
         end  
         
-        F = FarField( self, theta );
+        %F = FarField( self, theta );
         
         function val=eval(self,s, component)
             if nargin==2

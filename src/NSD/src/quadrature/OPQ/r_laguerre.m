@@ -15,7 +15,7 @@
 function ab=r_laguerre(N,a)
 if nargin<2, a=0; end
 if((N<=0)|(a<=-1)) error('parameter(s) out of range'), end
-nu=a+1; mu=gamma(a+1);
+nu=a+1; mu=gamma_complex(a+1);
 if N==1, ab=[nu mu]; return, end
 N=N-1; n=1:N; na=2*n+a+1; nb=n.*(n+a);
 A=[nu na]; B=[mu nb];

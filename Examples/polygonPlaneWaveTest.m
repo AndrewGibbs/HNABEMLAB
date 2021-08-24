@@ -7,7 +7,7 @@ kwave=10;%11*2*pi;
 
 %approximation params:
 OS = 1.5; %oversampling rate
-pMax=5; %polynomiail degree
+pMax=4; %polynomiail degree
 cL = 2;
 nLayers=cL*(pMax+1)-1; %layers of mesh
 % hMax = 2*pi/(2*kwave);

@@ -10,7 +10,7 @@ vertices =   [0    0;
 Gamma=Screen(vertices);
 
 %inident plane wave -------------------------------------------------------
-d = [1 -1]./sqrt(2); %direction as a vector
+d = [1 1]./sqrt(2); %direction as a vector
 uinc=planeWave(kwave,d);
     
 %make an HNA basis on Gamma -----------------------------------------------

@@ -124,7 +124,7 @@ function [v_N, GOA, colMatrix, colRHS, solveTime] = ColHNA(Operator, Vbasis, uin
         f = Operator.get_RHS_data(uinc{ui_});
         %construct Geometrical optics approximation on Gamma
         GOA{ui_}=GeometricalOpticsApprox(uinc{ui_},Gamma);
-        parfor m=1:numColPts
+        parfor m=1:numColPts % can be parfor
             fCopy = f;
             %with RHS data
             %colMatrix(m,:) = colMatrixCol;

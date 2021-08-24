@@ -1,4 +1,4 @@
-function vals = FarField_lessSlow_stillSteady(boundary, density, k, theta, derivs)
+function vals = FarField(boundary, density, k, theta, derivs)
 %produces matrix of domain values for density function
     if nargin == 4
         derivs = 0;
