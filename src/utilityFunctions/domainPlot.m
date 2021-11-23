@@ -13,10 +13,14 @@ function domainPlot(Gamma,uinc,GOA,v_N,kwave,totalPixels)
     x = linspace(xmin,xmax,pixelRate*(xmax-xmin));
     [X1, X2] = meshgrid(x,y);
     Sv = singleLayerDomain(Gamma, v_N, kwave, X1, X2);
-    SPsi = singleLayerDomain(Gamma, GOA, kwave, X1, X2);
+    if v_N == 0
+        SPsi = 0;
+    else
+        SPsi = singleLayerDomain(Gamma, GOA, kwave, X1, X2);
+    end
      u_N = uinc.eval(X1,X2) - Sv - SPsi;
 %    u_N = Sv + SPsi;
-    imagesc(x,y,real(u_N));
+    imagesc(x,y,abs(u_N));
     set(gca,'YDir','normal');
     shading interp;
     hold on;
