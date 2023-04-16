@@ -1,6 +1,6 @@
 function domainPlot(Gamma,uinc,GOA,v_N,kwave,totalPixels)
     if nargin == 5
-        totalPixels = 1000000;
+        totalPixels = 100000;
     end
     V = Gamma.vertices;
     r = 1;
@@ -20,7 +20,7 @@ function domainPlot(Gamma,uinc,GOA,v_N,kwave,totalPixels)
     end
      u_N = uinc.eval(X1,X2) - Sv - SPsi;
 %    u_N = Sv + SPsi;
-    imagesc(x,y,abs(u_N));
+    imagesc(x,y,real(u_N));
     set(gca,'YDir','normal');
     shading interp;
     hold on;

@@ -1,16 +1,19 @@
 clc;
 clear classes;
+close all;
+clear all;
 % run addPathsHNA() to add necessary search paths
 %wavenumber
-kwave=20;
+kwave=50;
 
 %create 'screen' object ---------------------------------------------------
-vertices =   [0    0;
-              1    0];
+vertices =   [-2*pi    2*pi;
+                0 0]; 
 Gamma=Screen(vertices);
 
 %inident plane wave -------------------------------------------------------
-d = [1 1]./sqrt(2); %direction as a vector
+theta = 0; %% need to change so it is consistent
+d = [sin(theta) -cos(theta) ];
 uinc=planeWave(kwave,d);
     
 %make an HNA basis on Gamma -----------------------------------------------
@@ -58,10 +61,10 @@ title(sprintf('k=%d',kwave),'FontSize',16);
 %plot the far-field pattern:
 figure(3);
 theta = linspace(0,2*pi,50*kwave);
-Fv_N = FarField_lessSlow_stillSteady(Gamma, v_N, kwave, theta);
-FPsi = FarField_lessSlow_stillSteady(Gamma, GOA, kwave, theta);
+Fv_N = FarField(Gamma, v_N, kwave, theta);
+FPsi = FarField(Gamma, GOA, kwave, theta);
 semilogy(theta,abs(FPsi+Fv_N));
-return;%'fontsize',
+% return;%'fontsize',
 
 %now plot the solution in the domain:
 figure(3);
